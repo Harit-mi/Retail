@@ -1,11 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
-body {
-  font-family: 'Outfit', sans-serif;
-  background-color: #0f172a;
-  color: #f8fafc;
-  overflow-x: hidden;
+@layer base {
+  :root {
+    --bg-main: #F7F8FA;
+    --surface-card: #FFFFFF;
+    --primary-navy: #1E3A5F;
+    --accent-marigold: #F5A623;
+    --success-green: #1FAA59;
+    --alert-red: #E64545;
+    --teal-chart: #0EA5A5;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F7F8FA;
+    color: #0F172A;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Sora', sans-serif;
+  }
+
+  .font-mono, .font-numeric {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom Card Shadows */
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.card-shadow-lg {
+  box-shadow: 0 10px 25px -5px rgba(30, 58, 95, 0.1), 0 8px 10px -6px rgba(30, 58, 95, 0.05);
+}
+
+/* Payment Mix Pulse Bar Segment Animations */
+.pulse-bar-segment {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-bar-segment, .animate-scan, .animate-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Print Styles for Thermal Receipts & Standard A4 Invoices */
@@ -32,27 +75,26 @@ body {
   }
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94A3B8;
 }
 
-/* Custom Pulsing Animation for Counter Scanning */
 @keyframes scanPulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.03); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
 }
 
 .animate-scan {

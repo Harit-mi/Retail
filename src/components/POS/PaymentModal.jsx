@@ -9,10 +9,6 @@ import {
   BookOpen,
   CheckCircle,
   Printer,
-  Sparkles,
-  ArrowRight,
-  Share2,
-  Phone,
 } from "lucide-react";
 
 export const PaymentModal = ({ isOpen, onClose }) => {
@@ -25,9 +21,8 @@ export const PaymentModal = ({ isOpen, onClose }) => {
     setPrintFormat,
   } = useStore();
 
-  const [paymentMode, setPaymentMode] = useState("upi"); // 'cash', 'upi', 'card', 'udhar'
+  const [paymentMode, setPaymentMode] = useState("upi");
   const [cashTendered, setCashTendered] = useState("");
-  const [udharAmount, setUdharAmount] = useState(cartGrandTotal);
   const [partialPaid, setPartialPaid] = useState("");
 
   if (!isOpen) return null;
@@ -46,7 +41,6 @@ export const PaymentModal = ({ isOpen, onClose }) => {
       paidAmt = Number(partialPaid) || 0;
     }
 
-    // Trigger celebration fireworks
     try {
       confetti({
         particleCount: 80,
@@ -57,51 +51,47 @@ export const PaymentModal = ({ isOpen, onClose }) => {
       console.log(e);
     }
 
-    const createdBill = completeCheckout({
+    completeCheckout({
       mode: paymentMode,
       paidAmount: paidAmt,
     });
 
     onClose();
 
-    // Trigger Print after short delay
     setTimeout(() => {
       window.print();
     }, 500);
   };
 
-  // Generate UPI QR String (standard Indian National Payments Corporation NPCI format)
-  // upi://pay?pa=address@upi&pn=StoreName&am=Amount&cu=INR
   const upiString = `upi://pay?pa=${encodeURIComponent(
     storeConfig.upiId || "guptakirana@upi"
   )}&pn=${encodeURIComponent(
     storeConfig.name
   )}&am=${cartGrandTotal}&cu=INR&tn=Invoice Payment`;
 
-  // QR Code Google Chart API for instant QR preview
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
     upiString
   )}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div>
-            <h3 className="font-extrabold text-white text-lg flex items-center space-x-2">
+            <h3 className="font-extrabold font-display text-slate-900 text-base flex items-center space-x-2">
               <span>Checkout & Payment</span>
-              <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
-                Total: ₹{cartGrandTotal}
+              <span className="text-xs bg-[#1FAA59]/10 text-[#1FAA59] border border-[#1FAA59]/30 px-2 py-0.5 rounded-full font-mono font-bold">
+                Total: ₹{cartGrandTotal.toLocaleString("en-IN")}
               </span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Select payment method & print receipt
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -112,10 +102,10 @@ export const PaymentModal = ({ isOpen, onClose }) => {
           {/* Payment Mode Selector Tabs */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { id: "upi", label: "UPI QR", icon: QrCode, color: "text-emerald-400" },
-              { id: "cash", label: "Cash", icon: Banknote, color: "text-amber-400" },
-              { id: "card", label: "Card", icon: CreditCard, color: "text-blue-400" },
-              { id: "udhar", label: "Udhar Khata", icon: BookOpen, color: "text-purple-400" },
+              { id: "upi", label: "UPI QR", icon: QrCode, color: "text-[#0EA5A5]" },
+              { id: "cash", label: "Cash", icon: Banknote, color: "text-[#1FAA59]" },
+              { id: "card", label: "Card", icon: CreditCard, color: "text-blue-600" },
+              { id: "udhar", label: "Udhaar", icon: BookOpen, color: "text-[#F5A623]" },
             ].map((mode) => {
               const Icon = mode.icon;
               const isSelected = paymentMode === mode.id;
@@ -123,25 +113,24 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                 <button
                   key={mode.id}
                   onClick={() => setPaymentMode(mode.id)}
-                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-bold transition-all duration-200 ${
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition ${
                     isSelected
-                      ? "bg-slate-800 border-emerald-500 text-white shadow-lg shadow-emerald-950/30"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                      ? "bg-[#1E3A5F] border-[#1E3A5F] text-white shadow-md"
+                      : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                   }`}
                 >
-                  <Icon className={`w-5 h-5 mb-1.5 ${mode.color}`} />
+                  <Icon className={`w-5 h-5 mb-1.5 ${isSelected ? "text-[#F5A623]" : mode.color}`} />
                   <span>{mode.label}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Payment Mode Content Panel */}
-          <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800">
-            {/* 1. UPI QR Code Mode */}
+          {/* Mode Content */}
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
             {paymentMode === "upi" && (
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="p-3 bg-white rounded-2xl shadow-xl border-4 border-emerald-500/40">
+                <div className="p-3 bg-white rounded-xl shadow-md border-2 border-teal-500/40">
                   <img
                     src={qrImageUrl}
                     alt="UPI QR Code"
@@ -149,55 +138,50 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-300">
+                  <p className="text-xs font-semibold text-slate-800 font-display">
                     Scan with PhonePe, GPay, Paytm or BHIM
                   </p>
-                  <p className="text-[11px] text-emerald-400 font-mono mt-0.5">
-                    UPI ID: {storeConfig.upiId || "guptakirana@upi"}
+                  <p className="text-[11px] text-[#0EA5A5] font-mono font-bold mt-0.5">
+                    UPI VPA: {storeConfig.upiId || "guptakirana@upi"}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* 2. Cash Mode */}
             {paymentMode === "cash" && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs text-slate-400 font-medium block mb-1">
-                    Cash Received from Customer (₹)
+                  <label className="text-xs text-slate-600 font-semibold block mb-1">
+                    Cash Tendered from Customer (₹)
                   </label>
                   <input
                     type="number"
                     value={cashTendered}
                     onChange={(e) => setCashTendered(e.target.value)}
-                    placeholder={`e.g. ${
-                      cartGrandTotal > 500 ? "2000" : "500"
-                    }`}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-lg font-bold text-white outline-none focus:border-amber-500"
+                    placeholder={`e.g. ${cartGrandTotal > 500 ? "2000" : "500"}`}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-lg font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
                   />
                 </div>
 
-                {/* Quick denomination buttons */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-[11px] text-slate-400">Quick Note:</span>
+                  <span className="text-[11px] text-slate-500">Quick Note:</span>
                   {[50, 100, 200, 500, 2000].map((note) => (
                     <button
                       key={note}
                       onClick={() => setCashTendered(note.toString())}
-                      className="px-2.5 py-1 bg-slate-800 hover:bg-amber-600/30 text-amber-300 rounded-lg text-xs font-bold border border-slate-700 transition"
+                      className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 rounded-lg text-xs font-mono font-bold border border-slate-300 transition"
                     >
                       ₹{note}
                     </button>
                   ))}
                 </div>
 
-                {/* Return Change Calculation Box */}
                 {Number(cashTendered) > 0 && (
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex justify-between items-center">
-                    <span className="text-xs text-amber-300 font-semibold">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center text-xs">
+                    <span className="text-[#1FAA59] font-bold">
                       Return Change to Customer:
                     </span>
-                    <span className="text-xl font-black text-amber-400">
+                    <span className="text-lg font-mono font-black text-[#1FAA59]">
                       ₹{cashReturnChange}
                     </span>
                   </div>
@@ -205,61 +189,52 @@ export const PaymentModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* 3. Card Mode */}
             {paymentMode === "card" && (
               <div className="text-center py-4 space-y-2">
-                <CreditCard className="w-10 h-10 text-blue-400 mx-auto" />
-                <p className="text-sm font-semibold text-slate-200">
+                <CreditCard className="w-10 h-10 text-blue-600 mx-auto" />
+                <p className="text-sm font-bold text-slate-800 font-display">
                   Swipe or Tap Card on POS Terminal Machine
                 </p>
-                <p className="text-xs text-slate-400">
-                  Press Complete Checkout after transaction is approved on card machine.
+                <p className="text-xs text-slate-500">
+                  Press Complete & Print after card machine approval.
                 </p>
               </div>
             )}
 
-            {/* 4. Udhar / Khata Book Mode */}
             {paymentMode === "udhar" && (
-              <div className="space-y-3">
+              <div className="space-y-3 text-xs">
                 {!cartCustomer ? (
-                  <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 text-center">
-                    <p className="text-xs font-semibold text-rose-300">
-                      ⚠️ No customer linked to this bill!
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+                    <p className="font-bold text-[#E64545]">
+                      ⚠️ No Customer Account Linked
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      Please close this window and click "Select Customer" on the cart to link a customer account for Udhar.
+                    <p className="text-slate-600 mt-1">
+                      Please close this window and select a customer account first to add to Udhaar.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-xs bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-slate-400">Customer:</span>
-                      <span className="font-bold text-white">{cartCustomer.name}</span>
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between bg-white p-2.5 rounded-xl border border-slate-200">
+                      <span className="text-slate-500">Customer:</span>
+                      <span className="font-bold text-slate-900">{cartCustomer.name}</span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                      <span className="text-slate-400">Existing Udhar Balance:</span>
-                      <span className="font-bold text-purple-400">₹{cartCustomer.balance}</span>
+                    <div className="flex justify-between bg-white p-2.5 rounded-xl border border-slate-200">
+                      <span className="text-slate-500">Existing Udhaar Balance:</span>
+                      <span className="font-mono font-bold text-[#F5A623]">₹{cartCustomer.balance}</span>
                     </div>
 
                     <div>
-                      <label className="text-xs text-slate-400 font-medium block mb-1">
-                        Partial Cash Received (Optional, rest will be added to Udhar):
+                      <label className="text-slate-600 font-semibold block mb-1">
+                        Partial Cash Paid Now (Optional):
                       </label>
                       <input
                         type="number"
                         value={partialPaid}
                         onChange={(e) => setPartialPaid(e.target.value)}
-                        placeholder="0 (if fully on Udhar)"
-                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none focus:border-purple-500"
+                        placeholder="0 (if fully on Udhaar)"
+                        className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none focus:border-[#1E3A5F]"
                       />
-                    </div>
-
-                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 flex justify-between items-center text-xs">
-                      <span className="text-purple-300 font-semibold">New Udhar Dues:</span>
-                      <span className="text-base font-bold text-purple-300">
-                        ₹{Math.max(0, cartGrandTotal - (Number(partialPaid) || 0))}
-                      </span>
                     </div>
                   </div>
                 )}
@@ -268,42 +243,42 @@ export const PaymentModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Receipt Print Format Selection */}
-          <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
-            <span className="text-slate-400 font-medium flex items-center space-x-1.5">
-              <Printer className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+            <span className="text-slate-600 font-semibold flex items-center space-x-1.5">
+              <Printer className="w-4 h-4 text-[#1E3A5F]" />
               <span>Receipt Format:</span>
             </span>
 
-            <div className="flex space-x-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
+            <div className="flex space-x-1 bg-white p-0.5 rounded-lg border border-slate-200 font-bold">
               <button
                 onClick={() => setPrintFormat("thermal")}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
+                className={`px-3 py-1 rounded-md text-xs transition ${
                   printFormat === "thermal"
-                    ? "bg-emerald-600 text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#1E3A5F] text-white"
+                    : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                80mm Thermal Slip
+                80mm Thermal
               </button>
               <button
                 onClick={() => setPrintFormat("a4")}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
+                className={`px-3 py-1 rounded-md text-xs transition ${
                   printFormat === "a4"
-                    ? "bg-emerald-600 text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#1E3A5F] text-white"
+                    : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                Full A4 GST Invoice
+                Full A4 GST
               </button>
             </div>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900"
           >
             Cancel
           </button>
@@ -311,10 +286,10 @@ export const PaymentModal = ({ isOpen, onClose }) => {
           <button
             onClick={handleCheckout}
             disabled={paymentMode === "udhar" && !cartCustomer}
-            className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 text-white font-extrabold px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-950/50 transition transform hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center space-x-2 bg-[#F5A623] hover:bg-amber-500 disabled:opacity-50 text-slate-950 font-black font-display px-6 py-2.5 rounded-xl shadow-md transition"
           >
             <CheckCircle className="w-5 h-5" />
-            <span>Complete & Print Bill</span>
+            <span>Complete & Print Invoice</span>
           </button>
         </div>
       </div>
