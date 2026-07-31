@@ -25,29 +25,29 @@ const MainContent = () => {
 
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950">
-      {/* Fixed Left Sidebar (Hidden on cashier POS billing screen for speed) */}
+      {/* Fixed Left Sidebar */}
       {!isPosView && <Sidebar />}
 
-      {/* Right Main Column */}
+      {/* Main Right Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Sticky Top Bar */}
         <Navbar />
 
-        {/* SIGNATURE ELEMENT: Payment Mix Pulse Bar */}
+        {/* Live Payment Mix Pulse Bar */}
         <PaymentMixPulseBar />
 
-        {/* Main View Area */}
+        {/* Main View Screen */}
         <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto overflow-hidden">
           {activeTab === "dashboard" && <DashboardOverview />}
 
           {activeTab === "pos" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-140px)]">
-              {/* Left ~65% POS Product Touch Grid */}
+              {/* Left POS Counter Grid */}
               <div className="lg:col-span-7 xl:col-span-8 h-full min-h-[450px]">
                 <BillingCounter />
               </div>
 
-              {/* Right ~35% POS Cart & Checkout */}
+              {/* Right POS Cart Section */}
               <div className="lg:col-span-5 xl:col-span-4 h-full min-h-[450px]">
                 <CartSection
                   onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
