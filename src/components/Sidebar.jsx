@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 
-export const Sidebar = () => {
+export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const { activeTab, setActiveTab, products, customers, suppliers, t } = useStore();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -40,82 +40,118 @@ export const Sidebar = () => {
     { id: "settings", label: t("settings"), iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
   ];
 
+  const handleNavClick = (tabId) => {
+    setActiveTab(tabId);
+    if (onCloseMobile) onCloseMobile();
+  };
+
   return (
-    <aside
-      className={`bg-[#1E3A5F] text-slate-100 min-h-screen flex flex-col transition-all duration-300 border-r border-slate-700/50 shadow-xl z-30 ${
-        collapsed ? "w-16" : "w-64"
-      }`}
-    >
-      {/* Brand Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-700/60 bg-slate-900/30">
-        {!collapsed && (
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div
+          onClick={onCloseMobile}
+          className="md:hidden fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+        />
+      )}
+
+      {/* Main Responsive Sidebar Drawer */}
+      <aside
+        className={`bg-[#1E3A5F] text-slate-100 min-h-screen flex flex-col transition-all duration-300 border-r border-slate-700/50 shadow-xl z-50 ${
+          isMobileOpen
+            ? "fixed inset-y-0 left-0 w-64 translate-x-0"
+            : "hidden md:flex " + (collapsed ? "w-16" : "w-64")
+        }`}
+      >
+        {/* Brand Header */}
+        <div className="h-16 px-4 flex items-center justify-between border-b border-slate-700/60 bg-slate-900/30">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F5A623] to-amber-500 flex items-center justify-center shadow-md text-slate-950 text-base font-bold">
               <i className="fa-solid fa-store"></i>
             </div>
-            <div>
-              <span className="font-extrabold text-base font-display text-white tracking-tight">
-                Dukaan<span className="text-[#F5A623]">POS</span>
-              </span>
-              <span className="block text-[10px] text-slate-300 font-mono tracking-wider uppercase">
-                India Multi-Vertical
-              </span>
-            </div>
+            {(!collapsed || isMobileOpen) && (
+              <div>
+                <span className="font-extrabold text-base font-display text-white tracking-tight">
+                  Dukaan<span className="text-[#F5A623]">POS</span>
+                </span>
+                <span className="block text-[10px] text-slate-300 font-mono tracking-wider uppercase">
+                  India Multi-Vertical
+                </span>
+              </div>
+            )}
           </div>
-        )}
 
-        {collapsed && (
-          <div className="mx-auto w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F5A623] to-amber-500 flex items-center justify-center text-slate-950">
-            <i className="fa-solid fa-store"></i>
-          </div>
-        )}
+          {/* Desktop Collapse Toggle */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition hidden md:block"
+          >
+            <i className={`fa-solid ${collapsed ? "fa-chevron-right" : "fa-chevron-left"} text-xs`}></i>
+          </button>
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition hidden md:block"
-        >
-          <i className={`fa-solid ${collapsed ? "fa-chevron-right" : "fa-chevron-left"} text-xs`}></i>
-        </button>
-      </div>
-
-      {/* Nav Menu Links */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
+          {/* Mobile Close Drawer Button */}
+          {isMobileOpen && (
             <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              title={collapsed ? item.label : undefined}
-              className={`w-full flex items-center ${
-                collapsed ? "justify-center px-2" : "px-3.5"
-              } py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? "bg-[#F5A623] text-slate-950 font-bold shadow-md shadow-amber-950/30"
-                  : "text-slate-200 hover:bg-slate-700/50 hover:text-white"
-              }`}
+              onClick={onCloseMobile}
+              className="md:hidden p-1.5 rounded-lg text-slate-300 hover:text-white"
             >
-              <i className={`${item.iconClass} text-base w-5 text-center ${isActive ? "text-slate-950" : "text-amber-400"}`}></i>
-              {!collapsed && (
-                <div className="ml-3 flex-1 flex items-center justify-between truncate">
-                  <span className="truncate">{item.label}</span>
-                  {item.badge && (
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isActive
-                          ? "bg-slate-950/20 text-slate-950"
-                          : item.badgeColor || "bg-slate-800 text-slate-300"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-              )}
+              <i className="fa-solid fa-xmark text-lg"></i>
             </button>
-          );
-        })}
-      </nav>
-    </aside>
+          )}
+        </div>
+
+        {/* Nav Menu Links */}
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                title={collapsed && !isMobileOpen ? item.label : undefined}
+                className={`w-full flex items-center ${
+                  collapsed && !isMobileOpen ? "justify-center px-2" : "px-3.5"
+                } py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-[#F5A623] text-slate-950 font-bold shadow-md shadow-amber-950/30"
+                    : "text-slate-200 hover:bg-slate-700/50 hover:text-white"
+                }`}
+              >
+                <i className={`${item.iconClass} text-base w-5 text-center ${isActive ? "text-slate-950" : "text-amber-400"}`}></i>
+                {(!collapsed || isMobileOpen) && (
+                  <div className="ml-3 flex-1 flex items-center justify-between truncate">
+                    <span className="truncate">{item.label}</span>
+                    {item.badge && (
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isActive
+                            ? "bg-slate-950/20 text-slate-950"
+                            : item.badgeColor || "bg-slate-800 text-slate-300"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Sidebar Footer */}
+        {(!collapsed || isMobileOpen) && (
+          <div className="p-3 m-3 rounded-xl bg-slate-900/40 border border-slate-700/50 text-xs text-slate-300">
+            <div className="flex items-center space-x-2 font-bold text-amber-300">
+              <i className="fa-solid fa-mobile-screen"></i>
+              <span>Mobile POS Ready</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Touch-Optimized Responsive SaaS
+            </p>
+          </div>
+        )}
+      </aside>
+    </>
   );
 };

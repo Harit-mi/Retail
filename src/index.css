@@ -13,12 +13,18 @@
     --teal-chart: #0EA5A5;
   }
 
-  body {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
     font-family: 'Inter', sans-serif;
     background-color: #F7F8FA;
     color: #0F172A;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   h1, h2, h3, h4, .font-display {
