@@ -36,6 +36,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       badgeColor: "bg-teal-500/20 text-teal-300",
     },
     { id: "modules", label: t("verticalModules"), iconClass: "fa-solid fa-cubes", badge: "7" },
+    { id: "security", label: "Security & Privacy", iconClass: "fa-solid fa-shield-halved", badge: "100%" },
     { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
     { id: "settings", label: t("settings"), iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
   ];
@@ -142,12 +143,12 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         {/* Sidebar Footer */}
         {(!collapsed || isMobileOpen) && (
           <div className="p-3 m-3 rounded-xl bg-slate-900/40 border border-slate-700/50 text-xs text-slate-300">
-            <div className="flex items-center space-x-2 font-bold text-amber-300">
-              <i className="fa-solid fa-mobile-screen"></i>
-              <span>Mobile POS Ready</span>
+            <div className="flex items-center space-x-2 font-bold text-emerald-400">
+              <i className="fa-solid fa-[#1FAA59] fa-shield-halved"></i>
+              <span>DPDP Act Compliant</span>
             </div>
             <p className="text-[11px] text-slate-400 mt-1">
-              Touch-Optimized Responsive SaaS
+              Local-First Zero Cloud Leakage
             </p>
           </div>
         )}
