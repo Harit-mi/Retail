@@ -9,11 +9,14 @@ export const Navbar = () => {
     storeConfig,
     activeVertical,
     setActiveVertical,
+    activeTab,
+    setActiveTab,
     currentLanguage,
     changeLanguage,
     resetDemoData,
     products,
     customers,
+    t,
   } = useStore();
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -29,7 +32,7 @@ export const Navbar = () => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 card-shadow h-16 flex items-center px-4 sm:px-6">
       <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3">
-        {/* Left: Store Selector with FontAwesome Icon */}
+        {/* Left: Store Selector & Quick Navigation Tabs */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
             <i className="fa-solid fa-shop text-[#1E3A5F] text-xs"></i>
@@ -44,6 +47,36 @@ export const Navbar = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Quick Header Navigation Switcher Buttons */}
+          <div className="hidden xl:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {[
+              { id: "dashboard", label: t("dashboard"), icon: "fa-chart-line" },
+              { id: "pos", label: t("counterPOS"), icon: "fa-cash-register" },
+              { id: "inventory", label: t("inventory"), icon: "fa-boxes-stacked" },
+              { id: "khata", label: t("udharBook"), icon: "fa-book-bookmark" },
+              { id: "suppliers", label: "Suppliers", icon: "fa-truck-field" },
+              { id: "modules", label: t("verticalModules"), icon: "fa-cubes" },
+              { id: "reports", label: t("reports"), icon: "fa-file-invoice-dollar" },
+              { id: "settings", label: t("settings"), icon: "fa-sliders" },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center space-x-1 ${
+                    isActive
+                      ? "bg-[#1E3A5F] text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+                  }`}
+                >
+                  <i className={`fa-solid ${tab.icon} text-[11px]`}></i>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Indian State Language Selector Dropdown */}
@@ -64,17 +97,17 @@ export const Navbar = () => {
         </div>
 
         {/* Center: Global Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-md relative">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <div className="hidden md:flex flex-1 max-w-xs relative">
+          <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input
             type="text"
-            placeholder="Search billing invoice #, items, customers, barcode... (F2)"
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs pl-10 pr-4 py-2 rounded-xl outline-none focus:border-[#1E3A5F] focus:bg-white transition"
+            placeholder="Search invoice #, items, HSN... (F2)"
+            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs pl-9 pr-3 py-1.5 rounded-xl outline-none focus:border-[#1E3A5F] focus:bg-white transition"
           />
         </div>
 
         {/* Right: Notifications, Shift Audit, Reset & Profile */}
-        <div className="flex items-center space-x-2.5">
+        <div className="flex items-center space-x-2">
           {/* Shift Drawer Audit Trigger Button */}
           <button
             onClick={() => setShowShiftAuditModal(true)}

@@ -22,16 +22,14 @@ const MainContent = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
-  const isPosView = activeTab === "pos";
-
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950">
-      {/* Fixed Left Sidebar */}
-      {!isPosView && <Sidebar />}
+      {/* Sidebar rendered on ALL screens (including POS billing) */}
+      <Sidebar />
 
       {/* Main Right Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Sticky Top Bar */}
+        {/* Sticky Top Bar with Quick Navigation Switcher */}
         <Navbar />
 
         {/* Live Payment Mix Pulse Bar */}
