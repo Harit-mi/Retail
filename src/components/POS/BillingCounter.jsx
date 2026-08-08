@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const BillingCounter = () => {
-  const { products, addToCart, cart, activeVertical } = useStore();
+  const { products, addToCart, cart, activeVertical, t } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isScanning, setIsScanning] = useState(false);
@@ -86,7 +86,7 @@ export const BillingCounter = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Scan barcode or type name, HSN, IMEI... (Press F2)"
+            placeholder={t("searchPlaceholder")}
             className="w-full bg-slate-50 text-slate-900 text-sm font-medium pl-10 pr-10 py-3 rounded-xl border border-slate-300 focus:border-[#1E3A5F] focus:bg-white outline-none transition placeholder-slate-400 card-shadow"
           />
           {searchQuery && (
@@ -110,7 +110,7 @@ export const BillingCounter = () => {
         >
           <ScanBarcode className="w-5 h-5" />
           <span className="whitespace-nowrap font-display">
-            {isScanning ? "Scanning..." : "Simulate Scanner"}
+            {isScanning ? "..." : t("simulateScanner")}
           </span>
         </button>
       </div>
@@ -121,7 +121,7 @@ export const BillingCounter = () => {
           <div className="flex items-center space-x-2">
             <Zap className="w-4 h-4 text-[#1FAA59] animate-bounce" />
             <span>
-              Scanned & Added to Cart: <strong>{lastScannedItem}</strong>
+              Scanned: <strong>{lastScannedItem}</strong>
             </span>
           </div>
           <span className="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-mono font-bold">
@@ -130,7 +130,7 @@ export const BillingCounter = () => {
         </div>
       )}
 
-      {/* Category Chips Horizontal Filter */}
+      {/* Category Chips Filter */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
         <Filter className="w-4 h-4 text-slate-400 flex-shrink-0 ml-1" />
         {categories.map((cat) => {
@@ -159,9 +159,6 @@ export const BillingCounter = () => {
             <p className="text-base font-semibold text-slate-700 font-display">
               No items match search '{searchQuery}'
             </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Try searching another barcode, name or clear category filter
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -181,7 +178,6 @@ export const BillingCounter = () => {
                       : "border-slate-200 hover:border-slate-400"
                   }`}
                 >
-                  {/* Category & GST Badge */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                       {product.category}
@@ -192,31 +188,10 @@ export const BillingCounter = () => {
                     </span>
                   </div>
 
-                  {/* Title */}
                   <h4 className="text-sm font-bold font-display text-slate-900 group-hover:text-[#1E3A5F] transition line-clamp-2 leading-snug">
                     {product.name}
                   </h4>
 
-                  {/* Dynamic Attribute Tags */}
-                  <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 mt-1.5">
-                    {product.attributes?.size && (
-                      <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold border border-indigo-200">
-                        Size: {product.attributes.size}
-                      </span>
-                    )}
-                    {product.attributes?.expiry_date && (
-                      <span className="bg-red-50 text-red-700 px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold border border-red-200">
-                        Exp: {product.attributes.expiry_date}
-                      </span>
-                    )}
-                    {product.attributes?.purity && (
-                      <span className="bg-amber-50 text-amber-800 px-1.5 py-0.2 rounded text-[10px] font-semibold border border-amber-200">
-                        {product.attributes.purity}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Price in IBM Plex Mono & Quantity Controller */}
                   <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-end justify-between">
                     <div>
                       <div className="text-lg font-black font-mono text-[#1E3A5F] flex items-baseline space-x-1">
@@ -233,11 +208,11 @@ export const BillingCounter = () => {
                           </span>
                         ) : product.stock <= 0 ? (
                           <span className="text-[#E64545] font-bold">
-                            Out of Stock
+                            {t("outOfStock")}
                           </span>
                         ) : isLowStock ? (
                           <span className="text-[#F5A623] font-semibold">
-                            Low: {product.stock} {product.unit} left
+                            {t("lowStock")}: {product.stock} {product.unit}
                           </span>
                         ) : (
                           <span className="text-slate-400">

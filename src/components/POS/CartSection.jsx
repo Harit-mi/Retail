@@ -26,6 +26,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
     cartTaxDetails,
     cartGrandTotal,
     calculatedDiscount,
+    t,
   } = useStore();
 
   const [discountType, setDiscountType] = useState("rs");
@@ -40,10 +41,10 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
           </div>
           <div>
             <h3 className="font-extrabold font-display text-slate-900 text-base">
-              Current Billing Cart
+              {t("counterPOS")}
             </h3>
             <p className="text-xs text-slate-500 font-mono">
-              {cart.length} {cart.length === 1 ? "item" : "items"} in bill
+              {cart.length} {t("itemsInCart")}
             </p>
           </div>
         </div>
@@ -54,7 +55,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
             className="flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200 transition font-bold"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear Cart</span>
+            <span>{t("clearCart")}</span>
           </button>
         )}
       </div>
@@ -67,12 +68,12 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
           </div>
           <div className="truncate">
             <p className="text-xs font-bold text-slate-900 truncate font-display">
-              {cartCustomer ? cartCustomer.name : "Walk-in Cash Customer"}
+              {cartCustomer ? cartCustomer.name : t("walkInCustomer")}
             </p>
             <p className="text-[11px] text-slate-500 truncate font-mono">
               {cartCustomer
                 ? `Udhaar Bal: ₹${cartCustomer.balance} • ${cartCustomer.phone}`
-                : "No customer account linked"}
+                : "No customer linked"}
             </p>
           </div>
         </div>
@@ -82,7 +83,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
           className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1E3A5F] hover:bg-[#152a45] text-white transition flex items-center space-x-1"
         >
           {cartCustomer ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
-          <span>{cartCustomer ? "Change" : "Select Customer"}</span>
+          <span>{cartCustomer ? "Change" : t("selectCustomer")}</span>
         </button>
       </div>
 
@@ -104,7 +105,6 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
               key={item.id}
               className="bg-white rounded-xl p-3 border border-slate-200 flex items-center justify-between gap-2 card-shadow"
             >
-              {/* Item Info */}
               <div className="flex-1 min-w-0">
                 <h5 className="text-xs font-bold text-slate-900 truncate font-display">
                   {item.name}
@@ -119,7 +119,6 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
                 </div>
               </div>
 
-              {/* Quantity Stepper */}
               <div className="flex items-center space-x-1 bg-slate-100 border border-slate-200 rounded-lg p-0.5">
                 <button
                   onClick={() => updateCartQty(item.id, item.qty - 1)}
@@ -141,7 +140,6 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
                 </button>
               </div>
 
-              {/* Item Total */}
               <div className="text-right min-w-[65px]">
                 <div className="text-xs font-black font-mono text-slate-900">
                   ₹{item.total.toLocaleString("en-IN")}
@@ -161,9 +159,8 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
       {/* Cart Summary & Discount Input */}
       {cart.length > 0 && (
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
-          {/* Discount Section */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600 font-semibold">Bill Discount:</span>
+            <span className="text-slate-600 font-semibold">{t("extraDiscount")}:</span>
             <div className="flex items-center space-x-1.5">
               <div className="flex bg-slate-200 border border-slate-300 rounded-lg p-0.5 font-bold">
                 <button
@@ -214,7 +211,6 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
             </div>
           </div>
 
-          {/* GST Breakdown */}
           <div className="space-y-1 text-xs pt-2 border-t border-slate-200">
             <div className="flex justify-between text-slate-600">
               <span>Items Total (Inc. Tax)</span>
@@ -234,11 +230,10 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
             </div>
           </div>
 
-          {/* Grand Total & Prominent Marigold Accent Pay Button */}
           <div className="pt-2 border-t border-slate-300 flex items-center justify-between">
             <div>
               <span className="text-xs text-slate-500 uppercase font-bold font-display">
-                Grand Total
+                {t("grandTotal")}
               </span>
               <div className="text-2xl font-black font-mono text-slate-900 tracking-tight">
                 ₹{cartGrandTotal.toLocaleString("en-IN")}
@@ -249,7 +244,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
               onClick={onOpenPaymentModal}
               className="flex items-center space-x-2 bg-[#F5A623] hover:bg-amber-500 text-slate-950 font-black font-display px-6 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span>COMPLETE SALE</span>
+              <span>{t("completeSale")}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

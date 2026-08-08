@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 import { VERTICAL_DEFINITIONS } from "../data/sampleData";
+import { INDIAN_LANGUAGES } from "../i18n/translations";
 
 export const Navbar = () => {
   const {
     storeConfig,
     activeVertical,
     setActiveVertical,
+    currentLanguage,
+    changeLanguage,
     resetDemoData,
     products,
     customers,
@@ -23,9 +26,9 @@ export const Navbar = () => {
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 card-shadow h-16 flex items-center px-4 sm:px-6">
-      <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-4">
+      <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3">
         {/* Left: Store Selector with FontAwesome Icon */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
             <i className="fa-solid fa-shop text-[#1E3A5F] text-xs"></i>
             <select
@@ -41,12 +44,24 @@ export const Navbar = () => {
             </select>
           </div>
 
-          <span className="hidden sm:inline-block text-xs font-medium text-slate-500 truncate max-w-xs">
-            {storeConfig.name}
-          </span>
+          {/* Indian State Language Selector Dropdown */}
+          <div className="flex items-center space-x-1.5 bg-amber-50 border border-amber-200/80 p-1.5 rounded-xl">
+            <i className="fa-solid fa-language text-[#F5A623] text-sm"></i>
+            <select
+              value={currentLanguage}
+              onChange={(e) => changeLanguage(e.target.value)}
+              className="bg-transparent text-amber-950 text-xs font-bold outline-none cursor-pointer pr-1"
+            >
+              {INDIAN_LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.flag} {lang.native} ({lang.name})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Center: Global Search Bar with FontAwesome Search Symbol */}
+        {/* Center: Global Search Bar */}
         <div className="hidden md:flex flex-1 max-w-md relative">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input
@@ -56,8 +71,8 @@ export const Navbar = () => {
           />
         </div>
 
-        {/* Right: FontAwesome Bell Notifications, Reset & Profile */}
-        <div className="flex items-center space-x-3">
+        {/* Right: Notifications, Reset & Profile */}
+        <div className="flex items-center space-x-2.5">
           {/* Notification Bell Badge */}
           <div className="relative">
             <button

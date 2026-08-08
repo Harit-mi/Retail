@@ -6,11 +6,9 @@ import {
   BookOpen,
   AlertTriangle,
   TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  Printer,
   ChevronRight,
   ShieldAlert,
+  Printer,
 } from "lucide-react";
 
 export const DashboardOverview = () => {
@@ -21,9 +19,9 @@ export const DashboardOverview = () => {
     setPrintableBill,
     setPrintFormat,
     setActiveTab,
+    t,
   } = useStore();
 
-  // Total Metrics Calculations
   const todaySalesTotal = sales.reduce((acc, s) => acc + s.grandTotal, 0);
   const totalOrdersCount = sales.length;
   const totalUdharOutstanding = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
@@ -45,7 +43,7 @@ export const DashboardOverview = () => {
         <div className="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Today's Revenue
+              {t("todayRevenue")}
             </span>
             <div className="p-2.5 bg-emerald-50 text-[#1FAA59] rounded-xl border border-emerald-100">
               <IndianRupee className="w-5 h-5" />
@@ -67,7 +65,7 @@ export const DashboardOverview = () => {
         <div className="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Orders Processed
+              {t("ordersProcessed")}
             </span>
             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
               <Receipt className="w-5 h-5" />
@@ -91,7 +89,7 @@ export const DashboardOverview = () => {
         <div className="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Udhaar Dues Balance
+              {t("udharDuesBalance")}
             </span>
             <div className="p-2.5 bg-amber-50 text-[#F5A623] rounded-xl border border-amber-100">
               <BookOpen className="w-5 h-5" />
@@ -118,7 +116,7 @@ export const DashboardOverview = () => {
         <div className="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Low Stock Warnings
+              {t("lowStockWarnings")}
             </span>
             <div className="p-2.5 bg-red-50 text-[#E64545] rounded-xl border border-red-100">
               <AlertTriangle className="w-5 h-5" />
@@ -144,7 +142,6 @@ export const DashboardOverview = () => {
 
       {/* 2. TWO-COLUMN CHART ZONE */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left (Larger): Hourly Sales Trend Chart */}
         <div className="lg:col-span-8 bg-white rounded-xl p-5 border border-slate-200 card-shadow space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -159,7 +156,6 @@ export const DashboardOverview = () => {
             </span>
           </div>
 
-          {/* SVG Line Chart Graphic */}
           <div className="h-48 w-full flex items-end justify-between gap-2 pt-4 px-2">
             {[
               { time: "9 AM", val: 1200, height: "30%" },
@@ -184,7 +180,6 @@ export const DashboardOverview = () => {
           </div>
         </div>
 
-        {/* Right (Smaller): Category & Mode Distribution */}
         <div className="lg:col-span-4 bg-white rounded-xl p-5 border border-slate-200 card-shadow space-y-4">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-extrabold font-display text-slate-900 text-sm">
@@ -214,9 +209,8 @@ export const DashboardOverview = () => {
         </div>
       </div>
 
-      {/* 3. RECENT TRANSACTIONS & LOW STOCK ALERTS SIDE BY SIDE */}
+      {/* 3. RECENT TRANSACTIONS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Recent Transactions (8 cols) */}
         <div className="lg:col-span-8 bg-white rounded-xl p-5 border border-slate-200 card-shadow space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="font-extrabold font-display text-slate-900 text-sm">
@@ -284,12 +278,11 @@ export const DashboardOverview = () => {
           </div>
         </div>
 
-        {/* Low Stock Alerts Box (4 cols) */}
         <div className="lg:col-span-4 bg-white rounded-xl p-5 border border-slate-200 card-shadow space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="font-extrabold font-display text-slate-900 text-sm flex items-center space-x-1.5">
               <ShieldAlert className="w-4 h-4 text-[#E64545]" />
-              <span>Low Stock Alerts</span>
+              <span>{t("lowStockWarnings")}</span>
             </h3>
             <span className="text-[10px] bg-red-50 text-[#E64545] px-2 py-0.5 rounded-full font-bold">
               {lowStockProducts.length} Items

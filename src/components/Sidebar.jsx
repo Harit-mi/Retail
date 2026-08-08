@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 
 export const Sidebar = () => {
-  const { activeTab, setActiveTab, products, customers } = useStore();
+  const { activeTab, setActiveTab, products, customers, t } = useStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const lowStockCount = products.filter(
@@ -12,25 +12,25 @@ export const Sidebar = () => {
   const udharCount = customers.filter((c) => c.balance > 0).length;
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", iconClass: "fa-solid fa-chart-line", badge: null },
-    { id: "pos", label: "Billing POS", iconClass: "fa-solid fa-cash-register", badge: "POS" },
+    { id: "dashboard", label: t("dashboard"), iconClass: "fa-solid fa-chart-line", badge: null },
+    { id: "pos", label: t("counterPOS"), iconClass: "fa-solid fa-cash-register", badge: "POS" },
     {
       id: "inventory",
-      label: "Inventory",
+      label: t("inventory"),
       iconClass: "fa-solid fa-boxes-stacked",
       badge: lowStockCount > 0 ? `${lowStockCount}` : null,
       badgeColor: "bg-red-500/20 text-red-300",
     },
     {
       id: "khata",
-      label: "Udhaar Book",
+      label: t("udharBook"),
       iconClass: "fa-solid fa-book-bookmark",
       badge: udharCount > 0 ? `${udharCount} Due` : null,
       badgeColor: "bg-amber-500/20 text-amber-300",
     },
-    { id: "modules", label: "Vertical Modules", iconClass: "fa-solid fa-cubes", badge: "7" },
-    { id: "reports", label: "Reports & GST", iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
-    { id: "settings", label: "Settings", iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
+    { id: "modules", label: t("verticalModules"), iconClass: "fa-solid fa-cubes", badge: "7" },
+    { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
+    { id: "settings", label: t("settings"), iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
   ];
 
   return (
@@ -39,11 +39,11 @@ export const Sidebar = () => {
         collapsed ? "w-16" : "w-64"
       }`}
     >
-      {/* Brand Header with FontAwesome Store Icon */}
+      {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-slate-700/60 bg-slate-900/30">
         {!collapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F5A623] to-amber-500 flex items-center justify-center shadow-md shadow-amber-950/40 text-slate-950 text-base font-bold">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F5A623] to-amber-500 flex items-center justify-center shadow-md text-slate-950 text-base font-bold">
               <i className="fa-solid fa-store"></i>
             </div>
             <div>
@@ -51,7 +51,7 @@ export const Sidebar = () => {
                 Dukaan<span className="text-[#F5A623]">POS</span>
               </span>
               <span className="block text-[10px] text-slate-300 font-mono tracking-wider uppercase">
-                FontAwesome Enterprise
+                India Multi-Lingual
               </span>
             </div>
           </div>
@@ -114,11 +114,11 @@ export const Sidebar = () => {
       {!collapsed && (
         <div className="p-3 m-3 rounded-xl bg-slate-900/40 border border-slate-700/50 text-xs text-slate-300">
           <div className="flex items-center space-x-2 font-bold text-amber-300">
-            <i className="fa-solid fa-bolt"></i>
-            <span>FontAwesome 6 Integrated</span>
+            <i className="fa-solid fa-language"></i>
+            <span>12 State Languages</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
-            Standard Vector Symbols Active
+            Zero-latency Localized Translation
           </p>
         </div>
       )}

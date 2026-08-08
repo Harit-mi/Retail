@@ -5,10 +5,27 @@ import {
   initialSalesHistory,
   initialStoreConfig,
 } from "../data/sampleData";
+import { translations } from "../i18n/translations";
 
 const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
+  // Language i18n
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    return localStorage.getItem("dukaan_language") || "en";
+  });
+
+  // Helper translation function
+  const t = (key) => {
+    const langDict = translations[currentLanguage] || translations.en;
+    return langDict[key] || translations.en[key] || key;
+  };
+
+  const changeLanguage = (langCode) => {
+    setCurrentLanguage(langCode);
+    localStorage.setItem("dukaan_language", langCode);
+  };
+
   // Store Config & Vertical Settings
   const [storeConfig, setStoreConfig] = useState(() => {
     const saved = localStorage.getItem("dukaan_store_config");
@@ -43,14 +60,14 @@ export const StoreProvider = ({ children }) => {
   const [discountRupees, setDiscountRupees] = useState(0);
 
   // App Navigation & UI States
-  const [activeTab, setActiveTab] = useState("pos"); // 'pos', 'inventory', 'khata', 'reports', 'modules', 'settings'
+  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard', 'pos', 'inventory', 'khata', 'reports', 'modules', 'settings'
   const [printableBill, setPrintableBill] = useState(null);
-  const [printFormat, setPrintFormat] = useState("thermal"); // 'thermal' or 'a4' or 'kot'
+  const [printFormat, setPrintFormat] = useState("thermal");
 
-  // KOT Kitchen Orders (for Restaurant Module)
+  // KOT Kitchen Orders
   const [kotOrders, setKotOrders] = useState([]);
 
-  // Appointments (for Salon Module)
+  // Appointments
   const [appointments, setAppointments] = useState([
     {
       id: "apt_1",
@@ -58,7 +75,7 @@ export const StoreProvider = ({ children }) => {
       phone: "+91 99887 76655",
       serviceName: "Hair Cut & Styling Combo",
       staffName: "Priya (Senior Stylist)",
-      date: "2026-07-31",
+      date: "2026-08-08",
       time: "14:30",
       status: "Confirmed",
     },
@@ -81,7 +98,7 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_sales", JSON.stringify(sales));
   }, [sales]);
 
-  // Cart Operations with Multi-vertical Attribute support
+  // Cart Operations
   const addToCart = (product, qty = 1, customAttributes = {}) => {
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((item) => item.id === product.id);
@@ -178,7 +195,7 @@ export const StoreProvider = ({ children }) => {
     const newInvoice = {
       id: invNumber,
       date: now,
-      customerName: cartCustomer ? cartCustomer.name : "Cash Customer",
+      customerName: cartCustomer ? cartCustomer.name : t("walkInCustomer"),
       customerPhone: cartCustomer ? cartCustomer.phone : "",
       customerId: cartCustomer ? cartCustomer.id : null,
       items: [...cart],
@@ -192,7 +209,7 @@ export const StoreProvider = ({ children }) => {
       operator: storeConfig.ownerName || "Cashier",
     };
 
-    // 1. Deduct Stock Inventory (bypassed if service item or null stock)
+    // 1. Deduct Stock Inventory
     setProducts((prevProducts) =>
       prevProducts.map((p) => {
         const cartItem = cart.find((item) => item.id === p.id);
@@ -227,27 +244,13 @@ export const StoreProvider = ({ children }) => {
       );
     }
 
-    // 3. Add to KOT if kitchen item exists (Restaurant Module)
-    const kotItems = cart.filter((item) => item.attributes?.is_kot_item);
-    if (kotItems.length > 0) {
-      const newKot = {
-        id: `KOT-${Date.now()}`,
-        billId: invNumber,
-        tableNo: paymentDetails.tableNo || "Table 4",
-        items: kotItems,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        status: "Pending Kitchen",
-      };
-      setKotOrders((prev) => [newKot, ...prev]);
-    }
-
-    // 4. Record Sales Log
+    // 3. Add to Sales Log
     setSales((prev) => [newInvoice, ...prev]);
 
-    // 5. Printable Invoice
+    // 4. Printable Invoice
     setPrintableBill(newInvoice);
 
-    // 6. Clear Cart
+    // 5. Clear Cart
     clearCart();
 
     return newInvoice;
@@ -294,7 +297,7 @@ export const StoreProvider = ({ children }) => {
     setCustomers((prev) => [c, ...prev]);
   };
 
-  const recordCustomerPayment = (customerId, paidAmount, paymentNote = "Udhar Payment") => {
+  const recordCustomerPayment = (customerId, paidAmount, paymentNote = "Udhaar Payment") => {
     setCustomers((prev) =>
       prev.map((c) => {
         if (c.id === customerId) {
@@ -320,7 +323,6 @@ export const StoreProvider = ({ children }) => {
     );
   };
 
-  // Salon Appointment creation
   const addAppointment = (appointment) => {
     setAppointments((prev) => [
       { id: `apt_${Date.now()}`, ...appointment, status: "Confirmed" },
@@ -328,7 +330,6 @@ export const StoreProvider = ({ children }) => {
     ]);
   };
 
-  // Reset to initial demo data
   const resetDemoData = () => {
     setProducts(initialProducts);
     setCustomers(initialCustomers);
@@ -341,6 +342,9 @@ export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider
       value={{
+        currentLanguage,
+        changeLanguage,
+        t,
         storeConfig,
         setStoreConfig,
         products,
