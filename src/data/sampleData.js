@@ -6,7 +6,7 @@ export const initialStoreConfig = {
   gstin: "07AAAAA0000A1Z5",
   upiId: "guptakirana@upi",
   ownerName: "Rajesh Gupta",
-  primaryVertical: "all", // 'all', 'kirana', 'clothing', 'pharmacy', 'electronics', 'restaurant', 'salon', 'jewelry'
+  primaryVertical: "all",
   enabledModules: {
     batchExpiry: true,
     variantMatrix: true,
@@ -16,9 +16,62 @@ export const initialStoreConfig = {
     jewelryRate: true,
     emiBilling: true,
   },
-  liveGoldRate22K: 6850, // ₹ per gram for 22K gold
-  liveSilverRate: 85, // ₹ per gram for Silver
+  liveGoldRate22K: 6850,
+  liveSilverRate: 85,
+  shiftOpeningFloat: 2000, // ₹2,000 opening cash float
 };
+
+export const initialSuppliers = [
+  {
+    id: "sup_1",
+    name: "Hindustan Unilever Limited (HUL)",
+    contactPerson: "Sanjay Mehta",
+    phone: "+91 98111 22334",
+    gstin: "07AAACH1111A1Z2",
+    city: "Delhi",
+    creditDays: 30,
+    pendingBalance: 12500,
+  },
+  {
+    id: "sup_2",
+    name: "Amul Dairy Distributors",
+    contactPerson: "Rakesh Patel",
+    phone: "+91 98222 33445",
+    gstin: "07AAACA2222B1Z4",
+    city: "Delhi",
+    creditDays: 15,
+    pendingBalance: 4800,
+  },
+  {
+    id: "sup_3",
+    name: "ITC Consumer Goods",
+    contactPerson: "Vikram Malhotra",
+    phone: "+91 98333 44556",
+    gstin: "07AAACI3333C1Z6",
+    city: "Delhi",
+    creditDays: 30,
+    pendingBalance: 0,
+  },
+];
+
+export const initialPurchaseOrders = [
+  {
+    id: "PO-8801",
+    supplierName: "Hindustan Unilever Limited (HUL)",
+    date: "2026-08-01",
+    items: [
+      { productName: "Surf Excel Easy Wash Detergent 1kg", qty: 25, costPrice: 118 },
+    ],
+    totalAmount: 2950,
+    status: "Received (GRN Completed)",
+  },
+];
+
+export const initialCoupons = [
+  { code: "DIWALI10", type: "percent", value: 10, minBill: 500, desc: "10% Off on bills above ₹500" },
+  { code: "FLAT200", type: "flat", value: 200, minBill: 1500, desc: "Flat ₹200 Off on bills above ₹1500" },
+  { code: "WELCOME50", type: "flat", value: 50, minBill: 200, desc: "₹50 Off for new customer" },
+];
 
 export const initialProducts = [
   // 1. Kirana / Grocery Items
@@ -83,7 +136,7 @@ export const initialProducts = [
     minStockWarning: 10,
   },
 
-  // 2. Clothing & Apparel Items (Variant Matrix)
+  // 2. Clothing & Apparel Items
   {
     id: "p9",
     name: "Men Slim Fit Cotton Shirt - Navy Blue",
@@ -127,7 +180,7 @@ export const initialProducts = [
     minStockWarning: 4,
   },
 
-  // 3. Pharmacy & Medical Items (Batch & Expiry & Rx)
+  // 3. Pharmacy Items
   {
     id: "p14",
     name: "Paracetamol 650mg Tablets (Strip of 15)",
@@ -171,7 +224,7 @@ export const initialProducts = [
     minStockWarning: 10,
   },
 
-  // 4. Electronics & Mobile Items (IMEI & Warranty & EMI)
+  // 4. Electronics
   {
     id: "p16",
     name: "Samsung Galaxy M34 5G (8GB RAM, 128GB)",
@@ -194,7 +247,7 @@ export const initialProducts = [
     minStockWarning: 2,
   },
 
-  // 5. Salon & Spa Services (Non-Stock Service Billing)
+  // 5. Salon Services
   {
     id: "p17",
     name: "Hair Cut & Styling + Beard Grooming Combo",
@@ -204,7 +257,7 @@ export const initialProducts = [
     gst: 18,
     retailPrice: 650,
     costPrice: 150,
-    stock: null, // Service items don't have stock decrement!
+    stock: null,
     unit: "Service",
     selling_unit_type: "service",
     vertical: "salon",
@@ -216,7 +269,7 @@ export const initialProducts = [
     minStockWarning: 0,
   },
 
-  // 6. Restaurant / Café KOT Items
+  // 6. Restaurant Items
   {
     id: "p18",
     name: "Paneer Butter Masala + 2 Butter Naan",
@@ -238,7 +291,7 @@ export const initialProducts = [
     minStockWarning: 0,
   },
 
-  // 7. Jewelry Items (Gold Weight + Purity + Making Charges)
+  // 7. Jewelry Items
   {
     id: "p19",
     name: "22K Gold Traditional Lakshmi Pendant (10g)",
@@ -272,6 +325,7 @@ export const initialCustomers = [
     city: "Delhi",
     balance: 450,
     creditLimit: 5000,
+    loyaltyPoints: 120, // 1 point per ₹100
     history: [
       { id: "h1", date: "2026-07-28", type: "debit", amount: 450, note: "Bill #1002 - Kirana items" },
     ],
@@ -283,6 +337,7 @@ export const initialCustomers = [
     city: "Delhi",
     balance: 1200,
     creditLimit: 8000,
+    loyaltyPoints: 250,
     history: [
       { id: "h2", date: "2026-07-25", type: "debit", amount: 1500, note: "Bill #0994 - Monthly ration" },
       { id: "h3", date: "2026-07-29", type: "credit", amount: 300, note: "Paid via UPI" },
@@ -295,6 +350,7 @@ export const initialCustomers = [
     city: "Delhi",
     balance: 0,
     creditLimit: 15000,
+    loyaltyPoints: 50,
     history: [],
   },
   {
@@ -304,6 +360,7 @@ export const initialCustomers = [
     city: "Delhi",
     balance: 850,
     creditLimit: 5000,
+    loyaltyPoints: 85,
     history: [
       { id: "h4", date: "2026-07-30", type: "debit", amount: 850, note: "Bill #1008 - Clothes" },
     ],
@@ -348,7 +405,6 @@ export const initialSalesHistory = [
   },
 ];
 
-// Vertical Definitions for Business Onboarding
 export const VERTICAL_DEFINITIONS = [
   { id: "all", name: "All Verticals / Multi-Store Hub", icon: "Store", badge: "Universal" },
   { id: "kirana", name: "Kirana & Grocery", icon: "ShoppingBag", badge: "FMCG / Weight" },

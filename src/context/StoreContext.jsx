@@ -4,6 +4,9 @@ import {
   initialCustomers,
   initialSalesHistory,
   initialStoreConfig,
+  initialSuppliers,
+  initialPurchaseOrders,
+  initialCoupons,
 } from "../data/sampleData";
 import { translations } from "../i18n/translations";
 
@@ -15,7 +18,6 @@ export const StoreProvider = ({ children }) => {
     return localStorage.getItem("dukaan_language") || "en";
   });
 
-  // Helper translation function
   const t = (key) => {
     const langDict = translations[currentLanguage] || translations.en;
     return langDict[key] || translations.en[key] || key;
@@ -26,7 +28,7 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_language", langCode);
   };
 
-  // Store Config & Vertical Settings
+  // Store Config & Settings
   const [storeConfig, setStoreConfig] = useState(() => {
     const saved = localStorage.getItem("dukaan_store_config");
     return saved ? JSON.parse(saved) : initialStoreConfig;
@@ -38,11 +40,27 @@ export const StoreProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialProducts;
   });
 
-  // Customers (Khata / Udhar Book)
+  // Customers (Khata / Udhaar Book + Loyalty)
   const [customers, setCustomers] = useState(() => {
     const saved = localStorage.getItem("dukaan_customers");
     return saved ? JSON.parse(saved) : initialCustomers;
   });
+
+  // Suppliers & Purchase Orders (Feature 3)
+  const [suppliers, setSuppliers] = useState(() => {
+    const saved = localStorage.getItem("dukaan_suppliers");
+    return saved ? JSON.parse(saved) : initialSuppliers;
+  });
+
+  const [purchaseOrders, setPurchaseOrders] = useState(() => {
+    const saved = localStorage.getItem("dukaan_purchase_orders");
+    return saved ? JSON.parse(saved) : initialPurchaseOrders;
+  });
+
+  // Coupons & Loyalty Points (Feature 6)
+  const [coupons] = useState(initialCoupons);
+  const [activeCoupon, setActiveCoupon] = useState(null);
+  const [redeemedPoints, setRedeemedPoints] = useState(0);
 
   // Sales History
   const [sales, setSales] = useState(() => {
@@ -60,26 +78,9 @@ export const StoreProvider = ({ children }) => {
   const [discountRupees, setDiscountRupees] = useState(0);
 
   // App Navigation & UI States
-  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard', 'pos', 'inventory', 'khata', 'reports', 'modules', 'settings'
+  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard', 'pos', 'inventory', 'khata', 'suppliers', 'modules', 'reports', 'settings'
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
-
-  // KOT Kitchen Orders
-  const [kotOrders, setKotOrders] = useState([]);
-
-  // Appointments
-  const [appointments, setAppointments] = useState([
-    {
-      id: "apt_1",
-      customerName: "Dr. Ananya Roy",
-      phone: "+91 99887 76655",
-      serviceName: "Hair Cut & Styling Combo",
-      staffName: "Priya (Senior Stylist)",
-      date: "2026-08-08",
-      time: "14:30",
-      status: "Confirmed",
-    },
-  ]);
 
   // Save to LocalStorage
   useEffect(() => {
@@ -93,6 +94,14 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("dukaan_customers", JSON.stringify(customers));
   }, [customers]);
+
+  useEffect(() => {
+    localStorage.setItem("dukaan_suppliers", JSON.stringify(suppliers));
+  }, [suppliers]);
+
+  useEffect(() => {
+    localStorage.setItem("dukaan_purchase_orders", JSON.stringify(purchaseOrders));
+  }, [purchaseOrders]);
 
   useEffect(() => {
     localStorage.setItem("dukaan_sales", JSON.stringify(sales));
@@ -160,9 +169,11 @@ export const StoreProvider = ({ children }) => {
     setCartCustomer(null);
     setDiscountPercent(0);
     setDiscountRupees(0);
+    setActiveCoupon(null);
+    setRedeemedPoints(0);
   };
 
-  // Cart Totals Calculation
+  // Cart Totals & Coupon / Loyalty Math
   const cartSubtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
   const cartTaxDetails = cart.reduce(
@@ -178,19 +189,55 @@ export const StoreProvider = ({ children }) => {
   );
 
   let calculatedDiscount = 0;
+
+  // 1. Direct Discount
   if (discountRupees > 0) {
     calculatedDiscount = discountRupees;
   } else if (discountPercent > 0) {
     calculatedDiscount = (cartSubtotal * discountPercent) / 100;
   }
 
+  // 2. Coupon Code Discount
+  if (activeCoupon) {
+    if (activeCoupon.type === "percent") {
+      calculatedDiscount += (cartSubtotal * activeCoupon.value) / 100;
+    } else {
+      calculatedDiscount += activeCoupon.value;
+    }
+  }
+
+  // 3. Loyalty Points Discount (1 Point = ₹1)
+  if (redeemedPoints > 0) {
+    calculatedDiscount += redeemedPoints;
+  }
+
   const cartGrandTotal = Math.max(0, Math.round(cartSubtotal - calculatedDiscount));
+
+  // Apply Coupon Helper
+  const applyCouponCode = (codeStr) => {
+    const code = codeStr.toUpperCase().trim();
+    const found = coupons.find((c) => c.code === code);
+    if (!found) {
+      return { success: false, message: "Invalid Coupon Code!" };
+    }
+    if (cartSubtotal < found.minBill) {
+      return {
+        success: false,
+        message: `Minimum bill of ₹${found.minBill} required for ${found.code}`,
+      };
+    }
+    setActiveCoupon(found);
+    return { success: true, message: `Coupon ${found.code} Applied Successfully!` };
+  };
 
   // Complete Sale / Checkout
   const completeCheckout = (paymentDetails) => {
     const invNumber = `INV-${1000 + sales.length + 1}`;
     const now = new Date().toISOString();
     const due = Math.max(0, cartGrandTotal - (paymentDetails.paidAmount || 0));
+
+    // Calculate Loyalty Points Earned (1 point per ₹100)
+    const pointsEarned = Math.floor(cartGrandTotal / 100);
 
     const newInvoice = {
       id: invNumber,
@@ -206,6 +253,7 @@ export const StoreProvider = ({ children }) => {
       paymentMode: paymentDetails.mode,
       paidAmount: paymentDetails.paidAmount,
       dueAmount: due,
+      pointsEarned: pointsEarned,
       operator: storeConfig.ownerName || "Cashier",
     };
 
@@ -220,23 +268,34 @@ export const StoreProvider = ({ children }) => {
       })
     );
 
-    // 2. Update Customer Ledger if Udhar
-    if (cartCustomer && (paymentDetails.mode === "udhar" || due > 0)) {
+    // 2. Update Customer Ledger & Loyalty Points
+    if (cartCustomer) {
       setCustomers((prevCustomers) =>
         prevCustomers.map((c) => {
           if (c.id === cartCustomer.id) {
             const addedDue = paymentDetails.mode === "udhar" ? cartGrandTotal : due;
-            const newHistoryItem = {
-              id: `h_${Date.now()}`,
-              date: new Date().toISOString().split("T")[0],
-              type: "debit",
-              amount: addedDue,
-              note: `Bill #${invNumber}`,
-            };
+            const updatedPoints = Math.max(
+              0,
+              (c.loyaltyPoints || 0) - redeemedPoints + pointsEarned
+            );
+            const newHistoryItem =
+              addedDue > 0
+                ? [
+                    {
+                      id: `h_${Date.now()}`,
+                      date: new Date().toISOString().split("T")[0],
+                      type: "debit",
+                      amount: addedDue,
+                      note: `Bill #${invNumber}`,
+                    },
+                  ]
+                : [];
+
             return {
               ...c,
               balance: c.balance + addedDue,
-              history: [newHistoryItem, ...(c.history || [])],
+              loyaltyPoints: updatedPoints,
+              history: [...newHistoryItem, ...(c.history || [])],
             };
           }
           return c;
@@ -256,7 +315,35 @@ export const StoreProvider = ({ children }) => {
     return newInvoice;
   };
 
-  // Product CRUD
+  // Supplier & Goods Receipt Note (GRN) Management (Feature 3)
+  const addSupplier = (supData) => {
+    const s = { ...supData, id: `sup_${Date.now()}`, pendingBalance: Number(supData.pendingBalance) || 0 };
+    setSuppliers((prev) => [s, ...prev]);
+  };
+
+  const receiveGRNShipment = (poId, supplierId, items) => {
+    // Increase Product Stock & Update Cost Price
+    setProducts((prevProducts) =>
+      prevProducts.map((p) => {
+        const grnItem = items.find((item) => item.productName === p.name);
+        if (grnItem) {
+          return {
+            ...p,
+            stock: (p.stock || 0) + Number(grnItem.qty),
+            costPrice: Number(grnItem.costPrice) || p.costPrice,
+          };
+        }
+        return p;
+      })
+    );
+
+    // Mark PO as GRN Completed
+    setPurchaseOrders((prev) =>
+      prev.map((po) => (po.id === poId ? { ...po, status: "Received (GRN Completed)" } : po))
+    );
+  };
+
+  // Product & Customer Operations
   const addProduct = (newProduct) => {
     const p = {
       ...newProduct,
@@ -278,12 +365,12 @@ export const StoreProvider = ({ children }) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Customer Management
   const addCustomer = (customerData) => {
     const c = {
       ...customerData,
       id: `c_${Date.now()}`,
       balance: Number(customerData.balance) || 0,
+      loyaltyPoints: 0,
       history: customerData.balance > 0 ? [
         {
           id: `h_${Date.now()}`,
@@ -323,18 +410,13 @@ export const StoreProvider = ({ children }) => {
     );
   };
 
-  const addAppointment = (appointment) => {
-    setAppointments((prev) => [
-      { id: `apt_${Date.now()}`, ...appointment, status: "Confirmed" },
-      ...prev,
-    ]);
-  };
-
   const resetDemoData = () => {
     setProducts(initialProducts);
     setCustomers(initialCustomers);
     setSales(initialSalesHistory);
     setStoreConfig(initialStoreConfig);
+    setSuppliers(initialSuppliers);
+    setPurchaseOrders(initialPurchaseOrders);
     clearCart();
     localStorage.clear();
   };
@@ -354,6 +436,15 @@ export const StoreProvider = ({ children }) => {
         customers,
         addCustomer,
         recordCustomerPayment,
+        suppliers,
+        addSupplier,
+        purchaseOrders,
+        receiveGRNShipment,
+        coupons,
+        activeCoupon,
+        applyCouponCode,
+        redeemedPoints,
+        setRedeemedPoints,
         sales,
         cart,
         addToCart,
@@ -379,9 +470,6 @@ export const StoreProvider = ({ children }) => {
         setPrintableBill,
         printFormat,
         setPrintFormat,
-        kotOrders,
-        appointments,
-        addAppointment,
         resetDemoData,
       }}
     >

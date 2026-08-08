@@ -9,6 +9,8 @@ import {
   UserPlus,
   Receipt,
   ArrowRight,
+  Tag,
+  Gift,
 } from "lucide-react";
 
 export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
@@ -22,6 +24,10 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
     setDiscountPercent,
     discountRupees,
     setDiscountRupees,
+    activeCoupon,
+    applyCouponCode,
+    redeemedPoints,
+    setRedeemedPoints,
     cartSubtotal,
     cartTaxDetails,
     cartGrandTotal,
@@ -30,6 +36,16 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
   } = useStore();
 
   const [discountType, setDiscountType] = useState("rs");
+  const [couponInput, setCouponInput] = useState("");
+  const [couponMsg, setCouponMsg] = useState("");
+
+  const handleApplyCoupon = (e) => {
+    e.preventDefault();
+    if (!couponInput) return;
+    const res = applyCouponCode(couponInput);
+    setCouponMsg(res.message);
+    if (res.success) setCouponInput("");
+  };
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 p-4 space-y-4 card-shadow">
@@ -72,7 +88,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
             </p>
             <p className="text-[11px] text-slate-500 truncate font-mono">
               {cartCustomer
-                ? `Udhaar Bal: ₹${cartCustomer.balance} • ${cartCustomer.phone}`
+                ? `Loyalty: 🎁 ${cartCustomer.loyaltyPoints || 0} pts • Udhaar Bal: ₹${cartCustomer.balance}`
                 : "No customer linked"}
             </p>
           </div>
@@ -159,6 +175,48 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
       {/* Cart Summary & Discount Input */}
       {cart.length > 0 && (
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+          {/* Coupon Code Input */}
+          <form onSubmit={handleApplyCoupon} className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Promo Code (e.g. DIWALI10, FLAT200)"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-2 py-1 text-xs font-mono text-slate-900 outline-none uppercase"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-3 py-1 bg-[#1E3A5F] text-white text-xs font-bold rounded-lg"
+            >
+              Apply
+            </button>
+          </form>
+
+          {couponMsg && (
+            <p className="text-[10px] font-bold text-indigo-700 bg-indigo-50 p-1.5 rounded border border-indigo-200">
+              {couponMsg}
+            </p>
+          )}
+
+          {/* Loyalty Points Redemption Toggle */}
+          {cartCustomer && (cartCustomer.loyaltyPoints || 0) > 0 && (
+            <div className="flex items-center justify-between bg-amber-50 border border-amber-200 p-2 rounded-xl text-xs text-amber-900">
+              <span className="flex items-center space-x-1 font-semibold">
+                <Gift className="w-3.5 h-3.5 text-amber-600" />
+                <span>Redeem {cartCustomer.loyaltyPoints} Points (₹{cartCustomer.loyaltyPoints})</span>
+              </span>
+              <input
+                type="checkbox"
+                checked={redeemedPoints > 0}
+                onChange={(e) => setRedeemedPoints(e.target.checked ? cartCustomer.loyaltyPoints : 0)}
+                className="w-4 h-4 accent-[#F5A623] cursor-pointer"
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-600 font-semibold">{t("extraDiscount")}:</span>
             <div className="flex items-center space-x-1.5">
@@ -219,15 +277,10 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
 
             {calculatedDiscount > 0 && (
               <div className="flex justify-between text-[#E64545] font-bold">
-                <span>Discount Applied</span>
+                <span>Total Discount (Coupon + Loyalty)</span>
                 <span className="font-mono">- ₹{calculatedDiscount}</span>
               </div>
             )}
-
-            <div className="flex justify-between text-slate-500 text-[11px] font-mono">
-              <span>Taxable Value: ₹{Math.round(cartTaxDetails.taxableAmount)}</span>
-              <span>CGST+SGST: ₹{Math.round(cartTaxDetails.totalTax)}</span>
-            </div>
           </div>
 
           <div className="pt-2 border-t border-slate-300 flex items-center justify-between">

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 
 export const Sidebar = () => {
-  const { activeTab, setActiveTab, products, customers, t } = useStore();
+  const { activeTab, setActiveTab, products, customers, suppliers, t } = useStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const lowStockCount = products.filter(
@@ -28,6 +28,13 @@ export const Sidebar = () => {
       badge: udharCount > 0 ? `${udharCount} Due` : null,
       badgeColor: "bg-amber-500/20 text-amber-300",
     },
+    {
+      id: "suppliers",
+      label: "Suppliers & PO",
+      iconClass: "fa-solid fa-truck-field",
+      badge: `${suppliers.length}`,
+      badgeColor: "bg-teal-500/20 text-teal-300",
+    },
     { id: "modules", label: t("verticalModules"), iconClass: "fa-solid fa-cubes", badge: "7" },
     { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
     { id: "settings", label: t("settings"), iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
@@ -51,7 +58,7 @@ export const Sidebar = () => {
                 Dukaan<span className="text-[#F5A623]">POS</span>
               </span>
               <span className="block text-[10px] text-slate-300 font-mono tracking-wider uppercase">
-                India Multi-Lingual
+                India Multi-Vertical
               </span>
             </div>
           </div>
@@ -109,19 +116,6 @@ export const Sidebar = () => {
           );
         })}
       </nav>
-
-      {/* Sidebar Footer */}
-      {!collapsed && (
-        <div className="p-3 m-3 rounded-xl bg-slate-900/40 border border-slate-700/50 text-xs text-slate-300">
-          <div className="flex items-center space-x-2 font-bold text-amber-300">
-            <i className="fa-solid fa-language"></i>
-            <span>12 State Languages</span>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Zero-latency Localized Translation
-          </p>
-        </div>
-      )}
     </aside>
   );
 };

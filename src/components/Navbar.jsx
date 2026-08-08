@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 import { VERTICAL_DEFINITIONS } from "../data/sampleData";
 import { INDIAN_LANGUAGES } from "../i18n/translations";
+import { ShiftReconciliationModal } from "./CashDrawer/ShiftReconciliationModal";
 
 export const Navbar = () => {
   const {
@@ -16,6 +17,7 @@ export const Navbar = () => {
   } = useStore();
 
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showShiftAuditModal, setShowShiftAuditModal] = useState(false);
 
   const lowStockCount = products.filter(
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
@@ -71,8 +73,18 @@ export const Navbar = () => {
           />
         </div>
 
-        {/* Right: Notifications, Reset & Profile */}
+        {/* Right: Notifications, Shift Audit, Reset & Profile */}
         <div className="flex items-center space-x-2.5">
+          {/* Shift Drawer Audit Trigger Button */}
+          <button
+            onClick={() => setShowShiftAuditModal(true)}
+            title="Day-End Cash Drawer Reconciliation"
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 border border-slate-200"
+          >
+            <i className="fa-solid fa-vault text-[#F5A623]"></i>
+            <span className="hidden sm:inline-block">Cash Audit</span>
+          </button>
+
           {/* Notification Bell Badge */}
           <div className="relative">
             <button
@@ -157,6 +169,12 @@ export const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Cash Drawer Audit Modal */}
+      <ShiftReconciliationModal
+        isOpen={showShiftAuditModal}
+        onClose={() => setShowShiftAuditModal(false)}
+      />
     </header>
   );
 };

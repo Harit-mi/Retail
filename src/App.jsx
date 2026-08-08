@@ -10,6 +10,7 @@ import { PaymentModal } from "./components/POS/PaymentModal";
 import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { InventoryList } from "./components/Inventory/InventoryList";
 import { CustomerLedger } from "./components/Khata/CustomerLedger";
+import { SupplierPOList } from "./components/Suppliers/SupplierPOList";
 import { AnalyticsDashboard } from "./components/Reports/AnalyticsDashboard";
 import { StoreSettings } from "./components/Settings/StoreSettings";
 import { VerticalModules } from "./components/Modules/VerticalModules";
@@ -59,6 +60,7 @@ const MainContent = () => {
 
           {activeTab === "inventory" && <InventoryList />}
           {activeTab === "khata" && <CustomerLedger />}
+          {activeTab === "suppliers" && <SupplierPOList />}
           {activeTab === "modules" && <VerticalModules />}
           {activeTab === "reports" && <AnalyticsDashboard />}
           {activeTab === "settings" && <StoreSettings />}
