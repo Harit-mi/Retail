@@ -77,26 +77,17 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
     onClose();
   };
 
-  // Indian HSN GST quick presets
-  const hsnGSTPresets = [
-    { label: "0% GST (Atta, Rice, Salt, Milk)", gst: 0, hsn: "1101" },
-    { label: "5% GST (Edible Oil, Shirts, Kurtis)", gst: 5, hsn: "1512" },
-    { label: "12% GST (Butter, Jeans, Packaged Food)", gst: 12, hsn: "0405" },
-    { label: "18% GST (Detergent, Soaps, Cosmetics)", gst: 18, hsn: "3402" },
-    { label: "28% GST (Aerated Drinks, Luxury)", gst: 28, hsn: "2202" },
-  ];
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col card-shadow">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
-          <h3 className="font-extrabold text-white text-base flex items-center space-x-2">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 className="font-extrabold text-slate-900 font-display text-base flex items-center space-x-2">
             <span>{productToEdit ? "Edit Product Details" : "Add New Inventory Item"}</span>
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+            className="p-1 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,15 +96,15 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Mode Switch inside form */}
-          <div className="flex items-center space-x-3 bg-slate-950 p-2 rounded-xl border border-slate-800 text-xs">
-            <span className="text-slate-400 font-medium">Item Type:</span>
+          <div className="flex items-center space-x-3 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+            <span className="text-slate-600 font-bold">Item Type:</span>
             <button
               type="button"
               onClick={() => setFormData((prev) => ({ ...prev, mode: "kirana" }))}
               className={`px-3 py-1 rounded-lg font-bold transition ${
                 formData.mode === "kirana"
-                  ? "bg-emerald-600 text-white"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#1E3A5F] text-white"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Kirana / Grocery
@@ -124,7 +115,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
               className={`px-3 py-1 rounded-lg font-bold transition ${
                 formData.mode === "clothing"
                   ? "bg-indigo-600 text-white"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Apparel / Fashion
@@ -133,7 +124,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
 
           {/* Product Name */}
           <div>
-            <label className="text-xs text-slate-400 font-semibold block mb-1">
+            <label className="text-xs text-slate-700 font-bold block mb-1">
               Product Name *
             </label>
             <input
@@ -142,14 +133,14 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Aashirvaad Atta 5kg or Cotton Formal Shirt"
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F] focus:bg-white"
             />
           </div>
 
           {/* Category & Barcode Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Category
               </label>
               <input
@@ -157,12 +148,12 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="Edible Oils, Men Wear..."
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Barcode Number
               </label>
               <input
@@ -170,15 +161,15 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.barcode}
                 onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                 placeholder="8901058..."
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono outline-none focus:border-[#1E3A5F]"
               />
             </div>
           </div>
 
-          {/* HSN Code & GST Preset Selector */}
+          {/* HSN Code & GST Selector */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 HSN Code
               </label>
               <input
@@ -186,18 +177,18 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.hsn}
                 onChange={(e) => setFormData({ ...formData, hsn: e.target.value })}
                 placeholder="e.g. 1902"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 GST Rate (%)
               </label>
               <select
                 value={formData.gst}
                 onChange={(e) => setFormData({ ...formData, gst: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-teal-400 font-bold outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-teal-700 font-bold outline-none cursor-pointer"
               >
                 <option value={0}>0% (Exempt)</option>
                 <option value={5}>5% GST</option>
@@ -211,7 +202,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
           {/* Prices Row: Retail Price, Wholesale Price, Cost Price */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Retail Price (₹) *
               </label>
               <input
@@ -220,12 +211,12 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.retailPrice}
                 onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
                 placeholder="145"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-emerald-400 font-bold outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-[#1FAA59] font-black font-mono outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Wholesale Price (₹)
               </label>
               <input
@@ -233,12 +224,12 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.wholesalePrice}
                 onChange={(e) => setFormData({ ...formData, wholesalePrice: e.target.value })}
                 placeholder="130"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Cost Price (₹)
               </label>
               <input
@@ -246,7 +237,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
                 placeholder="115"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
           </div>
@@ -254,25 +245,25 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
           {/* Stock & Unit Row */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Stock Qty
               </label>
               <input
                 type="number"
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Measuring Unit
               </label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none"
               >
                 <option value="Pcs">Pcs / Pieces</option>
                 <option value="Pack">Pack</option>
@@ -285,7 +276,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold block mb-1">
+              <label className="text-xs text-slate-700 font-bold block mb-1">
                 Low Stock Alert At
               </label>
               <input
@@ -294,46 +285,46 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, minStockWarning: Number(e.target.value) })
                 }
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
           </div>
 
           {/* Apparel Specific Fields if Clothing Mode */}
           {formData.mode === "clothing" && (
-            <div className="p-3 bg-indigo-950/40 rounded-xl border border-indigo-500/30 space-y-3">
-              <h5 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">
+            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 space-y-3">
+              <h5 className="text-xs font-extrabold text-indigo-900 font-display uppercase tracking-wider">
                 Apparel & Fashion Attributes
               </h5>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">Size</label>
+                  <label className="text-[11px] text-slate-600 block mb-1 font-semibold">Size</label>
                   <input
                     type="text"
                     value={formData.size}
                     onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                     placeholder="M, L, XL, 32"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">Brand</label>
+                  <label className="text-[11px] text-slate-600 block mb-1 font-semibold">Brand</label>
                   <input
                     type="text"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     placeholder="Levi's, Biba"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">Color</label>
+                  <label className="text-[11px] text-slate-600 block mb-1 font-semibold">Color</label>
                   <input
                     type="text"
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                     placeholder="Navy Blue, Red"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 outline-none"
                   />
                 </div>
               </div>
@@ -341,17 +332,17 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
           )}
 
           {/* Footer Submit */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white"
+              className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-emerald-950/40 transition"
+              className="px-6 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold font-display rounded-xl text-xs shadow-md transition"
             >
               {productToEdit ? "Save Changes" : "Add to Inventory"}
             </button>
