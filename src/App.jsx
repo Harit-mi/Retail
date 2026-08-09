@@ -5,8 +5,7 @@ import { Navbar } from "./components/Navbar";
 import { MobileBottomNav } from "./components/Mobile/MobileBottomNav";
 import { PaymentMixPulseBar } from "./components/Dashboard/PaymentMixPulseBar";
 import { DashboardOverview } from "./components/Dashboard/DashboardOverview";
-import { BillingCounter } from "./components/POS/BillingCounter";
-import { CartSection } from "./components/POS/CartSection";
+import { POSBillingScreen } from "./components/POS/POSBillingScreen";
 import { PaymentModal } from "./components/POS/PaymentModal";
 import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { InventoryList } from "./components/Inventory/InventoryList";
@@ -46,20 +45,10 @@ const MainContent = () => {
           {activeTab === "dashboard" && <DashboardOverview />}
 
           {activeTab === "pos" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-140px)]">
-              {/* Left POS Counter Grid */}
-              <div className="lg:col-span-7 xl:col-span-8 h-full min-h-[400px]">
-                <BillingCounter />
-              </div>
-
-              {/* Right POS Cart Section */}
-              <div className="lg:col-span-5 xl:col-span-4 h-full min-h-[400px]">
-                <CartSection
-                  onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-                  onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
-                />
-              </div>
-            </div>
+            <POSBillingScreen
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+            />
           )}
 
           {activeTab === "inventory" && <InventoryList />}
