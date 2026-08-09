@@ -1,17 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useStore } from "../../context/StoreContext";
-import { Store, Save, RotateCcw, CheckCircle, Tag, Phone, MapPin, QrCode } from "lucide-react";
+import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
 
 export const StoreSettings = () => {
-  const { storeConfig, setStoreConfig, resetDemoData, t } = useStore();
+  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers, t } = useStore();
   const [formData, setFormData] = useState({ ...storeConfig });
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [backupMsg, setBackupMsg] = useState(null);
+
+  const fileInputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setStoreConfig(formData);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
+  // 1-Click Offline Data Backup Export (JSON)
+  const exportStoreBackup = () => {
+    const backupData = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      storeConfig,
+      products,
+      sales,
+      customers,
+      suppliers,
+    };
+
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dukaanpos_backup_${storeConfig.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    setBackupMsg("✓ Store backup file downloaded successfully!");
+    setTimeout(() => setBackupMsg(null), 4000);
+  };
+
+  // 1-Click Restore Data from JSON Backup File
+  const importStoreBackup = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.products && parsed.customers) {
+          localStorage.setItem("dukaan_products", JSON.stringify(parsed.products));
+          localStorage.setItem("dukaan_sales", JSON.stringify(parsed.sales || []));
+          localStorage.setItem("dukaan_customers", JSON.stringify(parsed.customers));
+          if (parsed.suppliers) {
+            localStorage.setItem("dukaan_suppliers", JSON.stringify(parsed.suppliers));
+          }
+          if (parsed.storeConfig) {
+            localStorage.setItem("dukaan_store_config", JSON.stringify(parsed.storeConfig));
+          }
+          window.location.reload();
+        } else {
+          alert("Invalid backup file structure.");
+        }
+      } catch (err) {
+        alert("Failed to parse JSON backup file.");
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -140,36 +198,49 @@ export const StoreSettings = () => {
             />
           </div>
 
-          {/* Store Mode */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-            <label className="text-xs text-slate-900 font-bold block font-display">
-              Default Retail Industry Mode:
-            </label>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center space-x-2 text-xs text-slate-700 font-semibold cursor-pointer">
-                <input
-                  type="radio"
-                  name="storeMode"
-                  value="kirana"
-                  checked={formData.mode === "kirana"}
-                  onChange={() => setFormData({ ...formData, mode: "kirana" })}
-                  className="accent-[#1E3A5F]"
-                />
-                <span>Kirana / Grocery / Supermarket</span>
-              </label>
+          {/* OFFLINE DATA BACKUP & RESTORE SECTION */}
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <h4 className="text-xs font-extrabold text-slate-900 font-display flex items-center space-x-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#1FAA59]" />
+              <span>Offline Data Backup & Device Restore</span>
+            </h4>
+            <p className="text-[11px] text-slate-500">
+              Export all your inventory stock, invoices, customer ledgers, and suppliers to a single offline JSON backup file, or restore data onto a new device.
+            </p>
 
-              <label className="flex items-center space-x-2 text-xs text-slate-700 font-semibold cursor-pointer">
-                <input
-                  type="radio"
-                  name="storeMode"
-                  value="clothing"
-                  checked={formData.mode === "clothing"}
-                  onChange={() => setFormData({ ...formData, mode: "clothing" })}
-                  className="accent-[#1E3A5F]"
-                />
-                <span>Clothing / Apparel / Fashion Boutique</span>
-              </label>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={exportStoreBackup}
+                className="px-4 py-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>Export Data Backup (.json)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition flex items-center space-x-1.5"
+              >
+                <Upload className="w-3.5 h-3.5 text-teal-600" />
+                <span>Restore / Import Data Backup</span>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={importStoreBackup}
+                className="hidden"
+              />
             </div>
+
+            {backupMsg && (
+              <p className="text-[11px] font-bold text-[#1FAA59] bg-emerald-50 p-2 rounded-xl border border-emerald-200">
+                {backupMsg}
+              </p>
+            )}
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
