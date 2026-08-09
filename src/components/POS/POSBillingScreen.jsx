@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "../../context/StoreContext";
+import { useBarcodeScanner } from "../../hooks/useBarcodeScanner";
+import { WebcamBarcodeScannerModal } from "./WebcamBarcodeScannerModal";
 import {
   Search,
   ScanBarcode,
+  Camera,
   Plus,
   Minus,
   Trash2,
@@ -14,14 +17,8 @@ import {
   Filter,
   Package,
   Receipt,
-  QrCode,
-  Banknote,
-  CreditCard,
-  BookOpen,
-  Sparkles,
   Tag,
   Gift,
-  Keyboard,
 } from "lucide-react";
 
 export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
@@ -34,11 +31,6 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     clearCart,
     activeVertical,
     cartCustomer,
-    discountPercent,
-    setDiscountPercent,
-    discountRupees,
-    setDiscountRupees,
-    activeCoupon,
     applyCouponCode,
     redeemedPoints,
     setRedeemedPoints,
@@ -53,11 +45,17 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isScanning, setIsScanning] = useState(false);
   const [lastScannedItem, setLastScannedItem] = useState(null);
-  const [discountType, setDiscountType] = useState("rs");
   const [couponInput, setCouponInput] = useState("");
   const [couponMsg, setCouponMsg] = useState("");
+  const [webcamModalOpen, setWebcamModalOpen] = useState(false);
 
   const searchInputRef = useRef(null);
+
+  // Global USB / Bluetooth Hardware Barcode Scanner Listener
+  useBarcodeScanner((scannedProduct) => {
+    setLastScannedItem(scannedProduct.name);
+    setTimeout(() => setLastScannedItem(null), 2500);
+  });
 
   // Keyboard Shortcuts Listener (F2: Focus Search, F4: Customer Select, F8: Checkout)
   useEffect(() => {
@@ -77,11 +75,10 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [cart, onOpenCustomerModal, onOpenPaymentModal]);
 
-  // Search & Vertical Filter Logic
+  // Multi-Attribute Search & Vertical Filter Engine
   const filteredProducts = products.filter((product) => {
     const matchesVertical =
       activeVertical === "all" || product.vertical === activeVertical;
-
     const matchesCategory =
       selectedCategory === "All" || product.category === selectedCategory;
 
@@ -138,7 +135,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
       {/* LEFT COLUMN: ITEM SEARCH & PHYSICAL TILL TOUCH GRID (8 Cols) */}
       <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 flex flex-col space-y-4 card-shadow">
         {/* Search & Barcode Scan Bar with Keyboard Shortcut Badges */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-2.5">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -154,21 +151,33 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             </span>
           </div>
 
-          {/* Barcode Scanner Simulation Button */}
-          <button
-            onClick={simulateBarcodeScan}
-            disabled={isScanning}
-            className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-extrabold text-sm transition-all shadow-md active:scale-95 ${
-              isScanning
-                ? "bg-[#F5A623] text-slate-950 animate-scan"
-                : "bg-[#1E3A5F] hover:bg-[#152a45] text-white"
-            }`}
-          >
-            <ScanBarcode className="w-5 h-5 text-[#F5A623]" />
-            <span className="whitespace-nowrap font-display">
-              {isScanning ? "Scanning..." : t("simulateScanner")}
-            </span>
-          </button>
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            {/* Live Web Camera Barcode Scanner Trigger Button */}
+            <button
+              onClick={() => setWebcamModalOpen(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-2xl font-bold text-xs border border-slate-300 transition"
+              title="Scan with Mobile/Tablet Camera"
+            >
+              <Camera className="w-4 h-4 text-[#1E3A5F]" />
+              <span>Camera</span>
+            </button>
+
+            {/* Barcode Scanner Simulation Button */}
+            <button
+              onClick={simulateBarcodeScan}
+              disabled={isScanning}
+              className={`flex-1 sm:flex-none flex items-center justify-center space-x-2 px-5 py-3 rounded-2xl font-extrabold text-sm transition-all shadow-md active:scale-95 ${
+                isScanning
+                  ? "bg-[#F5A623] text-slate-950 animate-scan"
+                  : "bg-[#1E3A5F] hover:bg-[#152a45] text-white"
+              }`}
+            >
+              <ScanBarcode className="w-5 h-5 text-[#F5A623]" />
+              <span className="whitespace-nowrap font-display">
+                {isScanning ? "Scanning..." : t("simulateScanner")}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Barcode Toast Alert */}
@@ -528,6 +537,16 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
           </div>
         )}
       </div>
+
+      {/* Camera Live Barcode Scanner Modal */}
+      <WebcamBarcodeScannerModal
+        isOpen={webcamModalOpen}
+        onClose={() => setWebcamModalOpen(false)}
+        onBarcodeDetected={(prod) => {
+          setLastScannedItem(prod.name);
+          setTimeout(() => setLastScannedItem(null), 2500);
+        }}
+      />
     </div>
   );
 };
