@@ -5,7 +5,7 @@
 [![Vitest Unit Tests](https://img.shields.io/badge/Vitest-3.0_Passed-1FAA59.svg)](https://vitest.dev)
 [![React 19](https://img.shields.io/badge/React-19.2-blue.svg)](https://react.dev)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4.3-38B2AC.svg)](https://tailwindcss.com)
-[![DPDP Act Compliant](https://img.shields.io/badge/Privacy-DPDP_Act_2023-0EA5A5.svg)](#security--dpdp-act-2023-privacy)
+[![DPDP Act Principles](https://img.shields.io/badge/Privacy-DPDP_Act_2023_Principles-0EA5A5.svg)](#security--dpdp-act-2023-privacy-principles)
 
 > **DukaanPOS** is an open-source, local-first retail software engineered specifically for Indian small & medium businesses (SMBs) across 7 major business verticals — Kirana/Grocery, Clothing/Apparel, Pharmacy, Electronics, Salon/Spa, Restaurant/QSR, and Jewelry.
 
@@ -44,10 +44,10 @@ Deploy your own live hosted instance of DukaanPOS to Vercel or Netlify instantly
 
 ---
 
-## 🌐 12 Indian State Languages Support
+## 🌐 12 Languages (10 Indian State Languages + Hinglish + English)
 
-DukaanPOS includes zero-latency localized translations across **12 Indian languages**:
-- 🇬邦 **English**
+DukaanPOS includes zero-latency localized translations across **12 languages**:
+- 🇬🇧 **English**
 - 🇮🇳 **Hindi (हिन्दी)**
 - 🇮🇳 **Hinglish** *(Counter Billing, Udhaar Khata, Total Bill Amount)*
 - 🇮🇳 **Marathi (मराठी)**
@@ -62,10 +62,11 @@ DukaanPOS includes zero-latency localized translations across **12 Indian langua
 
 ---
 
-## 🔒 Security & DPDP Act 2023 Privacy
+## 🔒 Security & DPDP Act 2023 Privacy Principles
 
-- **Local-First Zero Cloud Leakage**: All billing data, customer Khata ledgers, and sales invoices remain 100% stored on your local browser/device. No third-party tracking.
-- **DPDP Act 2023 Compliance**: Customer phone number masking option (`+91 98765 *****`) and Right-to-Erasure consent management.
+Designed with **India DPDP Act 2023 Privacy Principles** in mind:
+- **Local-First Zero Cloud Leakage**: All billing data, customer Khata ledgers, and sales invoices remain 100% stored on your local browser/device. No third-party data tracking or external cloud harvesting.
+- **Privacy Controls**: Optional customer phone number masking (`+91 98765 *****`) and Right-to-Erasure data management.
 - **Dynamic NPCI UPI QR**: Direct merchant-to-customer UPI payment QR code generated via open NPCI URI standards (`upi://pay?pa=...`).
 
 ---
