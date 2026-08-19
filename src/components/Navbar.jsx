@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
-import { VERTICAL_DEFINITIONS } from "../data/sampleData";
 import { INDIAN_LANGUAGES } from "../i18n/translations";
 import { ShiftReconciliationModal } from "./CashDrawer/ShiftReconciliationModal";
 
 export const Navbar = ({ onOpenMobileMenu }) => {
   const {
     storeConfig,
-    activeVertical,
-    setActiveVertical,
     activeTab,
     setActiveTab,
     currentLanguage,
@@ -32,7 +29,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 card-shadow h-16 flex items-center px-3 sm:px-6">
       <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-2 sm:gap-3">
-        {/* Left: Mobile Hamburger & Store Selector */}
+        {/* Left: Mobile Hamburger & Store Branding */}
         <div className="flex items-center space-x-2">
           {/* Mobile Hamburger Button */}
           <button
@@ -42,31 +39,22 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             <i className="fa-solid fa-bars text-lg text-[#1E3A5F]"></i>
           </button>
 
-          {/* Store Selector */}
-          <div className="flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-            <i className="fa-solid fa-shop text-[#1E3A5F] text-xs"></i>
-            <select
-              value={activeVertical}
-              onChange={(e) => setActiveVertical(e.target.value)}
-              className="bg-transparent text-slate-800 text-xs font-bold outline-none cursor-pointer pr-1 max-w-[120px] sm:max-w-none truncate"
-            >
-              {VERTICAL_DEFINITIONS.map((v) => (
-                <option key={v.id} value={v.id}>
-                  Store: {v.name}
-                </option>
-              ))}
-            </select>
+          {/* Kirana Store Title Badge */}
+          <div className="flex items-center space-x-2 bg-amber-50 p-1.5 px-3 rounded-xl border border-amber-200">
+            <i className="fa-solid fa-shop text-[#F5A623] text-sm"></i>
+            <span className="text-slate-900 text-xs font-black font-display">
+              {storeConfig.name || "Gupta Kirana Store"}
+            </span>
           </div>
 
-          {/* Desktop Quick Header Navigation Switcher Buttons */}
+          {/* Desktop Quick Navigation Header Pills */}
           <div className="hidden xl:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
             {[
-              { id: "dashboard", label: t("dashboard"), icon: "fa-chart-line" },
-              { id: "pos", label: t("counterPOS"), icon: "fa-cash-register" },
-              { id: "inventory", label: t("inventory"), icon: "fa-boxes-stacked" },
-              { id: "khata", label: t("udharBook"), icon: "fa-book-bookmark" },
-              { id: "suppliers", label: "Suppliers", icon: "fa-truck-field" },
-              { id: "modules", label: t("verticalModules"), icon: "fa-cubes" },
+              { id: "pos", label: "Billing POS", icon: "fa-cash-register" },
+              { id: "inventory", label: "Inventory", icon: "fa-boxes-stacked" },
+              { id: "barcodes", label: "Barcodes", icon: "fa-barcode" },
+              { id: "khata", label: "Udhaar & Loyalty", icon: "fa-book-bookmark" },
+              { id: "whatsapp", label: "WhatsApp Marketing", icon: "fa-whatsapp" },
               { id: "reports", label: t("reports"), icon: "fa-file-invoice-dollar" },
               { id: "settings", label: t("settings"), icon: "fa-sliders" },
             ].map((tab) => {
@@ -89,12 +77,12 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           </div>
 
           {/* Indian State Language Selector Dropdown */}
-          <div className="flex items-center space-x-1 bg-amber-50 border border-amber-200/80 p-1.5 rounded-xl">
+          <div className="flex items-center space-x-1 bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
             <i className="fa-solid fa-language text-[#F5A623] text-sm"></i>
             <select
               value={currentLanguage}
               onChange={(e) => changeLanguage(e.target.value)}
-              className="bg-transparent text-amber-950 text-xs font-bold outline-none cursor-pointer pr-0.5"
+              className="bg-transparent text-slate-800 text-xs font-bold outline-none cursor-pointer pr-0.5"
             >
               {INDIAN_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -105,12 +93,12 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           </div>
         </div>
 
-        {/* Center: Global Search Bar */}
+        {/* Center: Global Kirana Search Bar */}
         <div className="hidden lg:flex flex-1 max-w-xs relative">
           <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input
             type="text"
-            placeholder="Search invoice #, items... (F2)"
+            placeholder="Search items, barcode, HSN... (F2)"
             className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs pl-9 pr-3 py-1.5 rounded-xl outline-none focus:border-[#1E3A5F] focus:bg-white transition"
           />
         </div>
@@ -120,11 +108,11 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           {/* Shift Drawer Audit Trigger Button */}
           <button
             onClick={() => setShowShiftAuditModal(true)}
-            title="Day-End Cash Drawer Reconciliation"
+            title="Day-End Cash Drawer Audit"
             className="px-2.5 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center space-x-1 border border-slate-200"
           >
             <i className="fa-solid fa-vault text-[#F5A623]"></i>
-            <span className="hidden sm:inline-block">Audit</span>
+            <span className="hidden sm:inline-block">Cash Audit</span>
           </button>
 
           {/* Notification Bell Badge */}
@@ -160,7 +148,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                       <div>
                         <p className="font-bold text-[11px]">Low Stock Alert</p>
                         <p className="text-[10px] text-amber-700">
-                          {lowStockCount} items below minimum warning threshold.
+                          {lowStockCount} Kirana items below minimum warning threshold.
                         </p>
                       </div>
                     </div>
@@ -185,11 +173,11 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           {/* Reset Demo Data Button */}
           <button
             onClick={() => {
-              if (window.confirm("Reset all store data to default multi-vertical sample data?")) {
+              if (window.confirm("Reset Kirana store data to default sample items?")) {
                 resetDemoData();
               }
             }}
-            title="Reset Sample Demo Data"
+            title="Reset Kirana Sample Data"
             className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
           >
             <i className="fa-solid fa-rotate-left text-sm"></i>

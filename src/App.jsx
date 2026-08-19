@@ -4,17 +4,15 @@ import { Sidebar } from "./components/Sidebar";
 import { Navbar } from "./components/Navbar";
 import { MobileBottomNav } from "./components/Mobile/MobileBottomNav";
 import { PaymentMixPulseBar } from "./components/Dashboard/PaymentMixPulseBar";
-import { DashboardOverview } from "./components/Dashboard/DashboardOverview";
 import { POSBillingScreen } from "./components/POS/POSBillingScreen";
-import { PaymentModal } from "./components/POS/PaymentModal";
-import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { InventoryList } from "./components/Inventory/InventoryList";
+import { BarcodePrintModal } from "./components/Barcode/BarcodePrintModal";
 import { CustomerLedger } from "./components/Khata/CustomerLedger";
-import { SupplierPOList } from "./components/Suppliers/SupplierPOList";
-import { SecurityPrivacyPanel } from "./components/Security/SecurityPrivacyPanel";
+import { WhatsAppMarketingHub } from "./components/Marketing/WhatsAppMarketingHub";
 import { AnalyticsDashboard } from "./components/Reports/AnalyticsDashboard";
 import { StoreSettings } from "./components/Settings/StoreSettings";
-import { VerticalModules } from "./components/Modules/VerticalModules";
+import { PaymentModal } from "./components/POS/PaymentModal";
+import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { ThermalReceipt } from "./components/Invoice/ThermalReceipt";
 import { StandardInvoice } from "./components/Invoice/StandardInvoice";
 
@@ -26,7 +24,7 @@ const MainContent = () => {
 
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950 pb-16 md:pb-0">
-      {/* Sidebar (Desktop & Mobile Slide-Out Drawer) */}
+      {/* Sidebar (Desktop & Mobile Drawer) */}
       <Sidebar
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
@@ -42,8 +40,6 @@ const MainContent = () => {
 
         {/* Main View Screen */}
         <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto overflow-x-hidden">
-          {activeTab === "dashboard" && <DashboardOverview />}
-
           {activeTab === "pos" && (
             <POSBillingScreen
               onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
@@ -52,10 +48,9 @@ const MainContent = () => {
           )}
 
           {activeTab === "inventory" && <InventoryList />}
+          {activeTab === "barcodes" && <BarcodePrintModal />}
           {activeTab === "khata" && <CustomerLedger />}
-          {activeTab === "suppliers" && <SupplierPOList />}
-          {activeTab === "security" && <SecurityPrivacyPanel />}
-          {activeTab === "modules" && <VerticalModules />}
+          {activeTab === "whatsapp" && <WhatsAppMarketingHub />}
           {activeTab === "reports" && <AnalyticsDashboard />}
           {activeTab === "settings" && <StoreSettings />}
         </main>

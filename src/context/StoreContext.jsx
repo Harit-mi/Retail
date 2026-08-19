@@ -78,7 +78,7 @@ export const StoreProvider = ({ children }) => {
   const [discountRupees, setDiscountRupees] = useState(0);
 
   // App Navigation & UI States
-  const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard', 'pos', 'inventory', 'khata', 'suppliers', 'modules', 'reports', 'settings'
+  const [activeTab, setActiveTab] = useState("pos"); // Default Kirana Counter POS Billing
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 

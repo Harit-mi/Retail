@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useStore } from "../context/StoreContext";
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
-  const { activeTab, setActiveTab, products, customers, suppliers, t } = useStore();
+  const { activeTab, setActiveTab, products, customers, t } = useStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const lowStockCount = products.filter(
@@ -12,33 +12,25 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const udharCount = customers.filter((c) => c.balance > 0).length;
 
   const navItems = [
-    { id: "dashboard", label: t("dashboard"), iconClass: "fa-solid fa-chart-line", badge: null },
-    { id: "pos", label: t("counterPOS"), iconClass: "fa-solid fa-cash-register", badge: "POS" },
+    { id: "pos", label: "Kirana Billing POS", iconClass: "fa-solid fa-cash-register", badge: "POS" },
     {
       id: "inventory",
-      label: t("inventory"),
+      label: "Kirana Inventory",
       iconClass: "fa-solid fa-boxes-stacked",
       badge: lowStockCount > 0 ? `${lowStockCount}` : null,
       badgeColor: "bg-red-500/20 text-red-300",
     },
+    { id: "barcodes", label: "Barcode Printing", iconClass: "fa-solid fa-barcode", badge: "Print" },
     {
       id: "khata",
-      label: t("udharBook"),
+      label: "Udhaar & Loyalty",
       iconClass: "fa-solid fa-book-bookmark",
       badge: udharCount > 0 ? `${udharCount} Due` : null,
       badgeColor: "bg-amber-500/20 text-amber-300",
     },
-    {
-      id: "suppliers",
-      label: "Suppliers & PO",
-      iconClass: "fa-solid fa-truck-field",
-      badge: `${suppliers.length}`,
-      badgeColor: "bg-teal-500/20 text-teal-300",
-    },
-    { id: "modules", label: t("verticalModules"), iconClass: "fa-solid fa-cubes", badge: "7" },
-    { id: "security", label: "Security & Privacy", iconClass: "fa-solid fa-shield-halved", badge: "100%" },
+    { id: "whatsapp", label: "WhatsApp Marketing", iconClass: "fa-brands fa-whatsapp", badge: "New" },
     { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
-    { id: "settings", label: t("settings"), iconClass: "fa-solid fa-[#F5A623] fa-sliders", badge: null },
+    { id: "settings", label: t("settings"), iconClass: "fa-solid fa-sliders", badge: null },
   ];
 
   const handleNavClick = (tabId) => {
@@ -68,15 +60,15 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-700/60 bg-slate-900/30">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F5A623] to-amber-500 flex items-center justify-center shadow-md text-slate-950 text-base font-bold">
-              <i className="fa-solid fa-store"></i>
+              <i className="fa-solid fa-shop"></i>
             </div>
             {(!collapsed || isMobileOpen) && (
               <div>
                 <span className="font-extrabold text-base font-display text-white tracking-tight">
-                  Dukaan<span className="text-[#F5A623]">POS</span>
+                  Gupta<span className="text-[#F5A623]">Kirana</span>
                 </span>
-                <span className="block text-[10px] text-slate-300 font-mono tracking-wider uppercase">
-                  India Multi-Vertical
+                <span className="block text-[10px] text-amber-400 font-mono tracking-wider uppercase font-bold">
+                  Kirana Retail Software
                 </span>
               </div>
             )}
@@ -143,12 +135,12 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         {/* Sidebar Footer */}
         {(!collapsed || isMobileOpen) && (
           <div className="p-3 m-3 rounded-xl bg-slate-900/40 border border-slate-700/50 text-xs text-slate-300">
-            <div className="flex items-center space-x-2 font-bold text-emerald-400">
-              <i className="fa-solid fa-[#1FAA59] fa-shield-halved"></i>
-              <span>DPDP Act Compliant</span>
+            <div className="flex items-center space-x-2 font-bold text-amber-300">
+              <i className="fa-solid fa-store"></i>
+              <span>Kirana Store Edition</span>
             </div>
             <p className="text-[11px] text-slate-400 mt-1">
-              Local-First Zero Cloud Leakage
+              Billing • Barcode • WhatsApp • Loyalty
             </p>
           </div>
         )}
