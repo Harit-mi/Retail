@@ -23,6 +23,7 @@ const MainContent = () => {
     activeTab,
     printableBill,
     printFormat,
+    isStorageLoaded,
     isCounterLocked,
     unlockCounter,
     counterPin,
@@ -44,6 +45,22 @@ const MainContent = () => {
       setPinError(res.message);
     }
   };
+
+  if (!isStorageLoaded) {
+    return (
+      <div className="min-h-screen bg-[#1E3A5F] flex flex-col items-center justify-center p-5 text-white">
+        <div className="space-y-4 text-center">
+          <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <h3 className="font-extrabold font-display text-lg tracking-tight">
+            Gupta<span className="text-[#F5A623]">Kirana</span> POS
+          </h3>
+          <p className="text-xs text-amber-200/80 font-mono">
+            Decrypting Store Ledgers with Native Web Crypto API...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950 pb-16 md:pb-0">

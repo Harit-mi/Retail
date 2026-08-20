@@ -104,6 +104,8 @@ export const StoreProvider = ({ children }) => {
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 
+  const [isStorageLoaded, setIsStorageLoaded] = useState(false);
+
   // Async decrypt state on mount if Web Crypto payload exists
   useEffect(() => {
     const decryptAllOnMount = async () => {
@@ -133,6 +135,8 @@ export const StoreProvider = ({ children }) => {
         }
       } catch (err) {
         console.warn("Async Web Crypto decryption on mount completed with fallback:", err);
+      } finally {
+        setIsStorageLoaded(true);
       }
     };
 
@@ -538,6 +542,7 @@ export const StoreProvider = ({ children }) => {
         setPrintableBill,
         printFormat,
         setPrintFormat,
+        isStorageLoaded,
         isCounterLocked,
         counterPin,
         lockCounter,
