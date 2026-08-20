@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/StoreContext";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
+import { encryptDataPayload, decryptDataPayload } from "../../utils/storageCrypto";
 
 export const StoreSettings = () => {
   const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers } = useStore();
@@ -17,7 +18,7 @@ export const StoreSettings = () => {
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  // 1-Click Offline Data Backup Export (JSON)
+  // 1-Click Encrypted Data Backup Export
   const exportStoreBackup = () => {
     const backupData = {
       version: "1.0",
@@ -29,8 +30,8 @@ export const StoreSettings = () => {
       suppliers,
     };
 
-    const jsonStr = JSON.stringify(backupData, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
+    const encryptedContent = encryptDataPayload(backupData, "1234");
+    const blob = new Blob([encryptedContent], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -38,11 +39,11 @@ export const StoreSettings = () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    setBackupMsg("✓ Store backup file downloaded successfully!");
+    setBackupMsg("✓ Encrypted store backup downloaded successfully!");
     setTimeout(() => setBackupMsg(null), 4000);
   };
 
-  // 1-Click Restore Data from JSON Backup File
+  // 1-Click Restore Data from Encrypted Backup File
   const importStoreBackup = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -50,20 +51,20 @@ export const StoreSettings = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const parsed = JSON.parse(event.target.result);
-        if (parsed.products && parsed.customers) {
-          localStorage.setItem("dukaan_products", JSON.stringify(parsed.products));
-          localStorage.setItem("dukaan_sales", JSON.stringify(parsed.sales || []));
-          localStorage.setItem("dukaan_customers", JSON.stringify(parsed.customers));
+        const parsed = decryptDataPayload(event.target.result, "1234", null);
+        if (parsed && parsed.products && parsed.customers) {
+          localStorage.setItem("dukaan_products", encryptDataPayload(parsed.products, "1234"));
+          localStorage.setItem("dukaan_sales", encryptDataPayload(parsed.sales || [], "1234"));
+          localStorage.setItem("dukaan_customers", encryptDataPayload(parsed.customers, "1234"));
           if (parsed.suppliers) {
-            localStorage.setItem("dukaan_suppliers", JSON.stringify(parsed.suppliers));
+            localStorage.setItem("dukaan_suppliers", encryptDataPayload(parsed.suppliers, "1234"));
           }
           if (parsed.storeConfig) {
-            localStorage.setItem("dukaan_store_config", JSON.stringify(parsed.storeConfig));
+            localStorage.setItem("dukaan_store_config", encryptDataPayload(parsed.storeConfig, "1234"));
           }
           window.location.reload();
         } else {
-          alert("Invalid backup file structure.");
+          alert("Invalid backup file structure or corrupted data.");
         }
       } catch {
         alert("Failed to parse JSON backup file.");

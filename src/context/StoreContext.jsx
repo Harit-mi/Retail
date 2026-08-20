@@ -14,14 +14,15 @@ import {
   deductStockOnSale,
   updateCustomerLedger,
 } from "../utils/moneyMath";
+import { encryptDataPayload, decryptDataPayload } from "../utils/storageCrypto";
 
 const StoreContext = createContext();
 
-// Helper: Safe LocalStorage JSON parser with try/catch fallback
+// Helper: Safe Encrypted LocalStorage parser with fallback
 const getSafeStorage = (key, fallback) => {
   try {
     const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : fallback;
+    return saved ? decryptDataPayload(saved, "1234", fallback) : fallback;
   } catch (e) {
     console.warn(`Error parsing localStorage key "${key}", falling back to initial default.`, e);
     return fallback;
@@ -118,29 +119,29 @@ export const StoreProvider = ({ children }) => {
     return { success: true, message: "Cashier PIN updated successfully!" };
   };
 
-  // Save to LocalStorage
+  // Save Encrypted Data Payloads to LocalStorage
   useEffect(() => {
-    localStorage.setItem("dukaan_store_config", JSON.stringify(storeConfig));
+    localStorage.setItem("dukaan_store_config", encryptDataPayload(storeConfig, "1234"));
   }, [storeConfig]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_products", JSON.stringify(products));
+    localStorage.setItem("dukaan_products", encryptDataPayload(products, "1234"));
   }, [products]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_customers", JSON.stringify(customers));
+    localStorage.setItem("dukaan_customers", encryptDataPayload(customers, "1234"));
   }, [customers]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_suppliers", JSON.stringify(suppliers));
+    localStorage.setItem("dukaan_suppliers", encryptDataPayload(suppliers, "1234"));
   }, [suppliers]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_purchase_orders", JSON.stringify(purchaseOrders));
+    localStorage.setItem("dukaan_purchase_orders", encryptDataPayload(purchaseOrders, "1234"));
   }, [purchaseOrders]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_sales", JSON.stringify(sales));
+    localStorage.setItem("dukaan_sales", encryptDataPayload(sales, "1234"));
   }, [sales]);
 
   // Cart Operations with Soft Stock Warning

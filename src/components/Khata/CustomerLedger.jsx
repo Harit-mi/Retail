@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
 import {
   BookOpen,
   Search,
@@ -12,6 +10,8 @@ import {
   ArrowUpRight,
   ShieldAlert,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // Helper: Mask phone number (e.g. +91 98765 *****)
@@ -32,6 +32,7 @@ export const CustomerLedger = () => {
   const [paymentNote, setPaymentNote] = useState("Cash / UPI Collection");
   const [lastPaymentConfirmation, setLastPaymentConfirmation] = useState(null);
   const [reminderToast, setReminderToast] = useState(null);
+  const [showFullPhone, setShowFullPhone] = useState(false);
 
   const totalOutstanding = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
   const pendingCustomersCount = customers.filter((c) => c.balance > 0).length;
@@ -204,7 +205,7 @@ Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
                         {cust.name}
                       </h5>
                       <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        {maskPhoneNumber(cust.phone)}
+                        {showFullPhone ? cust.phone : maskPhoneNumber(cust.phone)}
                       </p>
                     </div>
 
@@ -242,6 +243,15 @@ Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
               );
             })}
           </div>
+
+          {/* Toggle Phone Number Masking Button */}
+          <button
+            onClick={() => setShowFullPhone(!showFullPhone)}
+            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 transition border border-slate-200"
+          >
+            {showFullPhone ? <EyeOff className="w-3.5 h-3.5 text-slate-600" /> : <Eye className="w-3.5 h-3.5 text-slate-600" />}
+            <span>{showFullPhone ? "Hide Full Phone Numbers" : "Show Full Customer Numbers"}</span>
+          </button>
         </div>
 
         {/* Right Ledger Details View */}
