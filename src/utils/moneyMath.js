@@ -31,7 +31,7 @@ export const calculateGstSplit = (price, gstRate = 5, isInterState = false) => {
   };
 };
 
-// 2. Calculate Cart Totals & Reconciled GST Tax Rounding
+// 2. Calculate Cart Totals & Independent GST Tax Breakdown
 export const calculateCartTotals = (
   cartItems = [],
   discountRupees = 0,
@@ -41,6 +41,7 @@ export const calculateCartTotals = (
 ) => {
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price || 0) * (item.qty || 1), 0);
 
+  // Independently aggregate item taxable base amounts and tax amounts
   const taxDetails = cartItems.reduce(
     (acc, item) => {
       const itemTotal = (item.price || 0) * (item.qty || 1);
@@ -81,9 +82,9 @@ export const calculateCartTotals = (
 
   const grandTotal = Math.max(0, Math.round(subtotal - calculatedDiscount));
 
-  // Reconciled Tax Rounding: subtotal + taxAmount === grandTotal ALWAYS
+  // Independent rounding for taxable subtotal and total tax amount
+  const exactTaxableSubtotal = Math.round(taxDetails.taxableAmount * 100) / 100;
   const exactTaxAmount = Math.round(taxDetails.totalTax * 100) / 100;
-  const exactTaxableSubtotal = Math.round((grandTotal - exactTaxAmount) * 100) / 100;
 
   return {
     subtotal,

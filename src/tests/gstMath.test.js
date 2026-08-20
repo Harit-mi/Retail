@@ -20,10 +20,10 @@ describe("Production GST Tax & Cart Math (src/utils/moneyMath.js)", () => {
     expect(res.igst).toBe(180);
   });
 
-  it("reconciles cart totals so taxableSubtotal + taxAmount === grandTotal", () => {
+  it("independently computes cart subtotal, discount, grand total, taxable base, and output tax", () => {
     const cart = [
-      { id: "1", name: "Aashirvaad Atta 5kg", price: 275, qty: 2, gst: 5 },
-      { id: "2", name: "Fortune Sunlite Oil 1L", price: 145, qty: 3, gst: 5 },
+      { id: "1", name: "Aashirvaad Atta 5kg", price: 275, qty: 2, gst: 5 }, // 550 total -> Taxable: 523.81, Tax: 26.19
+      { id: "2", name: "Fortune Sunlite Oil 1L", price: 145, qty: 3, gst: 5 }, // 435 total -> Taxable: 414.29, Tax: 20.71
     ];
     const totals = calculateCartTotals(cart, 50, 0, null, 0);
 
@@ -34,7 +34,13 @@ describe("Production GST Tax & Cart Math (src/utils/moneyMath.js)", () => {
     expect(totals.calculatedDiscount).toBe(50);
     expect(totals.grandTotal).toBe(935);
     
-    // Taxable Subtotal + Tax Amount must equal Grand Total down to exact 0.00 paisa
-    expect(totals.taxableSubtotal + totals.taxAmount).toBe(totals.grandTotal);
+    // Independently calculated taxable subtotal: 523.8095 + 414.2857 = 938.0952 -> 938.10
+    expect(totals.taxableSubtotal).toBe(938.10);
+    
+    // Independently calculated output tax: 26.1905 + 20.7143 = 46.9048 -> 46.90
+    expect(totals.taxAmount).toBe(46.90);
+
+    // Assert that taxableSubtotal + taxAmount equals subtotal (938.10 + 46.90 = 985.00)
+    expect(totals.taxableSubtotal + totals.taxAmount).toBe(totals.subtotal);
   });
 });
