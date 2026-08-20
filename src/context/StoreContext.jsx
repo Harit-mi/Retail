@@ -12,6 +12,17 @@ import { translations } from "../i18n/translations";
 
 const StoreContext = createContext();
 
+// Helper: Safe LocalStorage JSON parser with try/catch fallback
+const getSafeStorage = (key, fallback) => {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch (e) {
+    console.warn(`Error parsing localStorage key "${key}", falling back to initial default.`, e);
+    return fallback;
+  }
+};
+
 export const StoreProvider = ({ children }) => {
   // Language i18n
   const [currentLanguage, setCurrentLanguage] = useState(() => {
@@ -29,44 +40,38 @@ export const StoreProvider = ({ children }) => {
   };
 
   // Store Config & Settings
-  const [storeConfig, setStoreConfig] = useState(() => {
-    const saved = localStorage.getItem("dukaan_store_config");
-    return saved ? JSON.parse(saved) : initialStoreConfig;
-  });
+  const [storeConfig, setStoreConfig] = useState(() =>
+    getSafeStorage("dukaan_store_config", initialStoreConfig)
+  );
 
   // Products
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem("dukaan_products");
-    return saved ? JSON.parse(saved) : initialProducts;
-  });
+  const [products, setProducts] = useState(() =>
+    getSafeStorage("dukaan_products", initialProducts)
+  );
 
   // Customers (Khata / Udhaar Book + Loyalty)
-  const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem("dukaan_customers");
-    return saved ? JSON.parse(saved) : initialCustomers;
-  });
+  const [customers, setCustomers] = useState(() =>
+    getSafeStorage("dukaan_customers", initialCustomers)
+  );
 
-  // Suppliers & Purchase Orders (Feature 3)
-  const [suppliers, setSuppliers] = useState(() => {
-    const saved = localStorage.getItem("dukaan_suppliers");
-    return saved ? JSON.parse(saved) : initialSuppliers;
-  });
+  // Suppliers & Purchase Orders
+  const [suppliers, setSuppliers] = useState(() =>
+    getSafeStorage("dukaan_suppliers", initialSuppliers)
+  );
 
-  const [purchaseOrders, setPurchaseOrders] = useState(() => {
-    const saved = localStorage.getItem("dukaan_purchase_orders");
-    return saved ? JSON.parse(saved) : initialPurchaseOrders;
-  });
+  const [purchaseOrders, setPurchaseOrders] = useState(() =>
+    getSafeStorage("dukaan_purchase_orders", initialPurchaseOrders)
+  );
 
-  // Coupons & Loyalty Points (Feature 6)
+  // Coupons & Loyalty Points
   const [coupons] = useState(initialCoupons);
   const [activeCoupon, setActiveCoupon] = useState(null);
   const [redeemedPoints, setRedeemedPoints] = useState(0);
 
   // Sales History
-  const [sales, setSales] = useState(() => {
-    const saved = localStorage.getItem("dukaan_sales");
-    return saved ? JSON.parse(saved) : initialSalesHistory;
-  });
+  const [sales, setSales] = useState(() =>
+    getSafeStorage("dukaan_sales", initialSalesHistory)
+  );
 
   // Active Vertical Filter
   const [activeVertical, setActiveVertical] = useState("all");
@@ -135,6 +140,8 @@ export const StoreProvider = ({ children }) => {
             costPrice: product.costPrice || product.retailPrice * 0.8,
             gst: product.gst || 0,
             unit: product.unit || "Pcs",
+            stock: product.stock,
+            minStockWarning: product.minStockWarning || 5,
             selling_unit_type: product.selling_unit_type || "piece",
             vertical: product.vertical || "kirana",
             attributes: { ...(product.attributes || {}), ...customAttributes },
@@ -188,16 +195,23 @@ export const StoreProvider = ({ children }) => {
     { taxableAmount: 0, totalTax: 0 }
   );
 
+  /*
+   * NOTE (Intentional Design Choice):
+   * Discount stacking in Kirana retail billing is CUMULATIVE by design.
+   * Shopkeepers can apply a direct manual discount (rupee or percent) PLUS a seasonal
+   * promo coupon (e.g. DIWALI10) PLUS customer loyalty points redemption.
+   * The final payable bill is floored at 0 rupees via Math.max(0, ...).
+   */
   let calculatedDiscount = 0;
 
-  // 1. Direct Discount
+  // 1. Direct Manual Discount (Rupees or Percent)
   if (discountRupees > 0) {
     calculatedDiscount = discountRupees;
   } else if (discountPercent > 0) {
     calculatedDiscount = (cartSubtotal * discountPercent) / 100;
   }
 
-  // 2. Coupon Code Discount
+  // 2. Promo Coupon Code Discount
   if (activeCoupon) {
     if (activeCoupon.type === "percent") {
       calculatedDiscount += (cartSubtotal * activeCoupon.value) / 100;
@@ -206,7 +220,7 @@ export const StoreProvider = ({ children }) => {
     }
   }
 
-  // 3. Loyalty Points Discount (1 Point = ₹1)
+  // 3. Loyalty Points Redemption (1 Point = ₹1)
   if (redeemedPoints > 0) {
     calculatedDiscount += redeemedPoints;
   }
@@ -234,9 +248,12 @@ export const StoreProvider = ({ children }) => {
   const completeCheckout = (paymentDetails) => {
     const invNumber = `INV-${1000 + sales.length + 1}`;
     const now = new Date().toISOString();
-    const due = Math.max(0, cartGrandTotal - (paymentDetails.paidAmount || 0));
+    
+    // Calculate exact remaining unpaid due balance (supports partial payments)
+    const paid = Number(paymentDetails.paidAmount) || 0;
+    const due = Math.max(0, cartGrandTotal - paid);
 
-    // Calculate Loyalty Points Earned (1 point per ₹100)
+    // Calculate Loyalty Points Earned (1 point per ₹100 spent)
     const pointsEarned = Math.floor(cartGrandTotal / 100);
 
     const newInvoice = {
@@ -248,10 +265,10 @@ export const StoreProvider = ({ children }) => {
       items: [...cart],
       subtotal: Math.round(cartTaxDetails.taxableAmount * 100) / 100,
       taxAmount: Math.round(cartTaxDetails.totalTax * 100) / 100,
-      discount: calculatedDiscount,
+      discount: Math.round(calculatedDiscount * 100) / 100,
       grandTotal: cartGrandTotal,
       paymentMode: paymentDetails.mode,
-      paidAmount: paymentDetails.paidAmount,
+      paidAmount: paid,
       dueAmount: due,
       pointsEarned: pointsEarned,
       operator: storeConfig.ownerName || "Cashier",
@@ -269,11 +286,12 @@ export const StoreProvider = ({ children }) => {
     );
 
     // 2. Update Customer Ledger & Loyalty Points
+    // FIX: addedDue uses exact unpaid balance (due), preventing debt double-counting on partial payments
     if (cartCustomer) {
       setCustomers((prevCustomers) =>
         prevCustomers.map((c) => {
           if (c.id === cartCustomer.id) {
-            const addedDue = paymentDetails.mode === "udhar" ? cartGrandTotal : due;
+            const addedDue = due;
             const updatedPoints = Math.max(
               0,
               (c.loyaltyPoints || 0) - redeemedPoints + pointsEarned
@@ -282,11 +300,11 @@ export const StoreProvider = ({ children }) => {
               addedDue > 0
                 ? [
                     {
-                      id: `h_${Date.now()}`,
+                      id: `h_${crypto.randomUUID()}`,
                       date: new Date().toISOString().split("T")[0],
                       type: "debit",
                       amount: addedDue,
-                      note: `Bill #${invNumber}`,
+                      note: `Bill #${invNumber} (Partial/Udhaar Dues)`,
                     },
                   ]
                 : [];
@@ -315,14 +333,17 @@ export const StoreProvider = ({ children }) => {
     return newInvoice;
   };
 
-  // Supplier & Goods Receipt Note (GRN) Management (Feature 3)
+  // Supplier & Goods Receipt Note (GRN) Management
   const addSupplier = (supData) => {
-    const s = { ...supData, id: `sup_${Date.now()}`, pendingBalance: Number(supData.pendingBalance) || 0 };
+    const s = {
+      ...supData,
+      id: `sup_${crypto.randomUUID()}`,
+      pendingBalance: Number(supData.pendingBalance) || 0,
+    };
     setSuppliers((prev) => [s, ...prev]);
   };
 
   const receiveGRNShipment = (poId, supplierId, items) => {
-    // Increase Product Stock & Update Cost Price
     setProducts((prevProducts) =>
       prevProducts.map((p) => {
         const grnItem = items.find((item) => item.productName === p.name);
@@ -337,17 +358,16 @@ export const StoreProvider = ({ children }) => {
       })
     );
 
-    // Mark PO as GRN Completed
     setPurchaseOrders((prev) =>
       prev.map((po) => (po.id === poId ? { ...po, status: "Received (GRN Completed)" } : po))
     );
   };
 
-  // Product & Customer Operations
+  // Product & Customer Operations using crypto.randomUUID()
   const addProduct = (newProduct) => {
     const p = {
       ...newProduct,
-      id: `p_${Date.now()}`,
+      id: `p_${crypto.randomUUID()}`,
       stock: newProduct.stock === null ? null : Number(newProduct.stock) || 0,
       retailPrice: Number(newProduct.retailPrice) || 0,
       gst: Number(newProduct.gst) || 0,
@@ -368,12 +388,12 @@ export const StoreProvider = ({ children }) => {
   const addCustomer = (customerData) => {
     const c = {
       ...customerData,
-      id: `c_${Date.now()}`,
+      id: `c_${crypto.randomUUID()}`,
       balance: Number(customerData.balance) || 0,
       loyaltyPoints: 0,
       history: customerData.balance > 0 ? [
         {
-          id: `h_${Date.now()}`,
+          id: `h_${crypto.randomUUID()}`,
           date: new Date().toISOString().split("T")[0],
           type: "debit",
           amount: Number(customerData.balance),
@@ -391,7 +411,7 @@ export const StoreProvider = ({ children }) => {
           const amount = Number(paidAmount);
           const newHistory = [
             {
-              id: `h_${Date.now()}`,
+              id: `h_${crypto.randomUUID()}`,
               date: new Date().toISOString().split("T")[0],
               type: "credit",
               amount: amount,
