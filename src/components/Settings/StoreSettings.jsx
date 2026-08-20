@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/StoreContext";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
-import { encryptDataPayload, decryptDataPayload } from "../../utils/storageCrypto";
+import { encryptPayloadAsync, decryptPayloadAsync } from "../../utils/storageCrypto";
 
 export const StoreSettings = () => {
-  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers } = useStore();
+  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers, counterPin } = useStore();
   const [formData, setFormData] = useState({ ...storeConfig });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [backupMsg, setBackupMsg] = useState(null);
@@ -18,8 +18,8 @@ export const StoreSettings = () => {
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  // 1-Click Encrypted Data Backup Export
-  const exportStoreBackup = () => {
+  // 1-Click Native Web Crypto API AES-GCM 256-bit Encrypted Backup Export
+  const exportStoreBackup = async () => {
     const backupData = {
       version: "1.0",
       exportDate: new Date().toISOString(),
@@ -30,7 +30,7 @@ export const StoreSettings = () => {
       suppliers,
     };
 
-    const encryptedContent = encryptDataPayload(backupData, "1234");
+    const encryptedContent = await encryptPayloadAsync(backupData, counterPin);
     const blob = new Blob([encryptedContent], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -39,7 +39,7 @@ export const StoreSettings = () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    setBackupMsg("✓ Encrypted store backup downloaded successfully!");
+    setBackupMsg("✓ Native Web Crypto AES-GCM encrypted store backup downloaded successfully!");
     setTimeout(() => setBackupMsg(null), 4000);
   };
 
@@ -49,25 +49,32 @@ export const StoreSettings = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
-        const parsed = decryptDataPayload(event.target.result, "1234", null);
+        const parsed = await decryptPayloadAsync(event.target.result, counterPin, null);
         if (parsed && parsed.products && parsed.customers) {
-          localStorage.setItem("dukaan_products", encryptDataPayload(parsed.products, "1234"));
-          localStorage.setItem("dukaan_sales", encryptDataPayload(parsed.sales || [], "1234"));
-          localStorage.setItem("dukaan_customers", encryptDataPayload(parsed.customers, "1234"));
+          const encProducts = await encryptPayloadAsync(parsed.products, counterPin);
+          const encSales = await encryptPayloadAsync(parsed.sales || [], counterPin);
+          const encCustomers = await encryptPayloadAsync(parsed.customers, counterPin);
+
+          localStorage.setItem("dukaan_products", encProducts);
+          localStorage.setItem("dukaan_sales", encSales);
+          localStorage.setItem("dukaan_customers", encCustomers);
+
           if (parsed.suppliers) {
-            localStorage.setItem("dukaan_suppliers", encryptDataPayload(parsed.suppliers, "1234"));
+            const encSuppliers = await encryptPayloadAsync(parsed.suppliers, counterPin);
+            localStorage.setItem("dukaan_suppliers", encSuppliers);
           }
           if (parsed.storeConfig) {
-            localStorage.setItem("dukaan_store_config", encryptDataPayload(parsed.storeConfig, "1234"));
+            const encConfig = await encryptPayloadAsync(parsed.storeConfig, counterPin);
+            localStorage.setItem("dukaan_store_config", encConfig);
           }
           window.location.reload();
         } else {
-          alert("Invalid backup file structure or corrupted data.");
+          alert("Invalid backup file structure or incorrect cashier PIN.");
         }
       } catch {
-        alert("Failed to parse JSON backup file.");
+        alert("Failed to parse or decrypt Web Crypto backup file.");
       }
     };
     reader.readAsText(file);

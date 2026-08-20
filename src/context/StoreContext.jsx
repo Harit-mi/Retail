@@ -14,15 +14,19 @@ import {
   deductStockOnSale,
   updateCustomerLedger,
 } from "../utils/moneyMath";
-import { encryptDataPayload, decryptDataPayload } from "../utils/storageCrypto";
+import {
+  decryptDataPayload,
+  encryptPayloadAsync,
+  decryptPayloadAsync,
+} from "../utils/storageCrypto";
 
 const StoreContext = createContext();
 
 // Helper: Safe Encrypted LocalStorage parser with fallback
-const getSafeStorage = (key, fallback) => {
+const getSafeStorage = (key, fallback, pin = "1234") => {
   try {
     const saved = localStorage.getItem(key);
-    return saved ? decryptDataPayload(saved, "1234", fallback) : fallback;
+    return saved ? decryptDataPayload(saved, pin, fallback) : fallback;
   } catch (e) {
     console.warn(`Error parsing localStorage key "${key}", falling back to initial default.`, e);
     return fallback;
@@ -45,28 +49,34 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_language", langCode);
   };
 
+  // Global POS Counter Register PIN Lock State
+  const [isCounterLocked, setIsCounterLocked] = useState(false);
+  const [counterPin, setCounterPin] = useState(() => {
+    return localStorage.getItem("dukaan_counter_pin") || "1234";
+  });
+
   // Store Config & Settings
   const [storeConfig, setStoreConfig] = useState(() =>
-    getSafeStorage("dukaan_store_config", initialStoreConfig)
+    getSafeStorage("dukaan_store_config", initialStoreConfig, counterPin)
   );
 
   // Products
   const [products, setProducts] = useState(() =>
-    getSafeStorage("dukaan_products", initialProducts)
+    getSafeStorage("dukaan_products", initialProducts, counterPin)
   );
 
   // Customers (Khata / Udhaar Book + Loyalty)
   const [customers, setCustomers] = useState(() =>
-    getSafeStorage("dukaan_customers", initialCustomers)
+    getSafeStorage("dukaan_customers", initialCustomers, counterPin)
   );
 
   // Suppliers & Purchase Orders
   const [suppliers, setSuppliers] = useState(() =>
-    getSafeStorage("dukaan_suppliers", initialSuppliers)
+    getSafeStorage("dukaan_suppliers", initialSuppliers, counterPin)
   );
 
   const [purchaseOrders, setPurchaseOrders] = useState(() =>
-    getSafeStorage("dukaan_purchase_orders", initialPurchaseOrders)
+    getSafeStorage("dukaan_purchase_orders", initialPurchaseOrders, counterPin)
   );
 
   // Coupons & Loyalty Points
@@ -76,7 +86,7 @@ export const StoreProvider = ({ children }) => {
 
   // Sales History
   const [sales, setSales] = useState(() =>
-    getSafeStorage("dukaan_sales", initialSalesHistory)
+    getSafeStorage("dukaan_sales", initialSalesHistory, counterPin)
   );
 
   // Active Vertical Filter
@@ -94,11 +104,40 @@ export const StoreProvider = ({ children }) => {
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 
-  // Global POS Counter Register PIN Lock State
-  const [isCounterLocked, setIsCounterLocked] = useState(false);
-  const [counterPin, setCounterPin] = useState(() => {
-    return localStorage.getItem("dukaan_counter_pin") || "1234";
-  });
+  // Async decrypt state on mount if Web Crypto payload exists
+  useEffect(() => {
+    const decryptAllOnMount = async () => {
+      try {
+        const savedConfig = localStorage.getItem("dukaan_store_config");
+        if (savedConfig && savedConfig.startsWith("AES_GCM_v1::")) {
+          const decrypted = await decryptPayloadAsync(savedConfig, counterPin, initialStoreConfig);
+          if (decrypted) setStoreConfig(decrypted);
+        }
+
+        const savedProducts = localStorage.getItem("dukaan_products");
+        if (savedProducts && savedProducts.startsWith("AES_GCM_v1::")) {
+          const decrypted = await decryptPayloadAsync(savedProducts, counterPin, initialProducts);
+          if (decrypted) setProducts(decrypted);
+        }
+
+        const savedCustomers = localStorage.getItem("dukaan_customers");
+        if (savedCustomers && savedCustomers.startsWith("AES_GCM_v1::")) {
+          const decrypted = await decryptPayloadAsync(savedCustomers, counterPin, initialCustomers);
+          if (decrypted) setCustomers(decrypted);
+        }
+
+        const savedSales = localStorage.getItem("dukaan_sales");
+        if (savedSales && savedSales.startsWith("AES_GCM_v1::")) {
+          const decrypted = await decryptPayloadAsync(savedSales, counterPin, initialSalesHistory);
+          if (decrypted) setSales(decrypted);
+        }
+      } catch (err) {
+        console.warn("Async Web Crypto decryption on mount completed with fallback:", err);
+      }
+    };
+
+    decryptAllOnMount();
+  }, [counterPin]);
 
   const lockCounter = () => {
     setIsCounterLocked(true);
@@ -119,30 +158,42 @@ export const StoreProvider = ({ children }) => {
     return { success: true, message: "Cashier PIN updated successfully!" };
   };
 
-  // Save Encrypted Data Payloads to LocalStorage
+  // Save Native Web Crypto AES-GCM Encrypted Data Payloads to LocalStorage
   useEffect(() => {
-    localStorage.setItem("dukaan_store_config", encryptDataPayload(storeConfig, "1234"));
-  }, [storeConfig]);
+    encryptPayloadAsync(storeConfig, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_store_config", encrypted);
+    });
+  }, [storeConfig, counterPin]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_products", encryptDataPayload(products, "1234"));
-  }, [products]);
+    encryptPayloadAsync(products, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_products", encrypted);
+    });
+  }, [products, counterPin]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_customers", encryptDataPayload(customers, "1234"));
-  }, [customers]);
+    encryptPayloadAsync(customers, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_customers", encrypted);
+    });
+  }, [customers, counterPin]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_suppliers", encryptDataPayload(suppliers, "1234"));
-  }, [suppliers]);
+    encryptPayloadAsync(suppliers, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_suppliers", encrypted);
+    });
+  }, [suppliers, counterPin]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_purchase_orders", encryptDataPayload(purchaseOrders, "1234"));
-  }, [purchaseOrders]);
+    encryptPayloadAsync(purchaseOrders, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_purchase_orders", encrypted);
+    });
+  }, [purchaseOrders, counterPin]);
 
   useEffect(() => {
-    localStorage.setItem("dukaan_sales", encryptDataPayload(sales, "1234"));
-  }, [sales]);
+    encryptPayloadAsync(sales, counterPin).then((encrypted) => {
+      localStorage.setItem("dukaan_sales", encrypted);
+    });
+  }, [sales, counterPin]);
 
   // Cart Operations with Soft Stock Warning
   const addToCart = (product, qty = 1, customAttributes = {}) => {
