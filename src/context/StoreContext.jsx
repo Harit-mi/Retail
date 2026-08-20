@@ -392,6 +392,13 @@ export const StoreProvider = ({ children }) => {
     );
   };
 
+  const deleteCustomer = (id) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    if (cartCustomer && cartCustomer.id === id) {
+      setCartCustomer(null);
+    }
+  };
+
   const resetDemoData = () => {
     setProducts(initialProducts);
     setCustomers(initialCustomers);
@@ -417,6 +424,7 @@ export const StoreProvider = ({ children }) => {
         deleteProduct,
         customers,
         addCustomer,
+        deleteCustomer,
         recordCustomerPayment,
         suppliers,
         addSupplier,

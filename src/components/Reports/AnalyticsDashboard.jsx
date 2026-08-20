@@ -86,20 +86,29 @@ export const AnalyticsDashboard = () => {
 
   const hsnList = Object.values(hsnSummaryMap);
 
-  // Export CSV for GSTR-1 / GSTR-3B Tax Filing
+  // Helper: Sanitize string cells to prevent CSV Formula Injection (=, +, -, @)
+  const sanitizeCsvCell = (str = "") => {
+    const s = String(str).replace(/"/g, '""');
+    if (/^[=+\-@\t\r]/.test(s)) {
+      return `'${s}`; // Prefix formula triggers with single quote
+    }
+    return s;
+  };
+
+  // Export CSV for GSTR-1 / GSTR-3B Tax Filing with Formula Injection Defense
   const exportGstCsv = () => {
     const headers = "HSN Code,Description,GST Rate (%),Qty Sold,Taxable Value (INR),CGST (INR),SGST (INR),Total Tax (INR)\n";
     const rows = hsnList
       .map(
         (h) =>
-          `"${h.hsn}","${h.name.replace(/"/g, '""')}",${h.gst},${h.qty},${Math.round(h.taxableAmount)},${Math.round(h.cgst)},${Math.round(h.sgst)},${Math.round(h.totalTax)}`
+          `"${sanitizeCsvCell(h.hsn)}","${sanitizeCsvCell(h.name)}",${h.gst},${h.qty},${Math.round(h.taxableAmount)},${Math.round(h.cgst)},${Math.round(h.sgst)},${Math.round(h.totalTax)}`
       )
       .join("\n");
 
     const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + rows);
     const link = document.createElement("a");
     link.setAttribute("href", csvContent);
-    link.setAttribute("download", `GSTR_Tax_Summary_${storeConfig.name}_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", `GSTR_Tax_Summary_${storeConfig.name.replace(/[^a-zA-Z0-9_-]/g, "_")}_${new Date().toISOString().split("T")[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
