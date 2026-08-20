@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/StoreContext";
-import { X, UserPlus, Search, Check, Phone, MapPin, IndianRupee } from "lucide-react";
+import { X, UserPlus, Search, Check } from "lucide-react";
 
 export const CustomerSelectModal = ({ isOpen, onClose }) => {
   const { customers, setCartCustomer, cartCustomer, addCustomer } = useStore();

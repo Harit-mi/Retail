@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/StoreContext";
-import { MessageSquare, Send, Users, Sparkles, Check, Copy, Gift, ShoppingBag } from "lucide-react";
+import { Send, Check, Copy } from "lucide-react";
 
 export const WhatsAppMarketingHub = () => {
   const { customers, storeConfig } = useStore();

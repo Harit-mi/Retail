@@ -20,7 +20,6 @@ import {
   Tag,
   Gift,
   AlertTriangle,
-  CheckCircle,
 } from "lucide-react";
 
 // Web Audio API Crisp Cash Register Beep Synthesizer
@@ -39,7 +38,7 @@ const playBeepSound = () => {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.08);
-  } catch (e) {
+  } catch {
     // Ignore audio restriction if muted
   }
 };
@@ -52,7 +51,6 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     updateCartQty,
     removeFromCart,
     clearCart,
-    activeVertical,
     cartCustomer,
     applyCouponCode,
     redeemedPoints,

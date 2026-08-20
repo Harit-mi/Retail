@@ -3,7 +3,7 @@ import { useStore } from "../../context/StoreContext";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
 
 export const StoreSettings = () => {
-  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers, t } = useStore();
+  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers } = useStore();
   const [formData, setFormData] = useState({ ...storeConfig });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [backupMsg, setBackupMsg] = useState(null);
@@ -65,7 +65,7 @@ export const StoreSettings = () => {
         } else {
           alert("Invalid backup file structure.");
         }
-      } catch (err) {
+      } catch {
         alert("Failed to parse JSON backup file.");
       }
     };

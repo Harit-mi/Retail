@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useStore } from "../../context/StoreContext";
 
 export const SupplierPOList = () => {
-  const { suppliers, addSupplier, purchaseOrders, receiveGRNShipment, products } = useStore();
+  const { suppliers, addSupplier, purchaseOrders } = useStore();
 
   const [activeSubTab, setActiveSubTab] = useState("suppliers"); // 'suppliers' or 'po'
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "../../context/StoreContext";
-import { X, Save, Sparkles, Tag, CheckCircle } from "lucide-react";
+import { X } from "lucide-react";
 
 export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
-  const { addProduct, updateProduct, storeConfig, activeVertical } = useStore();
+  const { addProduct, updateProduct, activeVertical } = useStore();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -54,7 +54,25 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
         unit: productToEdit.unit || "Pcs",
         vertical: productToEdit.vertical || (activeVertical === "all" ? "kirana" : activeVertical),
         minStockWarning: productToEdit.minStockWarning || 5,
-        attributes: { ...formData.attributes, ...productToEdit.attributes },
+        attributes: {
+          size: "",
+          color: "",
+          brand: "",
+          batch_no: "",
+          expiry_date: "",
+          requires_prescription: false,
+          drug_schedule: "Schedule H",
+          imei: "",
+          serial_no: "",
+          warranty_months: 12,
+          duration_mins: 30,
+          purity: "22K (916)",
+          gross_weight: "",
+          net_weight: "",
+          making_charge_type: "flat",
+          making_charge_value: "",
+          ...(productToEdit.attributes || {}),
+        },
       });
     } else {
       setFormData({

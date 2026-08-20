@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "../../context/StoreContext";
-import { Camera, X, Zap, RefreshCw } from "lucide-react";
+import { Camera, X, Zap } from "lucide-react";
 
 export const WebcamBarcodeScannerModal = ({ isOpen, onClose, onBarcodeDetected }) => {
   const { products, addToCart } = useStore();
   const videoRef = useRef(null);
-  const [cameraActive, setCameraActive] = useState(false);
   const [scanMessage, setScanMessage] = useState("Point camera at product barcode (EAN-13/UPC)");
 
   useEffect(() => {

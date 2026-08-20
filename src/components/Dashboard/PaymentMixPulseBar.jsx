@@ -1,6 +1,6 @@
 import React from "react";
 import { useStore } from "../../context/StoreContext";
-import { Banknote, QrCode, CreditCard, BookOpen, Sparkles } from "lucide-react";
+// Simple payment breakdown pulse bar component
 
 export const PaymentMixPulseBar = () => {
   const { sales } = useStore();

@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import { useStore } from "../../context/StoreContext";
 import {
   BookOpen,
-  UserPlus,
   Search,
   IndianRupee,
-  Phone,
   MessageSquare,
   CheckCircle,
   Share2,
@@ -27,7 +25,7 @@ const maskPhoneNumber = (phoneStr) => {
 };
 
 export const CustomerLedger = () => {
-  const { customers, recordCustomerPayment, storeConfig, t } = useStore();
+  const { customers, recordCustomerPayment, storeConfig } = useStore();
   const [search, setSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");

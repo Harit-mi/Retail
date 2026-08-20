@@ -1,12 +1,8 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
-import { ShieldCheck, Lock, Eye, FileText, CheckCircle2, Server, Download, Trash2 } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
-  const { storeConfig, customers, sales } = useStore();
   const [activeTab, setActiveTab] = useState("audit"); // 'audit' or 'policy'
   const [phoneMasking, setPhoneMasking] = useState(false);
-  const [consentGranted, setConsentGranted] = useState(true);
 
   const securityAuditItems = [
     {

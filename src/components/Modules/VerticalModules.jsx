@@ -5,7 +5,6 @@ export const VerticalModules = () => {
   const {
     products,
     storeConfig,
-    kotOrders,
     appointments,
     addAppointment,
     addToCart,
@@ -19,13 +18,13 @@ export const VerticalModules = () => {
   const [aptPhone, setAptPhone] = useState("");
   const [aptService, setAptService] = useState("Hair Cut & Styling Combo");
   const [aptStaff, setAptStaff] = useState("Priya (Senior Stylist)");
-  const [aptTime, setAptTime] = useState("16:00");
+  const [aptTime] = useState("16:00");
 
   // Jewelry Rate Calc State
   const [jewelWeight, setJewelWeight] = useState(10);
   const [jewelPurity, setJewelPurity] = useState("22K");
-  const [makingType, setMakingType] = useState("percent");
-  const [makingVal, setMakingVal] = useState(8);
+  const [makingType] = useState("percent");
+  const [makingVal] = useState(8);
 
   const goldRate = storeConfig.liveGoldRate22K || 6850;
   const pharmacyProducts = products.filter((p) => p.attributes?.expiry_date);
@@ -52,7 +51,6 @@ export const VerticalModules = () => {
   let makingChargeAmt =
     makingType === "percent" ? (metalPrice * makingVal) / 100 : jewelWeight * makingVal;
   let totalJewelEst = metalPrice + makingChargeAmt;
-  const requiresKYC = totalJewelEst >= 200000;
 
   return (
     <div className="space-y-6 animate-fade-in">

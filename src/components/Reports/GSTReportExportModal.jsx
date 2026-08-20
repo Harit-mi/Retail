@@ -1,16 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { useStore } from "../../context/StoreContext";
 
 export const GSTReportExportModal = ({ isOpen, onClose }) => {
   const { sales, storeConfig } = useStore();
 
-  const [reportMonth, setReportMonth] = useState("2026-08");
-
   if (!isOpen) return null;
-
-  // Calculate GST Tax Summary
-  const b2bInvoices = sales.filter((s) => s.customerGstin);
-  const b2cInvoices = sales.filter((s) => !s.customerGstin);
 
   const totalTaxable = sales.reduce((acc, s) => acc + (s.subtotal || 0), 0);
   const totalGstTax = sales.reduce((acc, s) => acc + (s.taxAmount || 0), 0);

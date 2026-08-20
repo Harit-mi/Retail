@@ -8,7 +8,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-export const MobileBottomNav = ({ onOpenMoreMenu }) => {
+export const MobileBottomNav = ({ _onOpenMoreMenu }) => {
   const { activeTab, setActiveTab, products, customers } = useStore();
 
   const lowStockCount = products.filter(

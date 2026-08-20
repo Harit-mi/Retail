@@ -3,10 +3,6 @@ import { useStore } from "../../context/StoreContext";
 import {
   FileSpreadsheet,
   Download,
-  IndianRupee,
-  TrendingUp,
-  Receipt,
-  Calendar,
   Banknote,
   QrCode,
   CreditCard,
@@ -16,7 +12,7 @@ import {
 } from "lucide-react";
 
 export const AnalyticsDashboard = () => {
-  const { sales, products, storeConfig } = useStore();
+  const { sales, storeConfig } = useStore();
   const [dateRange, setDateRange] = useState("month"); // 'today', 'month', 'all'
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
