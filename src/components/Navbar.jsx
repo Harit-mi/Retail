@@ -13,6 +13,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
     resetDemoData,
     products,
     customers,
+    lockCounter,
     t,
   } = useStore();
 
@@ -54,8 +55,9 @@ export const Navbar = ({ onOpenMobileMenu }) => {
               { id: "inventory", label: "Inventory", icon: "fa-boxes-stacked" },
               { id: "barcodes", label: "Barcodes", icon: "fa-barcode" },
               { id: "khata", label: "Udhaar & Loyalty", icon: "fa-book-bookmark" },
-              { id: "whatsapp", label: "WhatsApp Marketing", icon: "fa-whatsapp" },
+              { id: "whatsapp", label: "WhatsApp", icon: "fa-whatsapp" },
               { id: "reports", label: t("reports"), icon: "fa-file-invoice-dollar" },
+              { id: "security", label: "Security", icon: "fa-shield-halved" },
               { id: "settings", label: t("settings"), icon: "fa-sliders" },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
@@ -103,8 +105,18 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           />
         </div>
 
-        {/* Right: Notifications, Shift Audit, Reset & Profile */}
+        {/* Right: Lock Counter, Notifications, Shift Audit, Reset & Profile */}
         <div className="flex items-center space-x-1.5 sm:space-x-2">
+          {/* POS Register PIN Lock Trigger Button */}
+          <button
+            onClick={lockCounter}
+            title="Lock POS Counter Register (PIN Required)"
+            className="px-2.5 sm:px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl text-xs font-bold transition flex items-center space-x-1 border border-amber-300 shadow-xs"
+          >
+            <i className="fa-solid fa-lock text-amber-600"></i>
+            <span className="hidden sm:inline-block font-display">Lock Counter</span>
+          </button>
+
           {/* Shift Drawer Audit Trigger Button */}
           <button
             onClick={() => setShowShiftAuditModal(true)}

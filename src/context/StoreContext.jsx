@@ -93,6 +93,31 @@ export const StoreProvider = ({ children }) => {
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 
+  // Global POS Counter Register PIN Lock State
+  const [isCounterLocked, setIsCounterLocked] = useState(false);
+  const [counterPin, setCounterPin] = useState(() => {
+    return localStorage.getItem("dukaan_counter_pin") || "1234";
+  });
+
+  const lockCounter = () => {
+    setIsCounterLocked(true);
+  };
+
+  const unlockCounter = (enteredPin) => {
+    if (enteredPin === counterPin) {
+      setIsCounterLocked(false);
+      return { success: true };
+    }
+    return { success: false, message: `Incorrect PIN! Enter your ${counterPin.length}-digit cashier PIN.` };
+  };
+
+  const updateCounterPin = (newPin) => {
+    if (!newPin || newPin.length < 4) return { success: false, message: "PIN must be at least 4 digits." };
+    setCounterPin(newPin);
+    localStorage.setItem("dukaan_counter_pin", newPin);
+    return { success: true, message: "Cashier PIN updated successfully!" };
+  };
+
   // Save to LocalStorage
   useEffect(() => {
     localStorage.setItem("dukaan_store_config", JSON.stringify(storeConfig));
@@ -461,6 +486,11 @@ export const StoreProvider = ({ children }) => {
         setPrintableBill,
         printFormat,
         setPrintFormat,
+        isCounterLocked,
+        counterPin,
+        lockCounter,
+        unlockCounter,
+        updateCounterPin,
         resetDemoData,
       }}
     >

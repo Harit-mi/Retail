@@ -30,6 +30,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
     },
     { id: "whatsapp", label: "WhatsApp Marketing", iconClass: "fa-brands fa-whatsapp", badge: "New" },
     { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
+    { id: "security", label: "Security & Privacy", iconClass: "fa-solid fa-shield-halved", badge: "DPDP" },
     { id: "settings", label: t("settings"), iconClass: "fa-solid fa-sliders", badge: null },
   ];
 

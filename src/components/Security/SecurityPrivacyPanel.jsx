@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/StoreContext";
-import { ShieldCheck, Lock, CheckCircle, Trash2 } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
-  const { customers, deleteCustomer } = useStore();
-  const [activeTab, setActiveTab] = useState("audit"); // 'audit' or 'policy'
-  const [isCounterLocked, setIsCounterLocked] = useState(false);
-  const [pinInput, setPinInput] = useState("");
+  const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin } = useStore();
+  const [activeTab, setActiveTab] = useState("audit"); // 'audit', 'policy', or 'pin'
+  const [newPin, setNewPin] = useState("");
+  const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
   const [deletionSuccess, setDeletionSuccess] = useState(null);
 
@@ -31,7 +31,7 @@ export const SecurityPrivacyPanel = () => {
     },
     {
       title: "Physical Counter Register PIN Lock",
-      desc: "Instant 4-digit screen lock preventing unauthorized physical access to sales and customer balances.",
+      desc: "Instant 4-digit screen lock gating the entire POS application to prevent unauthorized physical access.",
       tag: "Access Control",
       icon: "fa-solid fa-lock text-amber-600",
     },
@@ -51,44 +51,16 @@ export const SecurityPrivacyPanel = () => {
     }
   };
 
+  const handleUpdatePin = (e) => {
+    e.preventDefault();
+    const res = updateCounterPin(newPin);
+    setPinMsg(res.message);
+    if (res.success) setNewPin("");
+    setTimeout(() => setPinMsg(null), 3500);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Counter Lock Overlay */}
-      {isCounterLocked && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-5 text-white animate-fade-in">
-          <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <div className="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
-              <Lock className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-extrabold font-display">POS Counter Register Locked</h3>
-            <p className="text-xs text-slate-500 font-medium">
-              Enter 4-digit cashier PIN to unlock register (Default: 1234)
-            </p>
-            <input
-              type="password"
-              maxLength="4"
-              value={pinInput}
-              onChange={(e) => setPinInput(e.target.value)}
-              placeholder="••••"
-              className="w-full text-center text-2xl font-mono tracking-widest py-3 border-2 border-slate-300 rounded-2xl outline-none focus:border-[#1E3A5F]"
-            />
-            <button
-              onClick={() => {
-                if (pinInput === "1234" || pinInput === "0000") {
-                  setIsCounterLocked(false);
-                  setPinInput("");
-                } else {
-                  alert("Incorrect PIN! (Use 1234)");
-                }
-              }}
-              className="w-full py-3 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold rounded-2xl text-xs shadow-md transition"
-            >
-              Unlock Register Now
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Header Banner */}
       <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -103,11 +75,11 @@ export const SecurityPrivacyPanel = () => {
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setIsCounterLocked(true)}
+            onClick={lockCounter}
             className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl flex items-center space-x-1.5 shadow-md transition"
           >
             <Lock className="w-4 h-4" />
-            <span>Lock Counter (PIN)</span>
+            <span>Lock Counter Register</span>
           </button>
 
           <button
@@ -119,6 +91,17 @@ export const SecurityPrivacyPanel = () => {
             }`}
           >
             Security Principles
+          </button>
+
+          <button
+            onClick={() => setActiveTab("pin")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+              activeTab === "pin"
+                ? "bg-[#1E3A5F] text-white shadow-md"
+                : "bg-white text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            Cashier PIN
           </button>
 
           <button
@@ -141,8 +124,8 @@ export const SecurityPrivacyPanel = () => {
         </div>
       )}
 
-      {/* Main Audit Grid */}
-      {activeTab === "audit" ? (
+      {/* Security Principles Tab */}
+      {activeTab === "audit" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {securityPrincipleItems.map((item, idx) => (
             <div
@@ -168,8 +151,54 @@ export const SecurityPrivacyPanel = () => {
             </div>
           ))}
         </div>
-      ) : (
-        /* DPDP Right-to-Erasure Customer Deletion Panel */
+      )}
+
+      {/* Cashier PIN Configuration Tab */}
+      {activeTab === "pin" && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 card-shadow max-w-md">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center space-x-2">
+              <Key className="w-5 h-5 text-[#1E3A5F]" />
+              <span>Configure Cashier Counter Lock PIN</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Current PIN: <strong className="font-mono text-slate-900">{counterPin}</strong>
+            </p>
+          </div>
+
+          <form onSubmit={handleUpdatePin} className="space-y-3">
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Enter New 4-Digit Cashier PIN
+              </label>
+              <input
+                type="password"
+                maxLength="6"
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value)}
+                placeholder="New PIN (e.g. 5678)"
+                className="w-full bg-slate-50 border border-slate-300 font-mono font-bold text-sm px-3 py-2.5 rounded-xl outline-none focus:border-[#1E3A5F]"
+              />
+            </div>
+
+            {pinMsg && (
+              <p className="text-xs font-bold text-[#1FAA59] bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                {pinMsg}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-xl shadow-md transition min-h-[44px]"
+            >
+              Save New Cashier PIN
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* DPDP Right-to-Erasure Customer Deletion Panel */}
+      {activeTab === "policy" && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 card-shadow">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center space-x-2">
