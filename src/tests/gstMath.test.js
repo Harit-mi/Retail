@@ -1,66 +1,40 @@
 import { describe, it, expect } from "vitest";
+import { calculateGstSplit, calculateCartTotals } from "../utils/moneyMath";
 
-// Pure GST & Money Math Helper Functions
-export const calculateGstSplit = (amountIncTax, gstPercent) => {
-  const taxableVal = amountIncTax / (1 + gstPercent / 100);
-  const totalTax = amountIncTax - taxableVal;
-  const cgst = totalTax / 2;
-  const sgst = totalTax / 2;
-
-  return {
-    taxableVal: Math.round(taxableVal * 100) / 100,
-    totalTax: Math.round(totalTax * 100) / 100,
-    cgst: Math.round(cgst * 100) / 100,
-    sgst: Math.round(sgst * 100) / 100,
-  };
-};
-
-export const calculateCartTotals = (items, discountRs = 0, discountPct = 0) => {
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.qty, 0);
-
-  let discount = 0;
-  if (discountRs > 0) {
-    discount = discountRs;
-  } else if (discountPct > 0) {
-    discount = (subtotal * discountPct) / 100;
-  }
-
-  const grandTotal = Math.max(0, Math.round(subtotal - discount));
-  return { subtotal, discount, grandTotal };
-};
-
-describe("GST Tax & Money Math Unit Tests", () => {
-  it("should accurately calculate 5% GST CGST/SGST split for ₹105 inclusive item", () => {
-    const res = calculateGstSplit(105, 5);
-    expect(res.taxableVal).toBe(100);
-    expect(res.totalTax).toBe(5);
-    expect(res.cgst).toBe(2.5);
-    expect(res.sgst).toBe(2.5);
+describe("Production GST Tax & Cart Math (src/utils/moneyMath.js)", () => {
+  it("calculates 5% intra-state CGST + SGST split correctly", () => {
+    const res = calculateGstSplit(100, 5, false);
+    expect(res.taxableAmount).toBe(95.24);
+    expect(res.totalTax).toBe(4.76);
+    expect(res.cgst).toBe(2.38);
+    expect(res.sgst).toBe(2.38);
+    expect(res.igst).toBe(0);
   });
 
-  it("should accurately calculate 18% GST CGST/SGST split for ₹118 inclusive item", () => {
-    const res = calculateGstSplit(118, 18);
-    expect(res.taxableVal).toBe(100);
-    expect(res.totalTax).toBe(18);
-    expect(res.cgst).toBe(9);
-    expect(res.sgst).toBe(9);
+  it("calculates 18% inter-state IGST split correctly", () => {
+    const res = calculateGstSplit(1180, 18, true);
+    expect(res.taxableAmount).toBe(1000);
+    expect(res.totalTax).toBe(180);
+    expect(res.cgst).toBe(0);
+    expect(res.sgst).toBe(0);
+    expect(res.igst).toBe(180);
   });
 
-  it("should correctly compute cart subtotal, discount, and grand total", () => {
-    const items = [
-      { price: 145, qty: 2 }, // 290
-      { price: 275, qty: 1 }, // 275
+  it("reconciles cart totals so taxableSubtotal + taxAmount === grandTotal", () => {
+    const cart = [
+      { id: "1", name: "Aashirvaad Atta 5kg", price: 275, qty: 2, gst: 5 },
+      { id: "2", name: "Fortune Sunlite Oil 1L", price: 145, qty: 3, gst: 5 },
     ];
-    // subtotal = 565
+    const totals = calculateCartTotals(cart, 50, 0, null, 0);
 
-    const resWithFlatDiscount = calculateCartTotals(items, 65, 0);
-    expect(resWithFlatDiscount.subtotal).toBe(565);
-    expect(resWithFlatDiscount.discount).toBe(65);
-    expect(resWithFlatDiscount.grandTotal).toBe(500);
-
-    const resWithPctDiscount = calculateCartTotals(items, 0, 10);
-    expect(resWithPctDiscount.subtotal).toBe(565);
-    expect(resWithPctDiscount.discount).toBe(56.5);
-    expect(resWithPctDiscount.grandTotal).toBe(509);
+    // Subtotal: (275*2) + (145*3) = 550 + 435 = 985
+    // Discount: 50
+    // Grand Total: 985 - 50 = 935
+    expect(totals.subtotal).toBe(985);
+    expect(totals.calculatedDiscount).toBe(50);
+    expect(totals.grandTotal).toBe(935);
+    
+    // Taxable Subtotal + Tax Amount must equal Grand Total down to exact 0.00 paisa
+    expect(totals.taxableSubtotal + totals.taxAmount).toBe(totals.grandTotal);
   });
 });

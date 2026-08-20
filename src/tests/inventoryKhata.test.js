@@ -1,63 +1,49 @@
 import { describe, it, expect } from "vitest";
+import { deductStockOnSale, updateCustomerLedger } from "../utils/moneyMath";
 
-// Pure Helper Logic for Inventory & Khata
-export const deductStockOnSale = (products, cartItems) => {
-  return products.map((p) => {
-    const itemInCart = cartItems.find((c) => c.id === p.id);
-    if (itemInCart && p.stock !== null) {
-      return { ...p, stock: Math.max(0, p.stock - itemInCart.qty) };
-    }
-    return p;
-  });
-};
-
-export const updateCustomerLedger = (customer, type, amount, note) => {
-  const numAmt = Number(amount);
-  const newBalance =
-    type === "debit"
-      ? (customer.balance || 0) + numAmt
-      : Math.max(0, (customer.balance || 0) - numAmt);
-
-  const newHistory = [
-    {
-      id: Date.now(),
-      date: new Date().toISOString().split("T")[0],
-      type,
-      amount: numAmt,
-      note,
-    },
-    ...(customer.history || []),
-  ];
-
-  return { ...customer, balance: newBalance, history: newHistory };
-};
-
-describe("Inventory Stock & Khata Ledger Unit Tests", () => {
-  it("should correctly deduct stock quantities upon completing a sale", () => {
+describe("Production Inventory & Customer Khata (src/utils/moneyMath.js)", () => {
+  it("deducts stock quantity on sale without dropping below zero", () => {
     const products = [
-      { id: "1", name: "Aashirvaad Atta", stock: 20 },
-      { id: "2", name: "Fortune Mustard Oil", stock: 15 },
+      { id: "p1", name: "Atta", stock: 10 },
+      { id: "p2", name: "Sugar", stock: 2 },
     ];
-
     const cart = [
-      { id: "1", qty: 3 },
-      { id: "2", qty: 5 },
+      { id: "p1", qty: 3 },
+      { id: "p2", qty: 5 },
     ];
 
     const updated = deductStockOnSale(products, cart);
-    expect(updated[0].stock).toBe(17);
-    expect(updated[1].stock).toBe(10);
+    expect(updated.find((p) => p.id === "p1").stock).toBe(7);
+    expect(updated.find((p) => p.id === "p2").stock).toBe(0); // Floored at 0
   });
 
-  it("should accurately update Khata customer ledger debit (Udhaar) and credit (Payment)", () => {
-    const customer = { id: "c1", name: "Ramesh Sharma", balance: 500, history: [] };
+  it("updates customer Udhaar balance with exact unpaid due (prevents double-counting)", () => {
+    const customers = [
+      {
+        id: "c1",
+        name: "Ramesh Sharma",
+        balance: 500,
+        loyaltyPoints: 10,
+        history: [],
+      },
+    ];
 
-    // Record Udhaar Bill of ₹300
-    const afterDebit = updateCustomerLedger(customer, "debit", 300, "Udhaar Invoice #1024");
-    expect(afterDebit.balance).toBe(800);
+    // Scenario: Bill Grand Total = ₹1000, Customer pays ₹700 Cash, Due = ₹300
+    const updated = updateCustomerLedger(
+      customers,
+      "c1",
+      300, // exact unpaid dueAmount
+      10,  // pointsEarned
+      0,   // redeemedPoints
+      "INV-1001"
+    );
 
-    // Record Payment of ₹500
-    const afterCredit = updateCustomerLedger(afterDebit, "credit", 500, "Paid via PhonePe");
-    expect(afterCredit.balance).toBe(300);
+    const c1 = updated.find((c) => c.id === "c1");
+    // New Balance should be initial (500) + unpaid due (300) = 800 (NOT 500 + 1000 = 1500)
+    expect(c1.balance).toBe(800);
+    expect(c1.loyaltyPoints).toBe(20);
+    expect(c1.history.length).toBe(1);
+    expect(c1.history[0].amount).toBe(300);
+    expect(c1.history[0].id).toMatch(/^h_/);
   });
 });

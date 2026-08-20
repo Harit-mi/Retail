@@ -9,6 +9,11 @@ import {
   initialCoupons,
 } from "../data/sampleData";
 import { translations } from "../i18n/translations";
+import {
+  calculateCartTotals,
+  deductStockOnSale,
+  updateCustomerLedger,
+} from "../utils/moneyMath";
 
 const StoreContext = createContext();
 
@@ -130,15 +135,13 @@ export const StoreProvider = ({ children }) => {
           qty: newQty,
           total: newQty * updated[existingIndex].price,
         };
-        
-        // Soft Stock Warning Check
+
         if (product.stock !== null && newQty > product.stock) {
           setStockWarningToast(`Soft Warning: Selling ${newQty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
           setTimeout(() => setStockWarningToast(null), 3500);
         }
         return updated;
       } else {
-        // Soft Stock Warning Check
         if (product.stock !== null && qty > product.stock) {
           setStockWarningToast(`Soft Warning: Selling ${qty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
           setTimeout(() => setStockWarningToast(null), 3500);
@@ -202,52 +205,22 @@ export const StoreProvider = ({ children }) => {
     setRedeemedPoints(0);
   };
 
-  // Cart Totals & Coupon / Loyalty Math
-  const cartSubtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-
-  const cartTaxDetails = cart.reduce(
-    (acc, item) => {
-      const itemTotal = item.price * item.qty;
-      const taxableVal = itemTotal / (1 + item.gst / 100);
-      const taxVal = itemTotal - taxableVal;
-      acc.taxableAmount += taxableVal;
-      acc.totalTax += taxVal;
-      return acc;
-    },
-    { taxableAmount: 0, totalTax: 0 }
+  // Delegate Cart Totals & Discount Stacking Math to Production moneyMath.js
+  const cartTotals = calculateCartTotals(
+    cart,
+    discountRupees,
+    discountPercent,
+    activeCoupon,
+    redeemedPoints
   );
 
-  /*
-   * NOTE (Intentional Design Choice):
-   * Discount stacking in Kirana retail billing is CUMULATIVE by design.
-   * Shopkeepers can apply a direct manual discount (rupee or percent) PLUS a seasonal
-   * promo coupon (e.g. DIWALI10) PLUS customer loyalty points redemption.
-   * The final payable bill is floored at 0 rupees via Math.max(0, ...).
-   */
-  let calculatedDiscount = 0;
-
-  // 1. Direct Manual Discount (Rupees or Percent)
-  if (discountRupees > 0) {
-    calculatedDiscount = discountRupees;
-  } else if (discountPercent > 0) {
-    calculatedDiscount = (cartSubtotal * discountPercent) / 100;
-  }
-
-  // 2. Promo Coupon Code Discount
-  if (activeCoupon) {
-    if (activeCoupon.type === "percent") {
-      calculatedDiscount += (cartSubtotal * activeCoupon.value) / 100;
-    } else {
-      calculatedDiscount += activeCoupon.value;
-    }
-  }
-
-  // 3. Loyalty Points Redemption (1 Point = ₹1)
-  if (redeemedPoints > 0) {
-    calculatedDiscount += redeemedPoints;
-  }
-
-  const cartGrandTotal = Math.max(0, Math.round(cartSubtotal - calculatedDiscount));
+  const cartSubtotal = cartTotals.subtotal;
+  const calculatedDiscount = cartTotals.calculatedDiscount;
+  const cartGrandTotal = cartTotals.grandTotal;
+  const cartTaxDetails = {
+    taxableAmount: cartTotals.taxableSubtotal,
+    totalTax: cartTotals.taxAmount,
+  };
 
   // Apply Coupon Helper
   const applyCouponCode = (codeStr) => {
@@ -266,21 +239,14 @@ export const StoreProvider = ({ children }) => {
     return { success: true, message: `Coupon ${found.code} Applied Successfully!` };
   };
 
-  // Complete Sale / Checkout with Exact Tax & Subtotal Reconciled Rounding
+  // Complete Sale / Checkout using Production Utility Functions
   const completeCheckout = (paymentDetails) => {
     const invNumber = `INV-${1000 + sales.length + 1}`;
     const now = new Date().toISOString();
-    
-    // Calculate exact remaining unpaid due balance
+
     const paid = Number(paymentDetails.paidAmount) || 0;
     const due = Math.max(0, cartGrandTotal - paid);
-
-    // Calculate Loyalty Points Earned (1 point per ₹100 spent)
     const pointsEarned = Math.floor(cartGrandTotal / 100);
-
-    // Tax Reconciled Rounding: Taxable Base = GrandTotal - TotalTax
-    const exactTaxAmount = Math.round(cartTaxDetails.totalTax * 100) / 100;
-    const exactTaxableSubtotal = Math.round((cartGrandTotal - exactTaxAmount) * 100) / 100;
 
     const newInvoice = {
       id: invNumber,
@@ -289,8 +255,8 @@ export const StoreProvider = ({ children }) => {
       customerPhone: cartCustomer ? cartCustomer.phone : "",
       customerId: cartCustomer ? cartCustomer.id : null,
       items: [...cart],
-      subtotal: exactTaxableSubtotal,
-      taxAmount: exactTaxAmount,
+      subtotal: cartTotals.taxableSubtotal,
+      taxAmount: cartTotals.taxAmount,
       discount: Math.round(calculatedDiscount * 100) / 100,
       grandTotal: cartGrandTotal,
       paymentMode: paymentDetails.mode,
@@ -300,49 +266,20 @@ export const StoreProvider = ({ children }) => {
       operator: storeConfig.ownerName || "Cashier",
     };
 
-    // 1. Deduct Stock Inventory
-    setProducts((prevProducts) =>
-      prevProducts.map((p) => {
-        const cartItem = cart.find((item) => item.id === p.id);
-        if (cartItem && p.stock !== null && p.stock !== undefined) {
-          return { ...p, stock: Math.max(0, p.stock - cartItem.qty) };
-        }
-        return p;
-      })
-    );
+    // 1. Deduct Stock Inventory (delegated to moneyMath.js)
+    setProducts((prevProducts) => deductStockOnSale(prevProducts, cart));
 
-    // 2. Update Customer Ledger & Loyalty Points
+    // 2. Update Customer Ledger & Loyalty Points (delegated to moneyMath.js)
     if (cartCustomer) {
       setCustomers((prevCustomers) =>
-        prevCustomers.map((c) => {
-          if (c.id === cartCustomer.id) {
-            const addedDue = due;
-            const updatedPoints = Math.max(
-              0,
-              (c.loyaltyPoints || 0) - redeemedPoints + pointsEarned
-            );
-            const newHistoryItem =
-              addedDue > 0
-                ? [
-                    {
-                      id: `h_${crypto.randomUUID()}`,
-                      date: new Date().toISOString().split("T")[0],
-                      type: "debit",
-                      amount: addedDue,
-                      note: `Bill #${invNumber} (Partial/Udhaar Dues)`,
-                    },
-                  ]
-                : [];
-
-            return {
-              ...c,
-              balance: c.balance + addedDue,
-              loyaltyPoints: updatedPoints,
-              history: [...newHistoryItem, ...(c.history || [])],
-            };
-          }
-          return c;
-        })
+        updateCustomerLedger(
+          prevCustomers,
+          cartCustomer.id,
+          due,
+          pointsEarned,
+          redeemedPoints,
+          invNumber
+        )
       );
     }
 
@@ -358,7 +295,7 @@ export const StoreProvider = ({ children }) => {
     return newInvoice;
   };
 
-  // Supplier & Goods Receipt Note (GRN) Management
+  // Supplier Operations
   const addSupplier = (supData) => {
     const s = {
       ...supData,
