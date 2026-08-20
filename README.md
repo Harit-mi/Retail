@@ -1,4 +1,4 @@
-# DukaanPOS — All-Rounder Retail POS for Indian SMBs (Multi-Vertical Edition)
+# DukaanPOS — Fast Kirana & Grocery Store Register POS (Local-First Edition)
 
 [![CI Build & Test](https://github.com/Harit-mi/Retail/actions/workflows/ci.yml/badge.svg)](https://github.com/Harit-mi/Retail/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -7,98 +7,76 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4.3-38B2AC.svg)](https://tailwindcss.com)
 [![DPDP Act Principles](https://img.shields.io/badge/Privacy-DPDP_Act_2023_Principles-0EA5A5.svg)](#security--dpdp-act-2023-privacy-principles)
 
-> **DukaanPOS** is an open-source, local-first retail software engineered specifically for Indian small & medium businesses (SMBs) across 7 major business verticals — Kirana/Grocery, Clothing/Apparel, Pharmacy, Electronics, Salon/Spa, Restaurant/QSR, and Jewelry.
+> **DukaanPOS (Kirana Store Edition)** is a local-first, offline-capable point of sale (POS) web application engineered specifically for Indian Kirana and FMCG grocery shopkeepers. Built for extreme counter speed, large touch targets, zero-deadend feedback, and zero-ambiguity billing math.
 
 ---
 
-## 🇮🇳 Why DukaanPOS?
+## 🇮🇳 Kirana-First Core Feature Suite
 
-Trying to hardcode one product schema for "clothing + kirana" and then bolting on more business types later gets messy fast. A pharmacy's expiry/batch rules, a jewelry store's weight+purity pricing, and a salon's appointment-based billing are structurally different problems.
+### 1. 🧾 Counter POS Billing Register (`POSBillingScreen.jsx`)
+- **8:4 Till Physical Layout**: High-contrast touch grid optimized for FMCG items, loose pulses, sugar, dairy, and packaged Kirana products.
+- **Web Audio API Feedback**: Instant 880Hz cash register beep on barcode scan or item selection.
+- **Cart Line Flash Animation**: Green ring flash highlight (`ring-2 ring-[#1FAA59]`) confirming item additions without intrusive modals.
+- **Keyboard Shortcuts**: Built-in `F2` (Search), `F4` (Customer Select), and `F8` (Checkout) shortcuts.
+- **Loudest Grand Total**: Tabular `IBM Plex Mono` currency digits with 3xl bold grand total display.
+- **Dual Barcode Engine**: Supports USB/Bluetooth HID hardware barcode scanners + WebRTC smartphone camera scanning.
 
-DukaanPOS solves this with a **Multi-Vertical JSONB Attributes Architecture** and a **Pluggable Module Engine**.
+### 2. 📖 Udhaar Khata Credit Ledger (`CustomerLedger.jsx`)
+- **DPDP Phone Number Masking**: Customer phone numbers masked as `+91 98765 *****` for data privacy.
+- **Non-Alarmist Credit States**: Settled `₹0` balances shown in green; over-limit accounts flagged with amber badges without blocking shop operations.
+- **Before / After Math Confirmation**: Instant green confirmation banner displaying before/after balance calculations (`Balance: ₹800 ➔ ₹300`) upon recording payments.
+- **WhatsApp Reminder Deep-Link**: Direct `https://wa.me/` link generator with shop name, total balance, and store UPI ID.
 
----
+### 3. 🏷️ Barcode Sticker Sheet Generator (`BarcodePrintModal.jsx`)
+- **Multi-Item Quantity Selection**: Print custom sticker counts for loose pulses, sugar, dry fruits, and un-barcoded Kirana packs.
+- **24-Label & 40-Label A4 Grids**: Live on-screen preview reflecting exact physical A4 sticker sheet geometry.
+- **Print-CSS Calibrated Precision (`@media print`)**: 1-to-1 barcode grid alignment preventing wasted adhesive sticker paper stock.
 
-## ⚡ 1-Click Live Deployment
+### 4. 💬 WhatsApp Marketing Hub (`WhatsAppMarketingHub.jsx`)
+- **Offer Broadcast Dispatcher**: Kirana discount announcements, festive offer alerts, and loyalty point rewards.
+- **Receipt Sharing**: Send digital bill links and payment receipts directly to customer WhatsApp numbers.
 
-Deploy your own live hosted instance of DukaanPOS to Vercel or Netlify instantly:
-
-| Provider | Deploy Button |
-| :--- | :--- |
-| **Vercel** | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHarit-mi%2FRetail) |
-| **Netlify** | [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Harit-mi/Retail) |
-
----
-
-## 🛒 7 Vertical Modules Overview
-
-| Vertical | Domain Logic & Features | Supported Attribute Keys |
-| :--- | :--- | :--- |
-| 🛒 **Kirana / Grocery** | Loose/weighed items (kg, g, Ltr), FMCG barcode lookup, high-volume counter speed | `batch_no`, `expiry_date` |
-| 👔 **Clothing & Apparel** | Size × Color × Brand variant matrix grid, seasonal stock management | `size`, `color`, `brand` |
-| 💊 **Pharmacy & Medical** | FEFO (First-Expiry-First-Out) batch engine, Schedule H/H1 drug flags, Rx mandatory warnings | `batch_no`, `expiry_date`, `drug_schedule`, `requires_prescription` |
-| 📱 **Electronics & Mobile** | Serial / IMEI tracking per unit, warranty period logging | `imei`, `serial_no`, `warranty_months` |
-| 💇 **Salon, Spa & Wellness** | Service packages, staff appointment booking slots & commission tracking | `duration_mins`, `default_staff`, `commission_percent` |
-| 🍽️ **Restaurant, Café & QSR** | Table layout management, Kitchen Order Tickets (KOT) dispatcher | `is_kot_item`, `kitchen_dept`, `spice_level` |
-| 💎 **Jewelry & Bullion** | Weight (g), 22K/18K purity rating, live metal rate feed, BIS Hallmark, PAN KYC alert (>₹2 Lakhs) | `purity`, `gross_weight`, `net_weight`, `making_charge_type`, `making_charge_value` |
+### 5. 📊 Till Reconciliation & GST Filing Dashboard (`AnalyticsDashboard.jsx`)
+- **End-of-Day Till Payment Mix**: Glanceable visual progress bar comparing Cash vs UPI vs Card vs Udhaar Dues.
+- **GSTR-1 & GSTR-3B Tax Table**: HSN-wise breakdown of Taxable Values, CGST, SGST, IGST, and Total Tax.
+- **1-Tap CSV Export**: Download CA-ready CSV files for monthly GST return filing.
 
 ---
 
 ## 🌐 12 Languages (10 Indian State Languages + Hinglish + English)
 
-DukaanPOS includes zero-latency localized translations across **12 languages**:
+Includes zero-latency localized translations across **12 languages**:
 - 🇬🇧 **English**
 - 🇮🇳 **Hindi (हिन्दी)**
 - 🇮🇳 **Hinglish** *(Counter Billing, Udhaar Khata, Total Bill Amount)*
-- 🇮🇳 **Marathi (मराठी)**
-- 🇮🇳 **Tamil (தமிழ்)**
-- 🇮🇳 **Telugu (తెలుగు)**
-- 🇮🇳 **Gujarati (ગુજરાતી)**
-- 🇮🇳 **Bengali (বাংলা)**
-- 🇮🇳 **Kannada (ಕನ್ನಡ)**
-- 🇮🇳 **Malayalam (മലയാളം)**
-- 🇮🇳 **Punjabi (ਪੰਜਾਬੀ)**
-- 🇮🇳 **Odia (ଓଡ଼ିଆ)**
+- 🇮🇳 **Marathi (मराठी)** | 🇮🇳 **Tamil (தமிழ்)** | 🇮🇳 **Telugu (తెలుగు)** | 🇮🇳 **Gujarati (ગુજરાતી)**
+- 🇮🇳 **Bengali (বাংলা)** | 🇮🇳 **Kannada (कन्नड)** | 🇮🇳 **Malayalam (മലയാളം)** | 🇮🇳 **Punjabi (ਪੰਜਾਬੀ)** | 🇮🇳 **Odia (ଓଡ଼ିଆ)**
 
 ---
 
 ## 🔒 Security & DPDP Act 2023 Privacy Principles
 
-Designed with **India DPDP Act 2023 Privacy Principles** in mind:
-- **Local-First Zero Cloud Leakage**: All billing data, customer Khata ledgers, and sales invoices remain 100% stored on your local browser/device. No third-party data tracking or external cloud harvesting.
-- **Privacy Controls**: Optional customer phone number masking (`+91 98765 *****`) and Right-to-Erasure data management.
-- **Dynamic NPCI UPI QR**: Direct merchant-to-customer UPI payment QR code generated via open NPCI URI standards (`upi://pay?pa=...`).
+- **Local-First Data Storage**: All billing records, inventory items, and Khata ledgers remain 100% stored in your local browser/device (`localStorage`).
+- **Data Erasure & Backup**: 1-click JSON offline data backup export and restore in Store Settings.
+- **Dynamic NPCI UPI QR**: Merchant-to-customer UPI payment QR generated via open NPCI standards (`upi://pay?pa=...`).
 
 ---
 
-## 🛠️ Architecture & System Scope
+## 🧪 Vitest Unit Testing & Quality Assurance
 
-| Component | Implementation Detail | Status |
-| :--- | :--- | :---: |
-| **GST Split Engine** | Auto-splits CGST + SGST for intra-state sales & IGST for inter-state billing | **Implemented & Unit Tested** |
-| **Khata Udhaar Book** | Customer credit ledger with WhatsApp payment reminder generator | **Implemented** |
-| **Shift Drawer Audit** | Cash float tracking, expected vs physical counted cash audit | **Implemented** |
-| **Supplier PO & GRN** | Distributor directory, Goods Receipt Note shipment entry & stock auto-refill | **Implemented** |
-| **Barcode Scanning** | Keyboard hardware scanner support + Barcode Scanner Simulator | **Implemented** |
-| **Receipt Printing** | 80mm Thermal Slip & A4 Official GST Invoice print CSS templates | **Implemented** |
-| **Data Persistence** | HTML5 `localStorage` (Local-First, Zero Cloud Dependency) | **Known Constraint** |
-
----
-
-## 🧪 Unit Testing & Quality Assurance
-
-DukaanPOS includes automated **Vitest** unit tests verifying all money math, GST tax splits (CGST, SGST, IGST), rounding, and cart discount calculations:
+DukaanPOS includes automated **Vitest** unit tests verifying all money math, GST tax splits (CGST, SGST, IGST), rounding, and Khata credit ledger operations:
 
 ```bash
-# Run Vitest unit tests
+# Run Vitest unit test suite
 npm test
 ```
 
 Sample output:
 ```text
  ✓ src/tests/gstMath.test.js (3 tests) 2ms
- Test Files  1 passed (1)
-      Tests  3 passed (3)
+ ✓ src/tests/inventoryKhata.test.js (2 tests) 2ms
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
 ```
 
 ---
@@ -122,7 +100,6 @@ npm run dev
 
 ---
 
-## 📜 License & Contributing
+## 📜 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
-Contributions, feature suggestions, and pull requests are welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md).

@@ -76,11 +76,12 @@ export const StoreProvider = ({ children }) => {
   // Active Vertical Filter
   const [activeVertical, setActiveVertical] = useState("all");
 
-  // POS Cart
+  // POS Cart & Soft Warnings
   const [cart, setCart] = useState([]);
   const [cartCustomer, setCartCustomer] = useState(null);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountRupees, setDiscountRupees] = useState(0);
+  const [stockWarningToast, setStockWarningToast] = useState(null);
 
   // App Navigation & UI States
   const [activeTab, setActiveTab] = useState("pos"); // Default Kirana Counter POS Billing
@@ -112,13 +113,15 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_sales", JSON.stringify(sales));
   }, [sales]);
 
-  // Cart Operations
+  // Cart Operations with Soft Stock Warning
   const addToCart = (product, qty = 1, customAttributes = {}) => {
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((item) => item.id === product.id);
+      let newQty = qty;
+
       if (existingIndex > -1) {
         const updated = [...prevCart];
-        const newQty = updated[existingIndex].qty + qty;
+        newQty = updated[existingIndex].qty + qty;
         if (newQty <= 0) {
           return prevCart.filter((item) => item.id !== product.id);
         }
@@ -127,8 +130,20 @@ export const StoreProvider = ({ children }) => {
           qty: newQty,
           total: newQty * updated[existingIndex].price,
         };
+        
+        // Soft Stock Warning Check
+        if (product.stock !== null && newQty > product.stock) {
+          setStockWarningToast(`Soft Warning: Selling ${newQty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
+          setTimeout(() => setStockWarningToast(null), 3500);
+        }
         return updated;
       } else {
+        // Soft Stock Warning Check
+        if (product.stock !== null && qty > product.stock) {
+          setStockWarningToast(`Soft Warning: Selling ${qty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
+          setTimeout(() => setStockWarningToast(null), 3500);
+        }
+
         return [
           ...prevCart,
           {
@@ -158,6 +173,13 @@ export const StoreProvider = ({ children }) => {
       removeFromCart(productId);
       return;
     }
+
+    const prod = products.find((p) => p.id === productId);
+    if (prod && prod.stock !== null && newQty > prod.stock) {
+      setStockWarningToast(`Soft Warning: Selling ${newQty} ${prod.unit} of "${prod.name}" (Recorded Stock: ${prod.stock})`);
+      setTimeout(() => setStockWarningToast(null), 3500);
+    }
+
     setCart((prev) =>
       prev.map((item) =>
         item.id === productId
@@ -244,17 +266,21 @@ export const StoreProvider = ({ children }) => {
     return { success: true, message: `Coupon ${found.code} Applied Successfully!` };
   };
 
-  // Complete Sale / Checkout
+  // Complete Sale / Checkout with Exact Tax & Subtotal Reconciled Rounding
   const completeCheckout = (paymentDetails) => {
     const invNumber = `INV-${1000 + sales.length + 1}`;
     const now = new Date().toISOString();
     
-    // Calculate exact remaining unpaid due balance (supports partial payments)
+    // Calculate exact remaining unpaid due balance
     const paid = Number(paymentDetails.paidAmount) || 0;
     const due = Math.max(0, cartGrandTotal - paid);
 
     // Calculate Loyalty Points Earned (1 point per ₹100 spent)
     const pointsEarned = Math.floor(cartGrandTotal / 100);
+
+    // Tax Reconciled Rounding: Taxable Base = GrandTotal - TotalTax
+    const exactTaxAmount = Math.round(cartTaxDetails.totalTax * 100) / 100;
+    const exactTaxableSubtotal = Math.round((cartGrandTotal - exactTaxAmount) * 100) / 100;
 
     const newInvoice = {
       id: invNumber,
@@ -263,8 +289,8 @@ export const StoreProvider = ({ children }) => {
       customerPhone: cartCustomer ? cartCustomer.phone : "",
       customerId: cartCustomer ? cartCustomer.id : null,
       items: [...cart],
-      subtotal: Math.round(cartTaxDetails.taxableAmount * 100) / 100,
-      taxAmount: Math.round(cartTaxDetails.totalTax * 100) / 100,
+      subtotal: exactTaxableSubtotal,
+      taxAmount: exactTaxAmount,
       discount: Math.round(calculatedDiscount * 100) / 100,
       grandTotal: cartGrandTotal,
       paymentMode: paymentDetails.mode,
@@ -286,7 +312,6 @@ export const StoreProvider = ({ children }) => {
     );
 
     // 2. Update Customer Ledger & Loyalty Points
-    // FIX: addedDue uses exact unpaid balance (due), preventing debt double-counting on partial payments
     if (cartCustomer) {
       setCustomers((prevCustomers) =>
         prevCustomers.map((c) => {
@@ -481,6 +506,7 @@ export const StoreProvider = ({ children }) => {
         cartTaxDetails,
         cartGrandTotal,
         calculatedDiscount,
+        stockWarningToast,
         completeCheckout,
         activeTab,
         setActiveTab,

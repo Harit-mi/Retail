@@ -61,6 +61,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     cartTaxDetails,
     cartGrandTotal,
     calculatedDiscount,
+    stockWarningToast,
     t,
   } = useStore();
 
@@ -111,7 +112,6 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
   }, []);
 
   const handleAddItemToCart = (product) => {
-    if (product.stock !== null && product.stock <= 0) return;
     playBeepSound();
     addToCart(product, 1);
     setHighlightedCartId(product.id);
@@ -236,6 +236,14 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
           </div>
         </div>
 
+        {/* Soft Stock Warning Toast Alert */}
+        {stockWarningToast && (
+          <div className="bg-amber-50 border-2 border-amber-300 text-amber-900 px-4 py-2.5 rounded-2xl text-xs flex items-center space-x-2 font-bold animate-fade-in">
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span>{stockWarningToast}</span>
+          </div>
+        )}
+
         {/* Unmatched Barcode Alert Banner (Non-blocking inline prompt) */}
         {unmatchedBarcode && (
           <div className="bg-amber-50 border-2 border-amber-300 text-amber-900 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between font-bold animate-fade-in">
@@ -307,13 +315,13 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                 return (
                   <div
                     key={product.id}
-                    onClick={() => !isOutOfStock && handleAddItemToCart(product)}
-                    className={`group relative bg-white border-2 transition-all duration-150 rounded-2xl p-4 flex flex-col justify-between select-none card-shadow ${
+                    onClick={() => handleAddItemToCart(product)}
+                    className={`group relative bg-white border-2 transition-all duration-150 rounded-2xl p-4 flex flex-col justify-between select-none card-shadow cursor-pointer active:scale-[0.98] ${
                       isOutOfStock
-                        ? "opacity-60 cursor-not-allowed border-slate-200 bg-slate-50"
+                        ? "border-amber-300 bg-amber-50/30"
                         : cartItem
-                        ? "border-[#1FAA59] ring-2 ring-[#1FAA59]/30 bg-emerald-50/20 cursor-pointer active:scale-[0.98]"
-                        : "border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer active:scale-[0.98]"
+                        ? "border-[#1FAA59] ring-2 ring-[#1FAA59]/30 bg-emerald-50/20"
+                        : "border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -342,7 +350,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                         <div className="text-[11px] mt-0.5 font-mono">
                           {isOutOfStock ? (
                             <span className="text-[#E64545] font-black uppercase bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
-                              OUT OF STOCK
+                              OUT OF STOCK ({product.stock})
                             </span>
                           ) : isLowStock ? (
                             <span className="text-[#F5A623] font-bold">
@@ -380,9 +388,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                             </button>
                           </div>
                         ) : (
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 ${
-                            isOutOfStock ? "bg-slate-200 text-slate-400" : "bg-slate-100 group-hover:bg-[#1E3A5F] text-slate-700 group-hover:text-white"
-                          }`}>
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-[#1E3A5F] text-slate-700 group-hover:text-white flex items-center justify-center transition-all duration-150">
                             <Plus className="w-4 h-4 stroke-[2.5]" />
                           </div>
                         )}
@@ -517,7 +523,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                       className="w-8 text-center text-xs font-mono font-black bg-transparent text-slate-900 outline-none"
                     />
                     <button
-                      onClick={() => updateCartQty(item.id, item.qty + 1)}
+                      onClick={() => handleAddItemToCart(item)}
                       className="p-1 text-slate-700 hover:bg-slate-200 rounded-lg transition min-w-[32px] h-8 flex items-center justify-center font-bold"
                     >
                       <Plus className="w-3.5 h-3.5" />
