@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 import {
   Banknote,
   QrCode,

@@ -1,196 +1,145 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
-import { Send, Check, Copy } from "lucide-react";
+import { useStore } from "../../context/useStore";
+import { MessageSquare, Send, CheckCircle, Users } from "lucide-react";
 
 export const WhatsAppMarketingHub = () => {
   const { customers, storeConfig } = useStore();
-  const [selectedCustomer, setSelectedCustomer] = useState(customers[0] || null);
-  const [templateType, setTemplateType] = useState("promo");
+  const [selectedTemplate, setSelectedTemplate] = useState("festival");
   const [customMsg, setCustomMsg] = useState("");
-  const [copiedToast, setCopiedToast] = useState(false);
+  const [sentToast, setSentToast] = useState(null);
 
-  const getTemplateText = () => {
-    const name = selectedCustomer ? selectedCustomer.name : "Customer";
-    if (templateType === "promo") {
-      return `Namaste ${name} Ji! 🛒 
-Special Kirana Offer at ${storeConfig.name}!
-Get 10% OFF on Aashirvaad Atta, Fortune Mustard Oil & Amul Dairy items this week.
-Visit us today or call ${storeConfig.phone} for home delivery!`;
-    } else if (templateType === "loyalty") {
-      return `Namaste ${name} Ji! 🎁
-You have ${selectedCustomer?.loyaltyPoints || 50} Loyalty Points (₹${selectedCustomer?.loyaltyPoints || 50} Value) at ${storeConfig.name}.
-Redeem your points on your next Kirana bill purchase!`;
-    } else if (templateType === "bill") {
-      return `Namaste ${name} Ji! 🧾
-Thank you for shopping at ${storeConfig.name}!
-Your bill receipt & GST breakdown is ready. 
-For any orders, call us at ${storeConfig.phone}. Have a great day!`;
-    }
-    return customMsg;
-  };
+  const templates = [
+    {
+      id: "festival",
+      title: "Diwali & Festival Offer",
+      text: `Namaste {NAME} ji! Special festival discounts on Kirana items at ${storeConfig.name}. Visit today or order via WhatsApp!`,
+    },
+    {
+      id: "udhar_reminder",
+      title: "Udhaar Ledger Payment Reminder",
+      text: `Namaste {NAME} ji! Your pending balance at ${storeConfig.name} is ₹{BALANCE}. Kindly pay via UPI to ${storeConfig.upiId || "store@upi"}. Thank you!`,
+    },
+    {
+      id: "new_stock",
+      title: "Fresh Stock Arrival",
+      text: `Namaste {NAME} ji! Fresh spices, pulses, and grocery items arrived at ${storeConfig.name}. Best prices guaranteed!`,
+    },
+  ];
 
-  const messageText = templateType === "custom" ? customMsg : getTemplateText();
+  const handleSendCampaign = (customer) => {
+    const templateText =
+      customMsg || templates.find((t) => t.id === selectedTemplate)?.text || "";
 
-  const handleSendWhatsApp = () => {
-    if (!selectedCustomer || !selectedCustomer.phone) return;
-    const cleanPhone = selectedCustomer.phone.replace(/[^0-9]/g, "");
-    const formattedPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
-    const encodedText = encodeURIComponent(messageText);
-    window.open(`https://wa.me/${formattedPhone}?text=${encodedText}`, "_blank");
-  };
+    const personalized = templateText
+      .replace("{NAME}", customer.name)
+      .replace("{BALANCE}", customer.balance);
 
-  const handleCopyText = () => {
-    navigator.clipboard?.writeText(messageText);
-    setCopiedToast(true);
-    setTimeout(() => setCopiedToast(false), 3000);
+    const url = `https://wa.me/${customer.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(personalized)}`;
+    window.open(url, "_blank");
+
+    setSentToast(`WhatsApp message opened for ${customer.name}!`);
+    setTimeout(() => setSentToast(null), 3500);
   };
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Top Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Till Header Banner */}
+      <div className="bg-[#0F1F35] text-white rounded-xl p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-white/10">
         <div>
-          <h2 className="font-extrabold font-display text-slate-900 text-lg flex items-center space-x-2">
-            <i className="fa-brands fa-whatsapp text-emerald-500 text-xl"></i>
-            <span>Kirana WhatsApp Marketing & Customer Engagement</span>
+          <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-[#F5A623]" />
+            <span>WhatsApp Marketing & Offer Hub</span>
           </h2>
-          <p className="text-xs text-slate-500">
-            Send instant WhatsApp bill receipts, promotional offer broadcasts & double loyalty points alerts
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Send targeted promotions, payment reminders & festival deals
           </p>
         </div>
 
-        {copiedToast && (
-          <div className="flex items-center space-x-1.5 bg-emerald-50 text-[#1FAA59] border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold animate-fade-in">
-            <Check className="w-4 h-4" />
-            <span>WhatsApp Text Copied!</span>
-          </div>
-        )}
+        <div className="bg-white/10 px-4 py-2 rounded-lg text-right">
+          <p className="text-[10px] text-amber-300 font-mono uppercase font-bold">Total Customers</p>
+          <p className="text-base font-black font-mono text-white tabular-nums">{customers.length}</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column: Template & Customer Selector */}
-        <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 card-shadow space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-sm font-display border-b border-slate-100 pb-2">
-            Select Customer & Message Template
-          </h3>
+      {sentToast && (
+        <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in">
+          <CheckCircle className="w-4 h-4" />
+          <span>{sentToast}</span>
+        </div>
+      )}
 
-          <div>
-            <label className="text-xs text-slate-700 font-bold block mb-1">
-              Select Customer
-            </label>
-            <select
-              value={selectedCustomer?.id || ""}
-              onChange={(e) => {
-                const c = customers.find((cust) => cust.id === e.target.value);
-                setSelectedCustomer(c);
-              }}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
-            >
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.phone}) — {c.loyaltyPoints || 0} Pts
-                </option>
-              ))}
-            </select>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Template Selector Card */}
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-5 space-y-4 shadow-xs">
+          <h3 className="font-extrabold text-slate-900 text-sm font-display">Select Campaign Template</h3>
+
+          <div className="space-y-2">
+            {templates.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setSelectedTemplate(t.id);
+                  setCustomMsg("");
+                }}
+                className={`w-full text-left p-3.5 rounded-lg border-2 transition ${
+                  selectedTemplate === t.id && !customMsg
+                    ? "border-[#1E3A5F] bg-slate-50 shadow-xs"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                }`}
+              >
+                <h5 className="font-bold text-xs text-slate-900 font-display">{t.title}</h5>
+                <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 font-mono">{t.text}</p>
+              </button>
+            ))}
           </div>
 
-          <div>
-            <label className="text-xs text-slate-700 font-bold block mb-1">
-              Marketing Campaign Template
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setTemplateType("promo")}
-                className={`p-2.5 rounded-xl text-xs font-bold border transition text-center ${
-                  templateType === "promo"
-                    ? "bg-[#1E3A5F] text-white border-[#1E3A5F]"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                🛒 Kirana Discount Offer
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTemplateType("loyalty")}
-                className={`p-2.5 rounded-xl text-xs font-bold border transition text-center ${
-                  templateType === "loyalty"
-                    ? "bg-[#1E3A5F] text-white border-[#1E3A5F]"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                🎁 Loyalty Points Alert
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTemplateType("bill")}
-                className={`p-2.5 rounded-xl text-xs font-bold border transition text-center ${
-                  templateType === "bill"
-                    ? "bg-[#1E3A5F] text-white border-[#1E3A5F]"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                🧾 Bill Receipt Share
-              </button>
-            </div>
+          <div className="space-y-1 pt-2 border-t border-slate-100">
+            <label className="text-xs font-bold text-slate-700 block">Custom Message Override</label>
+            <textarea
+              rows="3"
+              value={customMsg}
+              onChange={(e) => setCustomMsg(e.target.value)}
+              placeholder="Type custom offer text here..."
+              className="w-full bg-slate-50 border-2 border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
+            />
           </div>
-
-          {templateType === "custom" && (
-            <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                Custom WhatsApp Message
-              </label>
-              <textarea
-                rows="4"
-                value={customMsg}
-                onChange={(e) => setCustomMsg(e.target.value)}
-                placeholder="Type custom offer details..."
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 outline-none"
-              />
-            </div>
-          )}
         </div>
 
-        {/* Right Column: WhatsApp Live Message Preview */}
-        <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 card-shadow space-y-4 flex flex-col justify-between">
-          <div>
-            <h3 className="font-extrabold text-slate-900 text-sm font-display border-b border-slate-100 pb-2 flex items-center justify-between">
-              <span>WhatsApp Message Preview</span>
-              <span className="text-[10px] text-emerald-600 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Direct WhatsApp API
-              </span>
+        {/* Customer List & One-Click Broadcast */}
+        <div className="lg:col-span-2 bg-white border-2 border-slate-200 rounded-xl p-5 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-extrabold text-slate-900 text-sm font-display flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#1E3A5F]" />
+              <span>Customer Broadcast Directory ({customers.length})</span>
             </h3>
-
-            {/* Chat Bubble Simulation */}
-            <div className="mt-4 p-4 bg-[#E5DDD5] rounded-2xl border border-emerald-200 max-h-64 overflow-y-auto">
-              <div className="bg-[#DCF8C6] text-slate-900 p-3 rounded-2xl rounded-tl-none text-xs font-sans shadow-sm whitespace-pre-wrap leading-relaxed">
-                {messageText}
-                <div className="text-[9px] text-slate-500 text-right mt-1 font-mono">
-                  {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ✓✓
-                </div>
-              </div>
-            </div>
+            <span className="text-[10px] bg-emerald-50 text-[#1FAA59] font-mono font-bold px-2 py-0.5 rounded border border-emerald-200">
+              1-TAP DEEP-LINK
+            </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3 pt-2">
-            <button
-              onClick={handleCopyText}
-              className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 border border-slate-300 transition"
-            >
-              <Copy className="w-4 h-4 text-slate-600" />
-              <span>Copy Text</span>
-            </button>
+          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+            {customers.map((cust) => (
+              <div
+                key={cust.id}
+                className="p-3 bg-white border-2 border-slate-200 hover:border-slate-300 rounded-lg flex items-center justify-between gap-3 transition"
+              >
+                <div>
+                  <h5 className="font-bold text-xs text-slate-900 font-display">{cust.name}</h5>
+                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                    {cust.phone} · Balance: ₹{cust.balance}
+                  </p>
+                </div>
 
-            <button
-              onClick={handleSendWhatsApp}
-              className="flex-1 py-2.5 bg-[#25D366] hover:bg-emerald-600 text-white font-extrabold font-display rounded-xl text-xs flex items-center justify-center space-x-2 shadow-md transition"
-            >
-              <Send className="w-4 h-4" />
-              <span>Send via WhatsApp</span>
-            </button>
+                <button
+                  onClick={() => handleSendCampaign(cust)}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow transition whitespace-nowrap min-h-[36px]"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send Offer</span>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>

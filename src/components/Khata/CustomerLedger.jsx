@@ -1,14 +1,9 @@
+import React, { useState } from "react";
+import { useStore } from "../../context/useStore";
 import {
   BookOpen,
   Search,
-  IndianRupee,
   MessageSquare,
-  CheckCircle,
-  Share2,
-  AlertCircle,
-  ArrowDownLeft,
-  ArrowUpRight,
-  ShieldAlert,
   Sparkles,
   Eye,
   EyeOff,
@@ -31,7 +26,6 @@ export const CustomerLedger = () => {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("Cash / UPI Collection");
   const [lastPaymentConfirmation, setLastPaymentConfirmation] = useState(null);
-  const [reminderToast, setReminderToast] = useState(null);
   const [showFullPhone, setShowFullPhone] = useState(false);
 
   const totalOutstanding = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
@@ -43,129 +37,89 @@ export const CustomerLedger = () => {
       c.phone.includes(search)
   );
 
-  const activeCustomer = selectedCustomer
-    ? customers.find((c) => c.id === selectedCustomer.id) || selectedCustomer
-    : customers[0];
+  const activeCustomer = selectedCustomer || filteredCustomers[0];
 
-  const handleRecordPayment = (e) => {
+  const handleCollectPayment = (e) => {
     e.preventDefault();
     if (!activeCustomer || !paymentAmount || Number(paymentAmount) <= 0) return;
 
     const collected = Number(paymentAmount);
-    const prevBalance = activeCustomer.balance || 0;
-    const newBalance = Math.max(0, prevBalance - collected);
+    const prevBal = activeCustomer.balance;
+    const newBal = Math.max(0, prevBal - collected);
 
     recordCustomerPayment(activeCustomer.id, collected, paymentNote);
 
-    // Set Before / After Balance Confirmation Toast
     setLastPaymentConfirmation({
       customerName: activeCustomer.name,
-      prevBal: prevBalance,
-      collected: collected,
-      newBal: newBalance,
+      collected,
+      prevBal,
+      newBal,
     });
-    setTimeout(() => setLastPaymentConfirmation(null), 5000);
 
     setPaymentAmount("");
-    setPaymentNote("Cash / UPI Collection");
+    setTimeout(() => setLastPaymentConfirmation(null), 5000);
   };
 
-  // WhatsApp Payment Reminder Deep-link Trigger
-  const triggerWhatsAppReminder = (customer) => {
-    const text = `Namaste ${customer.name} Ji! 🛒
-Aapka total Udhar balance ₹${customer.balance} hai at ${storeConfig.name}.
-Please pay via UPI at ${storeConfig.upiId || "our store UPI ID"}.
-Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
+  const handleSendWhatsAppReminder = (cust) => {
+    const text = `Namaste ${cust.name} ji, your pending Udhaar balance at ${storeConfig.name} is ₹${cust.balance}. Kindly settle via UPI at ${storeConfig.upiId || "store@upi"}. Thank you!`;
+    const url = `https://wa.me/${cust.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
 
-    const cleanPhone = customer.phone.replace(/[^0-9]/g, "");
-    const formattedPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
-    const encodedText = encodeURIComponent(text);
-
-    window.open(`https://wa.me/${formattedPhone}?text=${encodedText}`, "_blank");
-
-    setReminderToast(`WhatsApp reminder launched for ${customer.name}!`);
+    setReminderToast(`WhatsApp reminder sent to ${cust.name}!`);
     setTimeout(() => setReminderToast(null), 3500);
   };
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Top Stat Summary Cards for Udhaar Khata */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex items-center justify-between">
-          <div>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider font-display">
-              Total Udhaar Dues
-            </p>
-            <h3 className="text-2xl font-black font-mono text-[#E64545] mt-1">
+      {/* Till Header Banner */}
+      <div className="bg-[#0F1F35] text-white rounded-xl p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-white/10">
+        <div>
+          <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-[#F5A623]" />
+            <span>Udhaar Khata Credit Ledger</span>
+          </h2>
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Customer balance tracking, credit limits & payment collection
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="bg-white/10 px-4 py-2 rounded-lg text-right flex-1 md:flex-none">
+            <p className="text-[10px] text-amber-300 font-mono uppercase font-bold">Total Udhaar Due</p>
+            <p className="text-lg font-black font-mono text-[#F5A623] tabular-nums">
               ₹{totalOutstanding.toLocaleString("en-IN")}
-            </h3>
-          </div>
-          <div className="p-3 bg-red-50 text-[#E64545] border border-red-100 rounded-2xl">
-            <BookOpen className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex items-center justify-between">
-          <div>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider font-display">
-              Customers with Dues
             </p>
-            <h3 className="text-2xl font-black font-mono text-[#F5A623] mt-1">
-              {pendingCustomersCount}
-            </h3>
           </div>
-          <div className="p-3 bg-amber-50 text-[#F5A623] border border-amber-100 rounded-2xl">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex items-center justify-between">
-          <div>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider font-display">
-              Total Khata Customers
-            </p>
-            <h3 className="text-2xl font-black font-mono text-[#1FAA59] mt-1">
-              {customers.length}
-            </h3>
-          </div>
-          <div className="p-3 bg-emerald-50 text-[#1FAA59] border border-emerald-100 rounded-2xl">
-            <CheckCircle className="w-6 h-6" />
+          <div className="bg-white/10 px-4 py-2 rounded-lg text-right flex-1 md:flex-none">
+            <p className="text-[10px] text-red-300 font-mono uppercase font-bold">Pending Accounts</p>
+            <p className="text-lg font-black font-mono text-red-400 tabular-nums">{pendingCustomersCount}</p>
           </div>
         </div>
       </div>
 
-      {/* Before / After Payment Confirmation Banner */}
       {lastPaymentConfirmation && (
-        <div className="bg-[#1FAA59] text-white px-5 py-3 rounded-2xl text-xs font-bold shadow-lg flex items-center justify-between animate-fade-in font-mono">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-[#F5A623] animate-spin" />
+        <div className="bg-[#0F1F35] border-2 border-[#1FAA59] text-white px-5 py-3 rounded-xl shadow-lg flex items-center justify-between text-xs animate-fade-in font-mono">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#F5A623]" />
             <span>
               Payment Collected from <strong>{lastPaymentConfirmation.customerName}</strong>: ₹{lastPaymentConfirmation.collected}
             </span>
           </div>
-          <div className="bg-emerald-900/40 px-3 py-1 rounded-xl text-emerald-100">
+          <div className="bg-emerald-900/60 px-3 py-1 rounded text-emerald-200 font-bold">
             Balance: ₹{lastPaymentConfirmation.prevBal} ➔ <strong>₹{lastPaymentConfirmation.newBal}</strong>
           </div>
-        </div>
-      )}
-
-      {/* Reminder Toast */}
-      {reminderToast && (
-        <div className="bg-emerald-600 text-white px-4 py-3 rounded-2xl text-xs font-bold shadow-lg flex items-center space-x-2 animate-bounce">
-          <MessageSquare className="w-4 h-4" />
-          <span>{reminderToast}</span>
         </div>
       )}
 
       {/* Main Grid: Left Customer List, Right Detail View */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Customer List Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 card-shadow">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between">
             <h4 className="font-extrabold text-slate-900 text-sm font-display">
-              Customer Udhaar Accounts
+              Customer Accounts
             </h4>
-            <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded border border-slate-200 font-mono">
               Khata Ledger
             </span>
           </div>
@@ -177,7 +131,7 @@ Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customer name or phone..."
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-[#1E3A5F]"
+              className="w-full bg-slate-50 text-slate-900 text-xs font-semibold pl-9 pr-3 py-2.5 rounded-lg border-2 border-slate-200 outline-none focus:border-[#1E3A5F]"
             />
           </div>
 
@@ -193,208 +147,146 @@ Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
                 <div
                   key={cust.id}
                   onClick={() => setSelectedCustomer(cust)}
-                  className={`p-3 rounded-2xl border cursor-pointer transition-all duration-200 select-none min-h-[56px] flex flex-col justify-between ${
+                  className={`p-3 rounded-lg border-2 cursor-pointer transition-colors select-none min-h-[56px] flex items-center justify-between ${
                     isSelected
-                      ? "bg-amber-50/70 border-[#F5A623] ring-2 ring-[#F5A623]/30 shadow-md"
-                      : "bg-white border-slate-200 hover:bg-slate-50"
+                      ? "bg-amber-50/70 border-[#F5A623] shadow-sm"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h5 className="text-xs font-extrabold text-slate-900 font-display">
-                        {cust.name}
-                      </h5>
-                      <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        {showFullPhone ? cust.phone : maskPhoneNumber(cust.phone)}
-                      </p>
+                  <div>
+                    <h5 className="text-xs font-extrabold text-slate-900 font-display">
+                      {cust.name}
+                    </h5>
+                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                      {showFullPhone ? cust.phone : maskPhoneNumber(cust.phone)}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <div
+                      className={`text-xs font-black font-mono tabular-nums ${
+                        isZeroBalance
+                          ? "text-[#1FAA59]"
+                          : isOverLimit
+                          ? "text-[#E64545]"
+                          : "text-slate-900"
+                      }`}
+                    >
+                      ₹{cust.balance.toLocaleString("en-IN")}
                     </div>
 
-                    <div className="text-right">
-                      {/* Bold Tabular Numerals Balance Indicator */}
-                      <div
-                        className={`text-xs font-black font-mono ${
-                          isZeroBalance
-                            ? "text-[#1FAA59]"
-                            : isOverLimit
-                            ? "text-[#E64545]"
-                            : "text-slate-900"
-                        }`}
-                      >
-                        ₹{cust.balance.toLocaleString("en-IN")}
-                      </div>
-
-                      {/* State Badges */}
-                      {isZeroBalance ? (
-                        <span className="text-[9px] bg-emerald-50 text-[#1FAA59] px-1.5 py-0.2 rounded font-mono font-bold">
-                          ✓ Settled
-                        </span>
-                      ) : isOverLimit ? (
-                        <span className="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold">
-                          Over Limit
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          Limit: ₹{creditLimit}
-                        </span>
-                      )}
-                    </div>
+                    {isZeroBalance ? (
+                      <span className="text-[9px] bg-emerald-50 text-[#1FAA59] px-1.5 py-0.2 rounded font-mono font-bold">
+                        ✓ Settled
+                      </span>
+                    ) : isOverLimit ? (
+                      <span className="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-mono font-bold">
+                        Over Limit
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        Limit: ₹{creditLimit}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Toggle Phone Number Masking Button */}
           <button
             onClick={() => setShowFullPhone(!showFullPhone)}
-            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 transition border border-slate-200"
+            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition border border-slate-200"
           >
-            {showFullPhone ? <EyeOff className="w-3.5 h-3.5 text-slate-600" /> : <Eye className="w-3.5 h-3.5 text-slate-600" />}
-            <span>{showFullPhone ? "Hide Full Phone Numbers" : "Show Full Customer Numbers"}</span>
+            {showFullPhone ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            <span>{showFullPhone ? "Hide Customer Numbers" : "Show Full Customer Numbers"}</span>
           </button>
         </div>
 
         {/* Right Ledger Details View */}
-        {activeCustomer ? (
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 space-y-5 card-shadow flex flex-col justify-between">
-            <div>
-              {/* Customer Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#1E3A5F] text-white flex items-center justify-center font-extrabold font-mono text-lg shadow-md">
-                    {activeCustomer.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 font-display text-base">
-                      {activeCustomer.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-mono flex items-center space-x-2 mt-0.5">
-                      <span>{maskPhoneNumber(activeCustomer.phone)}</span>
-                      <span>•</span>
-                      <span>{activeCustomer.city || "Delhi"}</span>
-                      {activeCustomer.loyaltyPoints > 0 && (
-                        <span>• 🎁 {activeCustomer.loyaltyPoints} Pts</span>
-                      )}
-                    </p>
-                  </div>
+        {activeCustomer && (
+          <div className="lg:col-span-2 space-y-4">
+            {/* Account Card Header */}
+            <div className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-base font-extrabold font-display text-slate-900">
+                    {activeCustomer.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">
+                    {showFullPhone ? activeCustomer.phone : maskPhoneNumber(activeCustomer.phone)} · {activeCustomer.city}
+                  </p>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  {/* Send WhatsApp Reminder Button */}
-                  {activeCustomer.balance > 0 && (
-                    <button
-                      onClick={() => triggerWhatsAppReminder(activeCustomer)}
-                      className="flex items-center space-x-1.5 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#1FAA59] border border-emerald-200 rounded-xl text-xs font-bold transition shadow-xs"
-                    >
-                      <Share2 className="w-4 h-4 text-[#1FAA59]" />
-                      <span>WhatsApp Reminder</span>
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={() => handleSendWhatsAppReminder(activeCustomer)}
+                  disabled={activeCustomer.balance === 0}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow transition disabled:opacity-40"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>WhatsApp Reminder</span>
+                </button>
               </div>
 
-              {/* Over Limit Alert Warning (Non-alarmist) */}
-              {activeCustomer.balance > (activeCustomer.creditLimit || 5000) && (
-                <div className="mt-3 bg-amber-50 border border-amber-200 text-amber-900 px-4 py-2 rounded-xl text-xs flex items-center justify-between font-bold">
-                  <div className="flex items-center space-x-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-600" />
-                    <span>Balance exceeds credit limit by ₹{activeCustomer.balance - (activeCustomer.creditLimit || 5000)}</span>
-                  </div>
-                  <span className="font-mono text-[10px] text-amber-800">
-                    Limit: ₹{activeCustomer.creditLimit || 5000}
-                  </span>
-                </div>
-              )}
-
-              {/* Record Payment Form Box */}
-              <div className="mt-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                <h4 className="text-xs font-extrabold text-slate-900 font-display uppercase tracking-wider">
-                  Record Udhaar Payment Collection
+              {/* Record Payment Form */}
+              <form onSubmit={handleCollectPayment} className="bg-slate-50 border-2 border-slate-200 rounded-lg p-4 space-y-3">
+                <h4 className="text-xs font-black text-slate-900 font-display uppercase tracking-wider">
+                  Record Cash / UPI Khata Payment
                 </h4>
 
-                <form onSubmit={handleRecordPayment} className="flex flex-col sm:flex-row items-center gap-2">
-                  <div className="relative flex-1 w-full">
-                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="number"
-                      required
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder="Amount collected (₹)"
-                      className="w-full bg-white border border-slate-300 font-mono text-slate-900 font-black text-sm pl-9 pr-3 py-2.5 rounded-xl outline-none focus:border-[#1E3A5F]"
-                    />
-                  </div>
-
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="number"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    placeholder="Enter amount collected (₹)..."
+                    className="flex-1 bg-white border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                  />
                   <input
                     type="text"
                     value={paymentNote}
                     onChange={(e) => setPaymentNote(e.target.value)}
-                    placeholder="Note e.g. PhonePe / Cash"
-                    className="w-full sm:w-44 bg-white border border-slate-300 text-slate-900 text-xs px-3 py-2.5 rounded-xl outline-none focus:border-[#1E3A5F]"
+                    placeholder="Payment note..."
+                    className="flex-1 bg-white border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
                   />
-
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-6 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold font-display rounded-xl text-xs whitespace-nowrap shadow-md transition min-h-[44px]"
+                    className="px-5 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg shadow transition whitespace-nowrap"
                   >
-                    Record Payment
+                    COLLECT PAYMENT
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
 
-              {/* Transaction History Ledger Table */}
-              <div className="mt-5 space-y-2">
-                <h4 className="text-xs font-bold text-slate-900 font-display">
-                  Transaction & Udhaar History Log
-                </h4>
-
-                <div className="overflow-hidden rounded-xl border border-slate-200">
-                  <table className="w-full text-left text-xs text-slate-800">
-                    <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200">
+              {/* History Ledger Table */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-900 font-display">Transaction History</h4>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-[#0F1F35] text-white text-[10px] uppercase">
                       <tr>
-                        <th className="py-2.5 px-3">Date</th>
-                        <th className="py-2.5 px-3">Type</th>
-                        <th className="py-2.5 px-3">Description / Note</th>
-                        <th className="py-2.5 px-3 text-right">Amount (₹)</th>
+                        <th className="px-3 py-2">Date / Type</th>
+                        <th className="px-3 py-2">Note</th>
+                        <th className="px-3 py-2 text-right">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white font-mono text-xs">
-                      {(!activeCustomer.history || activeCustomer.history.length === 0) ? (
+                    <tbody className="divide-y divide-slate-100">
+                      {(activeCustomer.history || []).length === 0 ? (
                         <tr>
-                          <td colSpan="4" className="py-6 text-center text-slate-400 font-sans font-medium">
-                            No ledger transaction history found for this customer
+                          <td colSpan="3" className="px-3 py-6 text-center text-slate-400 font-sans">
+                            No ledger history recorded
                           </td>
                         </tr>
                       ) : (
-                        activeCustomer.history.map((h) => (
-                          <tr key={h.id} className="hover:bg-slate-50 transition">
-                            <td className="py-2.5 px-3 text-[11px] text-slate-500">
-                              {h.date}
+                        (activeCustomer.history || []).map((h, i) => (
+                          <tr key={i} className="hover:bg-slate-50">
+                            <td className="px-3 py-2">
+                              <span className="font-bold text-slate-800">{h.type === "payment" ? "✓ Payment" : "Udhaar Bill"}</span>
+                              <span className="block text-[10px] text-slate-400">{h.date}</span>
                             </td>
-                            <td className="py-2.5 px-3 font-sans">
-                              {h.type === "debit" ? (
-                                <span className="flex items-center space-x-1 text-[#E64545] font-bold text-[11px]">
-                                  <ArrowUpRight className="w-3.5 h-3.5" />
-                                  <span>Udhaar Bill</span>
-                                </span>
-                              ) : (
-                                <span className="flex items-center space-x-1 text-[#1FAA59] font-bold text-[11px]">
-                                  <ArrowDownLeft className="w-3.5 h-3.5" />
-                                  <span>Payment Received</span>
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-3 text-slate-800 font-sans font-medium">
-                              {h.note}
-                            </td>
-                            <td
-                              className={`py-2.5 px-3 text-right font-black ${
-                                h.type === "debit"
-                                  ? "text-[#E64545]"
-                                  : "text-[#1FAA59]"
-                              }`}
-                            >
-                              {h.type === "debit" ? `+ ₹${h.amount}` : `- ₹${h.amount}`}
+                            <td className="px-3 py-2 font-sans font-medium text-slate-600">{h.note || "General Transaction"}</td>
+                            <td className={`px-3 py-2 text-right font-bold ${h.type === "payment" ? "text-[#1FAA59]" : "text-[#E64545]"}`}>
+                              {h.type === "payment" ? `−₹${h.amount}` : `+₹${h.amount}`}
                             </td>
                           </tr>
                         ))
@@ -404,23 +296,6 @@ Dhanyawad! - ${storeConfig.ownerName || "Gupta Kirana"}`;
                 </div>
               </div>
             </div>
-
-            {/* Bottom Summary Bar */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-500 font-medium">
-                Credit Limit: ₹{(activeCustomer.creditLimit || 5000).toLocaleString("en-IN")}
-              </span>
-              <div className="text-right">
-                <span className="text-slate-500 font-medium mr-2">Current Balance:</span>
-                <span className="font-black text-[#E64545] text-base">
-                  ₹{activeCustomer.balance.toLocaleString("en-IN")}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 card-shadow font-medium">
-            Select a customer from the left list to view Khata ledger
           </div>
         )}
       </div>

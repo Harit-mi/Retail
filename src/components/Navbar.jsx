@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "../context/StoreContext";
+import { useStore } from "../context/useStore";
 import { INDIAN_LANGUAGES } from "../i18n/translations";
 import { ShiftReconciliationModal } from "./CashDrawer/ShiftReconciliationModal";
 
@@ -10,7 +10,6 @@ export const Navbar = ({ onOpenMobileMenu }) => {
     setActiveTab,
     currentLanguage,
     changeLanguage,
-    resetDemoData,
     products,
     customers,
     lockCounter,
@@ -28,20 +27,20 @@ export const Navbar = ({ onOpenMobileMenu }) => {
   const totalAlerts = lowStockCount + overdueUdharCount;
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 card-shadow h-16 flex items-center px-3 sm:px-6">
+    <header className="bg-white border-b-2 border-slate-200 sticky top-0 z-30 h-16 flex items-center px-3 sm:px-6">
       <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-2 sm:gap-3">
         {/* Left: Mobile Hamburger & Store Branding */}
         <div className="flex items-center space-x-2">
           {/* Mobile Hamburger Button */}
           <button
             onClick={onOpenMobileMenu}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition"
+            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition"
           >
             <i className="fa-solid fa-bars text-lg text-[#1E3A5F]"></i>
           </button>
 
           {/* Kirana Store Title Badge */}
-          <div className="flex items-center space-x-2 bg-amber-50 p-1.5 px-3 rounded-xl border border-amber-200">
+          <div className="flex items-center space-x-2 bg-amber-50 p-1.5 px-3 rounded-lg border border-amber-200">
             <i className="fa-solid fa-shop text-[#F5A623] text-sm"></i>
             <span className="text-slate-900 text-xs font-black font-display">
               {storeConfig.name || "Gupta Kirana Store"}
@@ -49,7 +48,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           </div>
 
           {/* Desktop Quick Navigation Header Pills */}
-          <div className="hidden xl:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="hidden xl:flex items-center space-x-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
             {[
               { id: "pos", label: "Billing POS", icon: "fa-cash-register" },
               { id: "inventory", label: "Inventory", icon: "fa-boxes-stacked" },
@@ -65,43 +64,27 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center space-x-1 ${
+                  className={`px-3 py-1.5 rounded text-xs font-bold transition flex items-center space-x-1.5 ${
                     isActive
                       ? "bg-[#1E3A5F] text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-200"
                   }`}
                 >
-                  <i className={`fa-solid ${tab.icon} text-[11px]`}></i>
+                  <i className={`fa-solid ${tab.icon} ${isActive ? "text-[#F5A623]" : "text-slate-500"}`}></i>
                   <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
-
-          {/* Indian State Language Selector Dropdown */}
-          <div className="flex items-center space-x-1 bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
-            <i className="fa-solid fa-language text-[#F5A623] text-sm"></i>
-            <select
-              value={currentLanguage}
-              onChange={(e) => changeLanguage(e.target.value)}
-              className="bg-transparent text-slate-800 text-xs font-bold outline-none cursor-pointer pr-0.5"
-            >
-              {INDIAN_LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.native} ({lang.name})
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
-        {/* Center: Global Kirana Search Bar */}
-        <div className="hidden lg:flex flex-1 max-w-xs relative">
+        {/* Center: Global Search Bar */}
+        <div className="flex-1 max-w-xs hidden md:block relative">
           <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input
             type="text"
             placeholder="Search items, barcode, HSN... (F2)"
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs pl-9 pr-3 py-1.5 rounded-xl outline-none focus:border-[#1E3A5F] focus:bg-white transition"
+            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs pl-9 pr-3 py-1.5 rounded-lg outline-none focus:border-[#1E3A5F] focus:bg-white transition"
           />
         </div>
 
@@ -111,7 +94,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           <button
             onClick={lockCounter}
             title="Lock POS Counter Register (PIN Required)"
-            className="px-2.5 sm:px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl text-xs font-bold transition flex items-center space-x-1 border border-amber-300 shadow-xs"
+            className="px-2.5 sm:px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold transition flex items-center space-x-1 border border-amber-300 shadow-xs"
           >
             <i className="fa-solid fa-lock text-amber-600"></i>
             <span className="hidden sm:inline-block font-display">Lock Counter</span>
@@ -121,7 +104,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           <button
             onClick={() => setShowShiftAuditModal(true)}
             title="Day-End Cash Drawer Audit"
-            className="px-2.5 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center space-x-1 border border-slate-200"
+            className="px-2.5 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition flex items-center space-x-1 border border-slate-200"
           >
             <i className="fa-solid fa-vault text-[#F5A623]"></i>
             <span className="hidden sm:inline-block">Cash Audit</span>
@@ -131,7 +114,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition relative"
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition relative"
             >
               <i className="fa-solid fa-bell text-base"></i>
               {totalAlerts > 0 && (
@@ -143,19 +126,19 @@ export const Navbar = ({ onOpenMobileMenu }) => {
 
             {/* Notification Popup Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 z-50 animate-fade-in text-xs space-y-2">
+              <div className="absolute right-0 mt-2 w-72 bg-white border-2 border-slate-200 rounded-xl shadow-xl p-3 z-50 animate-fade-in text-xs space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <h4 className="font-bold text-slate-900 font-display">
                     Store Notifications
                   </h4>
-                  <span className="text-[10px] bg-red-50 text-[#E64545] px-1.5 py-0.5 rounded font-bold">
+                  <span className="text-[10px] bg-red-50 text-[#E64545] px-1.5 py-0.5 rounded font-bold font-mono">
                     {totalAlerts} Alerts
                   </span>
                 </div>
 
                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                   {lowStockCount > 0 && (
-                    <div className="p-2 bg-amber-50 rounded-xl border border-amber-200 flex items-start space-x-2 text-amber-900">
+                    <div className="p-2 bg-amber-50 rounded-lg border border-amber-200 flex items-start space-x-2 text-amber-900">
                       <i className="fa-solid fa-triangle-exclamation text-amber-600 text-xs mt-0.5"></i>
                       <div>
                         <p className="font-bold text-[11px]">Low Stock Alert</p>
@@ -167,7 +150,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                   )}
 
                   {overdueUdharCount > 0 && (
-                    <div className="p-2 bg-red-50 rounded-xl border border-red-200 flex items-start space-x-2 text-red-900">
+                    <div className="p-2 bg-red-50 rounded-lg border border-red-200 flex items-start space-x-2 text-red-900">
                       <i className="fa-solid fa-book-bookmark text-[#E64545] text-xs mt-0.5"></i>
                       <div>
                         <p className="font-bold text-[11px]">Overdue Udhaar</p>
@@ -182,33 +165,18 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             )}
           </div>
 
-          {/* Reset Demo Data Button */}
-          <button
-            onClick={() => {
-              if (window.confirm("Reset Kirana store data to default sample items?")) {
-                resetDemoData();
-              }
-            }}
-            title="Reset Kirana Sample Data"
-            className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+          {/* Language Switcher Dropdown */}
+          <select
+            value={currentLanguage}
+            onChange={(e) => changeLanguage(e.target.value)}
+            className="bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:bg-slate-200 transition"
           >
-            <i className="fa-solid fa-rotate-left text-sm"></i>
-          </button>
-
-          {/* Owner Profile Badge */}
-          <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center font-bold text-xs">
-              <i className="fa-solid fa-user-tie"></i>
-            </div>
-            <div className="hidden lg:block text-left">
-              <span className="block text-xs font-bold text-slate-900 leading-tight">
-                {storeConfig.ownerName || "Rajesh Gupta"}
-              </span>
-              <span className="block text-[10px] text-emerald-600 font-semibold">
-                ● Shift Active
-              </span>
-            </div>
-          </div>
+            {INDIAN_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.nativeName}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

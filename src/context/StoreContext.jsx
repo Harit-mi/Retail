@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   initialProducts,
   initialCustomers,
@@ -19,8 +19,7 @@ import {
   encryptPayloadAsync,
   decryptPayloadAsync,
 } from "../utils/storageCrypto";
-
-export const StoreContext = createContext();
+import { StoreContext } from "./StoreContextObject";
 
 // Helper: Safe Encrypted LocalStorage parser with fallback
 const getSafeStorage = (key, fallback, pin = "1234") => {
@@ -555,5 +554,3 @@ export const StoreProvider = ({ children }) => {
     </StoreContext.Provider>
   );
 };
-
-export { useStore } from "./useStore";

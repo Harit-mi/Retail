@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { StoreProvider, useStore } from "./context/StoreContext";
+import { StoreProvider } from "./context/StoreContext";
+import { useStore } from "./context/useStore";
 import { Sidebar } from "./components/Sidebar";
 import { Navbar } from "./components/Navbar";
 import { MobileBottomNav } from "./components/Mobile/MobileBottomNav";

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useStore } from "../context/StoreContext";
+import { useStore } from "../context/useStore";
 
 /**
  * Custom Hook: Global Hardware Barcode Scanner Listener (HID USB / Bluetooth Scanners)

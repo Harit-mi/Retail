@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 import { X, UserPlus, Search, Check } from "lucide-react";
 
 export const CustomerSelectModal = ({ isOpen, onClose }) => {

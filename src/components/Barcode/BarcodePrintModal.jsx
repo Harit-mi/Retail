@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 import { Printer, LayoutGrid, Plus, Minus } from "lucide-react";
 
 export const BarcodePrintModal = () => {

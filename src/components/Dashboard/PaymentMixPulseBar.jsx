@@ -1,5 +1,5 @@
 import React from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 // Simple payment breakdown pulse bar component
 
 export const PaymentMixPulseBar = () => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
@@ -27,7 +27,7 @@ export const SecurityPrivacyPanel = () => {
       title: "CSV / GSTR Export Formula Injection Defense",
       desc: "Automatic escaping of leading formula triggers (=, +, -, @) during GSTR-1/3B CSV file generation.",
       tag: "Export Defense",
-      icon: "fa-solid fa-[#1FAA59] fa-shield-halved text-teal-600",
+      icon: "fa-solid fa-shield-halved text-teal-600",
     },
     {
       title: "Physical Counter Register PIN Lock",
@@ -60,65 +60,60 @@ export const SecurityPrivacyPanel = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-[#0F1F35] text-white rounded-xl p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-white/10">
         <div>
-          <h2 className="font-extrabold font-display text-slate-900 text-lg flex items-center space-x-2">
-            <ShieldCheck className="w-5 h-5 text-[#1E3A5F]" />
+          <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-[#F5A623]" />
             <span>Privacy & Security Principles (DPDP Act Guidelines)</span>
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
             India DPDP Act 2023 compliance, offline data security & store privacy policies
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={lockCounter}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl flex items-center space-x-1.5 shadow-md transition"
+            className="px-4 py-2.5 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg flex items-center gap-1.5 shadow transition"
           >
             <Lock className="w-4 h-4" />
             <span>Lock Counter Register</span>
           </button>
-
-          <button
-            onClick={() => setActiveTab("audit")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === "audit"
-                ? "bg-[#1E3A5F] text-white shadow-md"
-                : "bg-white text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            Security Principles
-          </button>
-
-          <button
-            onClick={() => setActiveTab("pin")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === "pin"
-                ? "bg-[#1E3A5F] text-white shadow-md"
-                : "bg-white text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            Cashier PIN
-          </button>
-
-          <button
-            onClick={() => setActiveTab("policy")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === "policy"
-                ? "bg-[#1E3A5F] text-white shadow-md"
-                : "bg-white text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            Right-to-Erasure
-          </button>
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2">
+        <button
+          onClick={() => setActiveTab("audit")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            activeTab === "audit" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          Security Principles
+        </button>
+        <button
+          onClick={() => setActiveTab("pin")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            activeTab === "pin" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          Cashier PIN
+        </button>
+        <button
+          onClick={() => setActiveTab("policy")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            activeTab === "policy" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          Right-to-Erasure
+        </button>
+      </div>
+
       {deletionSuccess && (
-        <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-2xl text-xs font-bold flex items-center space-x-2 animate-fade-in">
+        <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in">
           <CheckCircle className="w-4 h-4" />
           <span>{deletionSuccess}</span>
         </div>
@@ -130,9 +125,9 @@ export const SecurityPrivacyPanel = () => {
           {securityPrincipleItems.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white border border-slate-200 rounded-2xl p-5 card-shadow flex items-start space-x-4"
+              className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs flex items-start space-x-4"
             >
-              <div className="p-3 bg-slate-100 rounded-2xl">
+              <div className="p-3 bg-slate-100 rounded-lg">
                 <i className={`${item.icon} text-xl`}></i>
               </div>
               <div className="space-y-1 flex-1">
@@ -155,9 +150,9 @@ export const SecurityPrivacyPanel = () => {
 
       {/* Cashier PIN Configuration Tab */}
       {activeTab === "pin" && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 card-shadow max-w-md">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs max-w-md">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center space-x-2">
+            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
               <Key className="w-5 h-5 text-[#1E3A5F]" />
               <span>Configure Cashier Counter Lock PIN</span>
             </h3>
@@ -177,7 +172,7 @@ export const SecurityPrivacyPanel = () => {
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value)}
                 placeholder="New PIN (e.g. 5678)"
-                className="w-full bg-slate-50 border border-slate-300 font-mono font-bold text-sm px-3 py-2.5 rounded-xl outline-none focus:border-[#1E3A5F]"
+                className="w-full bg-slate-50 border-2 border-slate-300 font-mono font-bold text-sm px-3 py-2.5 rounded-lg outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
@@ -189,7 +184,7 @@ export const SecurityPrivacyPanel = () => {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-xl shadow-md transition min-h-[44px]"
+              className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-lg shadow transition min-h-[44px]"
             >
               Save New Cashier PIN
             </button>
@@ -199,9 +194,9 @@ export const SecurityPrivacyPanel = () => {
 
       {/* DPDP Right-to-Erasure Customer Deletion Panel */}
       {activeTab === "policy" && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 card-shadow">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center space-x-2">
+            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
               <Trash2 className="w-5 h-5 text-[#E64545]" />
               <span>DPDP Act 2023 — Customer Right-to-Erasure Data Removal</span>
             </h3>
@@ -218,7 +213,7 @@ export const SecurityPrivacyPanel = () => {
               <select
                 value={selectedCustomerIdToDelete}
                 onChange={(e) => setSelectedCustomerIdToDelete(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               >
                 <option value="">-- Choose Customer --</option>
                 {customers.map((c) => (
@@ -232,7 +227,7 @@ export const SecurityPrivacyPanel = () => {
             <button
               type="submit"
               disabled={!selectedCustomerIdToDelete}
-              className="px-5 py-2.5 bg-[#E64545] hover:bg-red-700 text-white font-extrabold text-xs rounded-xl flex items-center space-x-2 shadow-md transition disabled:opacity-50 min-h-[44px]"
+              className="px-5 py-2.5 bg-[#E64545] hover:bg-red-700 text-white font-extrabold text-xs rounded-lg flex items-center gap-2 shadow transition disabled:opacity-50 min-h-[44px]"
             >
               <Trash2 className="w-4 h-4" />
               <span>Permanently Erase Customer Data</span>

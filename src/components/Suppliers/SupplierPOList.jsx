@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 
 export const SupplierPOList = () => {
   const { suppliers, addSupplier, purchaseOrders } = useStore();

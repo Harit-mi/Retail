@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useStore } from "../../context/StoreContext";
+import { useStore } from "../../context/useStore";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
 import { encryptPayloadAsync, decryptPayloadAsync } from "../../utils/storageCrypto";
 
@@ -81,158 +81,131 @@ export const StoreSettings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 card-shadow space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
+      <div className="bg-white border-2 border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-emerald-50 text-[#1FAA59] border border-emerald-100 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-[#0F1F35] text-[#F5A623] rounded-lg">
               <Store className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 font-display text-lg">
-                Store Settings & Profile
-              </h3>
-              <p className="text-xs text-slate-500">
-                Configure your business details, GSTIN, and UPI payment settings
+              <h2 className="text-lg font-black font-display text-slate-900">
+                Kirana Store Configuration
+              </h2>
+              <p className="text-xs text-slate-500 font-mono">
+                Store name, GSTIN number, receipt printer & UPI settings
               </p>
             </div>
           </div>
 
           {savedSuccess && (
-            <div className="flex items-center space-x-1.5 bg-emerald-50 text-[#1FAA59] border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold animate-fade-in">
+            <div className="flex items-center gap-1.5 bg-emerald-50 text-[#1FAA59] border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold animate-fade-in">
               <CheckCircle className="w-4 h-4" />
-              <span>Settings Saved Successfully!</span>
+              <span>Settings Saved!</span>
             </div>
           )}
         </div>
 
+        {/* Store Profile Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Store Name & Tagline */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                Store / Shop Name *
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Store Display Name *
               </label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F] focus:bg-white"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                Tagline / Slogan
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Store GSTIN Tax Number
               </label>
               <input
                 type="text"
-                value={formData.tagline}
-                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
-              />
-            </div>
-          </div>
-
-          {/* GSTIN & UPI ID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                GSTIN Number
-              </label>
-              <input
-                type="text"
-                value={formData.gstin}
+                value={formData.gstin || ""}
                 onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                placeholder="e.g. 07AAAAA0000A1Z5"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-[#1FAA59] outline-none focus:border-[#1E3A5F]"
+                placeholder="27AAAAA0000A1Z5"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                UPI Merchant VPA ID (For Instant Payment QR) *
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                UPI Payment VPA ID (For Dynamic QR)
               </label>
               <input
                 type="text"
-                required
-                value={formData.upiId}
+                value={formData.upiId || ""}
                 onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
-                placeholder="guptakirana@upi or 9876543210@ybl"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-mono text-[#0EA5A5] font-bold outline-none focus:border-[#1E3A5F]"
-              />
-            </div>
-          </div>
-
-          {/* Owner Name & Phone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                Owner / Cashier Name
-              </label>
-              <input
-                type="text"
-                value={formData.ownerName}
-                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                placeholder="guptakirana@upi"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
-              <label className="text-xs text-slate-700 font-bold block mb-1">
-                Phone / Mobile Number *
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Store Contact Phone
               </label>
               <input
                 type="tel"
-                required
-                value={formData.phone}
+                value={formData.phone || ""}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                placeholder="+91 98765 43210"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
           </div>
 
-          {/* Address */}
           <div>
-            <label className="text-xs text-slate-700 font-bold block mb-1">
-              Store Address
+            <label className="text-xs font-bold text-slate-700 block mb-1">
+              Store Address & City Header
             </label>
-            <input
-              type="text"
-              value={formData.address}
+            <textarea
+              rows="2"
+              value={formData.address || ""}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
+              placeholder="Shop No. 4, Main Market, Lajpat Nagar, New Delhi - 110024"
+              className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg p-3 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
             />
           </div>
 
-          {/* OFFLINE DATA BACKUP & RESTORE SECTION */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-            <h4 className="text-xs font-extrabold text-slate-900 font-display flex items-center space-x-1.5">
+          {/* Data Backup Section */}
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-lg p-4 space-y-3 pt-3">
+            <h4 className="text-xs font-extrabold text-slate-900 font-display flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-[#1FAA59]" />
-              <span>Offline Data Backup & Device Restore</span>
+              <span>Offline Data Backup & Encrypted Restore</span>
             </h4>
-            <p className="text-[11px] text-slate-500">
-              Export all your inventory stock, invoices, customer ledgers, and suppliers to a single offline JSON backup file, or restore data onto a new device.
-            </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            {backupMsg && (
+              <p className="text-xs font-bold text-[#1FAA59] bg-emerald-50 p-2.5 rounded border border-emerald-200 font-mono">
+                {backupMsg}
+              </p>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
                 onClick={exportStoreBackup}
-                className="px-4 py-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+                className="px-4 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition min-h-[44px]"
               >
                 <Download className="w-3.5 h-3.5 text-[#F5A623]" />
-                <span>Export Data Backup (.json)</span>
+                <span>Export Encrypted Backup (.json)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition flex items-center space-x-1.5"
+                className="px-4 py-2.5 bg-white border-2 border-slate-300 hover:border-slate-400 text-slate-900 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition min-h-[44px]"
               >
                 <Upload className="w-3.5 h-3.5 text-teal-600" />
-                <span>Restore / Import Data Backup</span>
+                <span>Restore / Import Backup</span>
               </button>
 
               <input
@@ -243,23 +216,19 @@ export const StoreSettings = () => {
                 className="hidden"
               />
             </div>
-
-            {backupMsg && (
-              <p className="text-[11px] font-bold text-[#1FAA59] bg-emerald-50 p-2 rounded-xl border border-emerald-200">
-                {backupMsg}
-              </p>
-            )}
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          {/* Reset Demo Data & Submit Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => {
-                if (confirm("Reset store to default sample data?")) {
+                if (window.confirm("Reset all store products and customer ledgers back to demo initial state?")) {
                   resetDemoData();
+                  window.location.reload();
                 }
               }}
-              className="flex items-center space-x-1.5 text-xs text-[#E64545] hover:text-red-700 font-bold"
+              className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-[#E64545] font-bold rounded-lg text-xs flex items-center gap-1.5 transition"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Reset Demo Data</span>
@@ -267,10 +236,10 @@ export const StoreSettings = () => {
 
             <button
               type="submit"
-              className="flex items-center space-x-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold font-display px-6 py-2.5 rounded-xl shadow-md transition"
+              className="px-6 py-3 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-lg text-xs shadow transition flex items-center gap-2 min-h-[44px]"
             >
-              <Save className="w-4 h-4 text-[#F5A623]" />
-              <span>Save Settings</span>
+              <Save className="w-4 h-4 stroke-[3]" />
+              <span>SAVE CONFIGURATION</span>
             </button>
           </div>
         </form>

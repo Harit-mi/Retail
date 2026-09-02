@@ -1,14 +1,8 @@
 import React from "react";
-import { useStore } from "../../context/StoreContext";
-import {
-  ShoppingCart,
-  Boxes,
-  BookOpen,
-  Barcode,
-  MessageSquare,
-} from "lucide-react";
+import { useStore } from "../../context/useStore";
+import { ShoppingBag, Boxes, Barcode, BookOpen, Menu } from "lucide-react";
 
-export const MobileBottomNav = ({ _onOpenMoreMenu }) => {
+export const MobileBottomNav = ({ onOpenMoreMenu }) => {
   const { activeTab, setActiveTab, products, customers } = useStore();
 
   const lowStockCount = products.filter(
@@ -18,41 +12,43 @@ export const MobileBottomNav = ({ _onOpenMoreMenu }) => {
   const udharCount = customers.filter((c) => c.balance > 0).length;
 
   const mobileTabs = [
-    { id: "pos", label: "Billing", icon: ShoppingCart, badge: null },
-    { id: "inventory", label: "Stock", icon: Boxes, badge: lowStockCount > 0 ? lowStockCount : null },
-    { id: "barcodes", label: "Barcodes", icon: Barcode, badge: null },
-    { id: "khata", label: "Udhaar", icon: BookOpen, badge: udharCount > 0 ? udharCount : null },
-    { id: "whatsapp", label: "Marketing", icon: MessageSquare, badge: null },
+    { id: "pos", label: "Billing", icon: ShoppingBag, badge: null },
+    { id: "inventory", label: "Stock", icon: Boxes, badge: lowStockCount || null },
+    { id: "barcodes", label: "Print", icon: Barcode, badge: null },
+    { id: "khata", label: "Khata", icon: BookOpen, badge: udharCount || null },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-2 py-1 shadow-lg flex items-center justify-around">
+    <div className="md:hidden fixed bottom-0 inset-x-0 bg-[#0F1F35] text-white border-t border-white/10 z-40 px-2 py-1 flex items-center justify-around shadow-2xl">
       {mobileTabs.map((tab) => {
-        const IconComponent = tab.icon;
+        const Icon = tab.icon;
         const isActive = activeTab === tab.id;
-
         return (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all duration-150 relative ${
-              isActive ? "text-[#1E3A5F] font-bold" : "text-slate-500 hover:text-slate-800"
+            className={`flex-1 py-1.5 flex flex-col items-center justify-center relative transition ${
+              isActive ? "text-[#F5A623] font-black" : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <div className="relative">
-              <IconComponent
-                className={`w-5 h-5 ${isActive ? "text-[#F5A623] stroke-[2.5]" : "stroke-[1.75]"}`}
-              />
-              {tab.badge && (
-                <span className="absolute -top-1 -right-2 bg-red-500 text-white font-mono font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-                  {tab.badge}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] mt-0.5 font-display">{tab.label}</span>
+            <Icon className="w-5 h-5" />
+            <span className="text-[10px] font-mono font-bold mt-0.5">{tab.label}</span>
+            {tab.badge && (
+              <span className="absolute top-1 right-3 bg-[#E64545] text-white text-[9px] font-mono font-bold px-1 rounded-full">
+                {tab.badge}
+              </span>
+            )}
           </button>
         );
       })}
-    </nav>
+
+      <button
+        onClick={onOpenMoreMenu}
+        className="flex-1 py-1.5 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition"
+      >
+        <Menu className="w-5 h-5" />
+        <span className="text-[10px] font-mono font-bold mt-0.5">More</span>
+      </button>
+    </div>
   );
 };
