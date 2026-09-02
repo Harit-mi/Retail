@@ -9,12 +9,10 @@ import {
   Plus,
   Minus,
   Trash2,
-  ShoppingCart,
   UserCheck,
   UserPlus,
   ArrowRight,
   Zap,
-  Filter,
   Package,
   Receipt,
   Tag,
@@ -152,10 +150,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     return matchesCategory && matchesSearch;
   });
 
-  const categories = [
-    "All",
-    ...new Set(products.map((p) => p.category)),
-  ];
+  const categories = ["All", ...new Set(products.map((p) => p.category))];
 
   // Barcode Scanner Simulator
   const simulateBarcodeScan = () => {
@@ -181,13 +176,17 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-140px)] animate-fade-in">
-      {/* LEFT COLUMN: ITEM SEARCH & PHYSICAL TILL TOUCH GRID (8 Cols on Desktop / 65% width) */}
-      <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 flex flex-col space-y-4 card-shadow">
-        {/* Search & Barcode Scan Bar with F2 Shortcut Hint */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[calc(100vh-140px)] animate-fade-in">
+      {/* ============================================================ */}
+      {/* LEFT: THE SHELF — flush against the page, no card chrome.     */}
+      {/* Flat, sharp-edged tiles read as counter/shelf signage rather  */}
+      {/* than dashboard widgets.                                       */}
+      {/* ============================================================ */}
+      <div className="lg:col-span-7 xl:col-span-8 flex flex-col space-y-4">
+        {/* Search & Scan Row */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               ref={searchInputRef}
               type="text"
@@ -198,91 +197,86 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               }}
               onKeyDown={handleSearchSubmit}
               placeholder={t("searchPlaceholder")}
-              className="w-full bg-slate-50 text-slate-900 text-sm font-semibold pl-10 pr-20 py-3 rounded-2xl border-2 border-slate-200 focus:border-[#1E3A5F] focus:bg-white outline-none transition placeholder-slate-400 shadow-xs"
+              className="w-full bg-white text-slate-900 text-sm font-semibold pl-11 pr-24 py-3.5 rounded-lg border-2 border-slate-300 focus:border-[#1E3A5F] outline-none transition placeholder-slate-400"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded border border-slate-300 select-none">
-              F2 Search
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-300 select-none">
+              F2
             </span>
           </div>
 
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
-            {/* Live Web Camera Barcode Scanner Trigger Button */}
+          <div className="flex items-stretch gap-2">
             <button
               onClick={() => setWebcamModalOpen(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-2xl font-bold text-xs border border-slate-300 transition active:scale-95"
               title="Scan with Mobile/Tablet Camera"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 rounded-lg font-bold text-xs bg-white border-2 border-slate-300 text-slate-700 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition active:scale-95 min-h-[48px]"
             >
-              <Camera className="w-4 h-4 text-[#1E3A5F]" />
+              <Camera className="w-4 h-4" />
               <span>Camera</span>
             </button>
 
-            {/* Barcode Scanner Simulation Button */}
             <button
               onClick={simulateBarcodeScan}
               disabled={isScanning}
-              className={`flex-1 sm:flex-none flex items-center justify-center space-x-2 px-5 py-3 rounded-2xl font-extrabold text-sm transition-all shadow-md active:scale-95 ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 rounded-lg font-extrabold text-sm transition-all active:scale-95 min-h-[48px] ${
                 isScanning
-                  ? "bg-[#F5A623] text-slate-950 animate-scan"
+                  ? "bg-[#F5A623] text-slate-950"
                   : "bg-[#1E3A5F] hover:bg-[#152a45] text-white"
               }`}
             >
-              <ScanBarcode className="w-5 h-5 text-[#F5A623]" />
+              <ScanBarcode className={`w-5 h-5 ${isScanning ? "text-slate-950" : "text-[#F5A623]"}`} />
               <span className="whitespace-nowrap font-display">
-                {isScanning ? "Scanning..." : t("simulateScanner")}
+                {isScanning ? "Scanning…" : t("simulateScanner")}
               </span>
             </button>
           </div>
         </div>
 
-        {/* Soft Stock Warning Toast Alert */}
+        {/* Inline status strip — one slot, one message at a time */}
         {stockWarningToast && (
-          <div className="bg-amber-50 border-2 border-amber-300 text-amber-900 px-4 py-2.5 rounded-2xl text-xs flex items-center space-x-2 font-bold animate-fade-in">
+          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-900 px-4 py-2.5 rounded text-xs flex items-center gap-2 font-bold animate-fade-in">
             <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
             <span>{stockWarningToast}</span>
           </div>
         )}
 
-        {/* Unmatched Barcode Alert Banner (Non-blocking inline prompt) */}
         {unmatchedBarcode && (
-          <div className="bg-amber-50 border-2 border-amber-300 text-amber-900 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between font-bold animate-fade-in">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>Barcode/Item '{unmatchedBarcode}' not found in inventory.</span>
+          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-900 px-4 py-2.5 rounded text-xs flex items-center justify-between font-bold animate-fade-in gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span className="truncate">Barcode/Item '{unmatchedBarcode}' not found in inventory.</span>
             </div>
-            <span className="text-[10px] bg-amber-200 text-amber-950 px-2.5 py-1 rounded-lg font-mono font-black uppercase">
-              Add New Product in Stock
+            <span className="text-[10px] bg-amber-200 text-amber-950 px-2.5 py-1 rounded font-mono font-black uppercase whitespace-nowrap">
+              Add New Product
             </span>
           </div>
         )}
 
-        {/* Scanned Success Toast Alert */}
         {lastScannedItem && (
-          <div className="bg-emerald-50 border-2 border-emerald-300 text-[#1FAA59] px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between font-bold animate-fade-in">
-            <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-[#1FAA59] animate-bounce" />
+          <div className="bg-emerald-50 border-l-4 border-[#1FAA59] text-[#1FAA59] px-4 py-2.5 rounded text-xs flex items-center justify-between font-bold animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#1FAA59]" />
               <span>
                 Scanned: <strong className="text-slate-900">{lastScannedItem}</strong>
               </span>
             </div>
-            <span className="text-[10px] bg-[#1FAA59] text-white px-2.5 py-0.5 rounded-full font-mono font-black">
-              +1 ADDED TO CART
+            <span className="text-[10px] bg-[#1FAA59] text-white px-2.5 py-0.5 rounded font-mono font-black">
+              +1 ADDED
             </span>
           </div>
         )}
 
-        {/* Category Filter Chips */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
-          <Filter className="w-4 h-4 text-slate-400 flex-shrink-0 ml-1" />
+        {/* Category Rail — till function keys, not filter chips */}
+        <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar border-b-2 border-slate-200 pb-0">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat;
             return (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all min-h-[44px] flex items-center ${
+                className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-all min-h-[44px] border-b-[3px] -mb-[2px] ${
                   isSelected
-                    ? "bg-[#1E3A5F] text-white shadow-md"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "border-[#1E3A5F] text-[#1E3A5F]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 {cat}
@@ -291,17 +285,17 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
           })}
         </div>
 
-        {/* Product Cards Touch Grid (44px Minimum Tap Targets) */}
+        {/* Product Shelf Grid — flat tiles, sharp corners, price is the loudest thing on each tile */}
         <div className="flex-1 overflow-y-auto pr-1">
           {filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center text-slate-400">
               <Package className="w-12 h-12 mb-2 text-slate-300 stroke-[1.5]" />
-              <p className="text-base font-bold text-slate-700 font-display">
+              <p className="text-base font-bold text-[#1E3A5F] font-display">
                 No Kirana items match '{searchQuery}'
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
               {filteredProducts.map((product) => {
                 const cartItem = cart.find((item) => item.id === product.id);
                 const isOutOfStock = product.stock !== null && product.stock <= 0;
@@ -314,83 +308,74 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                   <div
                     key={product.id}
                     onClick={() => handleAddItemToCart(product)}
-                    className={`group relative bg-white border-2 transition-all duration-150 rounded-2xl p-4 flex flex-col justify-between select-none card-shadow cursor-pointer active:scale-[0.98] ${
+                    className={`group relative bg-white border-2 rounded-lg p-3.5 flex flex-col justify-between select-none cursor-pointer transition-colors active:scale-[0.98] ${
                       isOutOfStock
-                        ? "border-amber-300 bg-amber-50/30"
+                        ? "border-amber-300"
                         : cartItem
-                        ? "border-[#1FAA59] ring-2 ring-[#1FAA59]/30 bg-emerald-50/20"
-                        : "border-slate-200 hover:border-slate-400 hover:bg-slate-50"
+                        ? "border-[#1FAA59]"
+                        : "border-slate-200 hover:border-slate-400"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-slate-600 uppercase bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-mono">
-                        {product.category}
-                      </span>
-
-                      <span className="text-[10px] font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                        GST {product.gst}%
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="text-sm font-extrabold font-display text-slate-900 leading-snug line-clamp-2 flex-1">
+                        {product.name}
+                      </h4>
+                      <span className="text-[9px] font-mono font-bold text-slate-400 whitespace-nowrap pt-0.5">
+                        GST{product.gst}
                       </span>
                     </div>
 
-                    <h4 className="text-xs sm:text-sm font-extrabold font-display text-slate-900 group-hover:text-[#1E3A5F] transition line-clamp-2 leading-snug">
-                      {product.name}
-                    </h4>
-
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-end justify-between">
+                    <div className="flex items-end justify-between pt-2 border-t border-slate-100">
                       <div>
-                        <div className="text-base sm:text-lg font-black font-mono text-[#1E3A5F] flex items-baseline space-x-1">
-                          <span>₹{product.retailPrice.toLocaleString("en-IN")}</span>
+                        <div className="text-lg font-black font-mono text-[#1E3A5F] leading-none">
+                          ₹{product.retailPrice.toLocaleString("en-IN")}
                           <span className="text-[10px] font-sans font-normal text-slate-400">
                             /{product.unit}
                           </span>
                         </div>
-
-                        <div className="text-[11px] mt-0.5 font-mono">
+                        <div className="text-[10px] mt-1 font-mono">
                           {isOutOfStock ? (
-                            <span className="text-[#E64545] font-black uppercase bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
-                              OUT OF STOCK ({product.stock})
+                            <span className="text-[#E64545] font-black uppercase">
+                              Out of stock
                             </span>
                           ) : isLowStock ? (
                             <span className="text-[#F5A623] font-bold">
-                              Low Stock: {product.stock} {product.unit}
+                              {product.stock} {product.unit} left
                             </span>
                           ) : (
-                            <span className="text-slate-500">
-                              Stock: {product.stock} {product.unit}
+                            <span className="text-slate-400">
+                              {product.stock} {product.unit}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Quantity Stepper Buttons */}
-                      <div className="flex items-center">
-                        {cartItem ? (
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center space-x-1 bg-[#1FAA59] text-white rounded-xl p-1 shadow-md"
+                      {cartItem ? (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-0.5 bg-[#1FAA59] text-white rounded p-0.5"
+                        >
+                          <button
+                            onClick={() => updateCartQty(product.id, cartItem.qty - 1)}
+                            className="hover:bg-emerald-700 rounded transition min-w-[30px] h-8 flex items-center justify-center"
                           >
-                            <button
-                              onClick={() => updateCartQty(product.id, cartItem.qty - 1)}
-                              className="p-1 hover:bg-emerald-700 rounded-lg transition min-w-[32px] h-8 flex items-center justify-center font-bold"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="text-xs font-mono font-black px-1.5 min-w-[20px] text-center">
-                              {cartItem.qty}
-                            </span>
-                            <button
-                              onClick={() => handleAddItemToCart(product)}
-                              className="p-1 hover:bg-emerald-700 rounded-lg transition min-w-[32px] h-8 flex items-center justify-center font-bold"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-[#1E3A5F] text-slate-700 group-hover:text-white flex items-center justify-center transition-all duration-150">
-                            <Plus className="w-4 h-4 stroke-[2.5]" />
-                          </div>
-                        )}
-                      </div>
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-xs font-mono font-black px-1 min-w-[18px] text-center">
+                            {cartItem.qty}
+                          </span>
+                          <button
+                            onClick={() => handleAddItemToCart(product)}
+                            className="hover:bg-emerald-700 rounded transition min-w-[30px] h-8 flex items-center justify-center"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 rounded bg-slate-100 group-hover:bg-[#1E3A5F] text-slate-500 group-hover:text-white flex items-center justify-center transition-colors">
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -400,237 +385,217 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
         </div>
       </div>
 
-      {/* RIGHT COLUMN: RUNNING CART & LIVE GST TILL SUMMARY (4 Cols on Desktop / 35% width) */}
-      <div className="lg:col-span-5 xl:col-span-4 bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 flex flex-col justify-between space-y-4 card-shadow">
-        {/* Cart Header & F4 Customer Linked Selector */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-emerald-50 text-[#1FAA59] rounded-xl border border-emerald-100">
-                <ShoppingCart className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-extrabold font-display text-slate-900 text-base">
-                  {t("counterPOS")} Cart
-                </h3>
-                <p className="text-xs text-slate-500 font-mono">
-                  {cart.length} {t("itemsInCart")}
-                </p>
-              </div>
+      {/* ============================================================ */}
+      {/* RIGHT: THE REGISTER — a dark ledger panel, the one bold thing */}
+      {/* on the screen. Receipt-style dotted rules, amber LED total.   */}
+      {/* ============================================================ */}
+      <div className="lg:col-span-5 xl:col-span-4 flex flex-col">
+        <div className="flex-1 flex flex-col bg-[#0F1F35] rounded-xl overflow-hidden shadow-xl shadow-slate-900/20">
+          {/* Header */}
+          <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/10">
+            <div>
+              <h3 className="font-extrabold font-display text-white text-sm tracking-wide">
+                {t("counterPOS")}
+              </h3>
+              <p className="text-[11px] text-slate-400 font-mono">
+                {cart.length} {t("itemsInCart")}
+              </p>
             </div>
-
             {cart.length > 0 && (
               <button
                 onClick={clearCart}
-                className="flex items-center space-x-1 text-xs text-[#E64545] hover:bg-red-50 px-2.5 py-1.5 rounded-xl border border-red-200 transition font-bold"
+                className="flex items-center gap-1 text-[11px] text-red-300 hover:text-red-200 px-2 py-1.5 rounded border border-red-400/30 hover:border-red-300/50 transition font-bold"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" />
                 <span>{t("clearCart")}</span>
               </button>
             )}
           </div>
 
-          {/* Customer Account Selector Card (F4 Shortcut Hint) */}
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 flex items-center justify-between">
-            <div className="flex items-center space-x-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 font-mono">
+          {/* Customer strip */}
+          <div className="px-4 py-2.5 flex items-center justify-between gap-2 border-b border-white/10">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-white/10 text-[#F5A623] flex items-center justify-center font-bold text-xs flex-shrink-0 font-mono">
                 {cartCustomer ? cartCustomer.name.charAt(0) : "C"}
               </div>
               <div className="truncate">
-                <p className="text-xs font-extrabold text-slate-900 truncate font-display">
+                <p className="text-xs font-bold text-white truncate">
                   {cartCustomer ? cartCustomer.name : t("walkInCustomer")}
                 </p>
-                <p className="text-[11px] text-slate-500 truncate font-mono">
+                <p className="text-[10px] text-slate-400 truncate font-mono">
                   {cartCustomer
-                    ? `Loyalty: 🎁 ${cartCustomer.loyaltyPoints || 0} pts • Udhaar Bal: ₹${cartCustomer.balance}`
-                    : "No customer account linked"}
+                    ? `${cartCustomer.loyaltyPoints || 0} pts · Udhaar ₹${cartCustomer.balance}`
+                    : "No account linked"}
                 </p>
               </div>
             </div>
-
             <button
               onClick={onOpenCustomerModal}
-              className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-bold bg-[#1E3A5F] hover:bg-[#152a45] text-white transition flex items-center space-x-1 shadow-xs min-h-[44px]"
+              className="flex-shrink-0 px-2.5 py-2 rounded text-[11px] font-bold bg-white/10 hover:bg-white/20 text-white transition flex items-center gap-1 min-h-[36px]"
             >
               {cartCustomer ? <UserCheck className="w-3.5 h-3.5 text-[#F5A623]" /> : <UserPlus className="w-3.5 h-3.5 text-[#F5A623]" />}
-              <span>{cartCustomer ? "Change" : "F4 Customer"}</span>
+              <span>{cartCustomer ? "Change" : "F4"}</span>
             </button>
           </div>
-        </div>
 
-        {/* Cart Item Row Stream with Flash Highlight Effect */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-2 max-h-[300px] lg:max-h-none">
-          {cart.length === 0 ? (
-            /* Empty Cart State */
-            <div className="flex flex-col items-center justify-center h-48 text-center text-slate-400 space-y-2">
-              <Receipt className="w-12 h-12 text-slate-300 stroke-[1.5]" />
-              <div>
-                <p className="text-sm font-bold text-slate-700 font-display">
-                  Cart is Ready for Next Sale
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Tap items on left till or scan barcode to add
+          {/* Receipt tape — cart lines */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-0 max-h-[280px] lg:max-h-none">
+            {cart.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-40 text-center text-slate-500 space-y-2">
+                <Receipt className="w-10 h-10 text-slate-600 stroke-[1.5]" />
+                <p className="text-xs font-bold text-slate-400">
+                  Tap items on the shelf or scan a barcode
                 </p>
               </div>
-            </div>
-          ) : (
-            cart.map((item) => {
-              const isHighlighted = highlightedCartId === item.id;
-              const isLowStockItem = item.stock !== null && item.stock <= (item.minStockWarning || 5);
+            ) : (
+              cart.map((item, idx) => {
+                const isHighlighted = highlightedCartId === item.id;
+                const isLowStockItem = item.stock !== null && item.stock <= (item.minStockWarning || 5);
 
-              return (
-                <div
-                  key={item.id}
-                  className={`rounded-xl p-3 border transition-all duration-300 flex items-center justify-between gap-2 card-shadow ${
-                    isHighlighted
-                      ? "bg-emerald-100 border-[#1FAA59] ring-2 ring-[#1FAA59]"
-                      : "bg-white border-slate-200"
-                  }`}
+                return (
+                  <div
+                    key={item.id}
+                    className={`py-2.5 flex items-center justify-between gap-2 transition-colors duration-300 ${
+                      idx !== 0 ? "border-t border-dashed border-white/15" : ""
+                    } ${isHighlighted ? "bg-[#1FAA59]/15 -mx-4 px-4" : ""}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h5 className="text-xs font-bold text-white truncate">{item.name}</h5>
+                        {isLowStockItem && (
+                          <span className="text-[8px] bg-amber-400/20 text-amber-300 px-1 rounded font-mono font-bold whitespace-nowrap">
+                            LOW
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-mono mt-0.5">
+                        <span>₹{item.price}</span>
+                        <span>×</span>
+                        <span>{item.qty}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-0.5 bg-white/10 rounded p-0.5">
+                      <button
+                        onClick={() => updateCartQty(item.id, item.qty - 1)}
+                        className="text-slate-300 hover:text-white rounded transition min-w-[26px] h-7 flex items-center justify-center"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <input
+                        type="number"
+                        value={item.qty}
+                        onChange={(e) => updateCartQty(item.id, Number(e.target.value))}
+                        className="w-7 text-center text-[11px] font-mono font-black bg-transparent text-white outline-none"
+                      />
+                      <button
+                        onClick={() => handleAddItemToCart(item)}
+                        className="text-slate-300 hover:text-white rounded transition min-w-[26px] h-7 flex items-center justify-center"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <div className="text-right min-w-[58px]">
+                      <div className="text-xs font-black font-mono text-white">
+                        ₹{item.total.toLocaleString("en-IN")}
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-slate-500 hover:text-red-300 transition text-[9px]"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Ledger footer + amber LED total */}
+          {cart.length > 0 && (
+            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-white/10 bg-black/10">
+              {/* Promo code */}
+              <form onSubmit={handleApplyCoupon} className="flex items-center gap-2 pt-2">
+                <div className="relative flex-1">
+                  <Tag className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Promo code"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="w-full bg-white/5 border border-white/15 rounded pl-8 pr-2 py-2 text-xs font-mono text-white placeholder-slate-500 outline-none uppercase focus:border-[#F5A623]/60"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded min-h-[36px]"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-1.5">
-                      <h5 className="text-xs font-extrabold text-slate-900 truncate font-display">
-                        {item.name}
-                      </h5>
-                      {isLowStockItem && (
-                        <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-mono font-bold">
-                          Low Stock
-                        </span>
-                      )}
-                    </div>
+                  Apply
+                </button>
+              </form>
 
-                    <div className="flex items-center space-x-2 text-[11px] text-slate-500 font-mono mt-0.5">
-                      <span className="text-[#1FAA59] font-bold">₹{item.price}</span>
-                      <span>•</span>
-                      <span>GST {item.gst}%</span>
-                    </div>
-                  </div>
-
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center space-x-1 bg-slate-100 border border-slate-200 rounded-xl p-0.5">
-                    <button
-                      onClick={() => updateCartQty(item.id, item.qty - 1)}
-                      className="p-1 text-slate-700 hover:bg-slate-200 rounded-lg transition min-w-[32px] h-8 flex items-center justify-center font-bold"
-                    >
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-                    <input
-                      type="number"
-                      value={item.qty}
-                      onChange={(e) => updateCartQty(item.id, Number(e.target.value))}
-                      className="w-8 text-center text-xs font-mono font-black bg-transparent text-slate-900 outline-none"
-                    />
-                    <button
-                      onClick={() => handleAddItemToCart(item)}
-                      className="p-1 text-slate-700 hover:bg-slate-200 rounded-lg transition min-w-[32px] h-8 flex items-center justify-center font-bold"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="text-right min-w-[65px]">
-                    <div className="text-xs font-black font-mono text-slate-900">
-                      ₹{item.total.toLocaleString("en-IN")}
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-slate-400 hover:text-red-600 transition text-[10px]"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Live Tax Summary & Loudest Grand Total Checkout Button */}
-        {cart.length > 0 && (
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
-            {/* Promo Code Input */}
-            <form onSubmit={handleApplyCoupon} className="flex items-center space-x-2">
-              <div className="relative flex-1">
-                <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Promo (DIWALI10, FLAT200)"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-xl pl-8 pr-2 py-1.5 text-xs font-mono text-slate-900 outline-none uppercase"
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-3.5 py-2 bg-[#1E3A5F] text-white text-xs font-bold rounded-xl min-h-[44px]"
-              >
-                Apply
-              </button>
-            </form>
-
-            {couponMsg && (
-              <p className="text-[10px] font-bold text-indigo-700 bg-indigo-50 p-1.5 rounded-lg border border-indigo-200">
-                {couponMsg}
-              </p>
-            )}
-
-            {/* Loyalty Points Redemption Toggle */}
-            {cartCustomer && (cartCustomer.loyaltyPoints || 0) > 0 && (
-              <div className="flex items-center justify-between bg-amber-50 border border-amber-200 p-2 rounded-xl text-xs text-amber-900">
-                <span className="flex items-center space-x-1 font-bold">
-                  <Gift className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Redeem {cartCustomer.loyaltyPoints} Pts (₹{cartCustomer.loyaltyPoints})</span>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={redeemedPoints > 0}
-                  onChange={(e) => setRedeemedPoints(e.target.checked ? cartCustomer.loyaltyPoints : 0)}
-                  className="w-5 h-5 accent-[#F5A623] cursor-pointer"
-                />
-              </div>
-            )}
-
-            {/* Live CGST & SGST Split Display */}
-            <div className="space-y-1 text-xs pt-2 border-t border-slate-200">
-              <div className="flex justify-between text-slate-600 font-mono">
-                <span>Items Subtotal</span>
-                <span className="font-bold text-slate-900">₹{cartSubtotal}</span>
-              </div>
-
-              {calculatedDiscount > 0 && (
-                <div className="flex justify-between text-[#E64545] font-bold font-mono">
-                  <span>Total Discount</span>
-                  <span>- ₹{calculatedDiscount}</span>
-                </div>
+              {couponMsg && (
+                <p className="text-[10px] font-bold text-sky-200 bg-sky-400/10 p-1.5 rounded border border-sky-400/20">
+                  {couponMsg}
+                </p>
               )}
 
-              <div className="flex justify-between text-slate-500 text-[11px] font-mono pt-1">
-                <span>Taxable Base: ₹{Math.round(cartTaxDetails.taxableAmount)}</span>
-                <span>CGST+SGST: ₹{Math.round(cartTaxDetails.totalTax)}</span>
-              </div>
-            </div>
+              {cartCustomer && (cartCustomer.loyaltyPoints || 0) > 0 && (
+                <label className="flex items-center justify-between bg-amber-400/10 border border-amber-400/20 p-2 rounded text-xs text-amber-200 cursor-pointer">
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <Gift className="w-3.5 h-3.5" />
+                    <span>Redeem {cartCustomer.loyaltyPoints} pts (₹{cartCustomer.loyaltyPoints})</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={redeemedPoints > 0}
+                    onChange={(e) => setRedeemedPoints(e.target.checked ? cartCustomer.loyaltyPoints : 0)}
+                    className="w-4 h-4 accent-[#F5A623] cursor-pointer"
+                  />
+                </label>
+              )}
 
-            {/* Loudest Grand Total Display & F8 Checkout Trigger */}
-            <div className="pt-2 border-t border-slate-300 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider font-display">
-                  {t("grandTotal")}
-                </span>
-                <div className="text-3xl font-black font-mono text-slate-950 tracking-tight">
-                  ₹{cartGrandTotal.toLocaleString("en-IN")}
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between text-slate-400 font-mono">
+                  <span>Subtotal</span>
+                  <span className="font-bold text-slate-200">₹{cartSubtotal}</span>
+                </div>
+                {calculatedDiscount > 0 && (
+                  <div className="flex justify-between text-red-300 font-bold font-mono">
+                    <span>Discount</span>
+                    <span>−₹{calculatedDiscount}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-slate-500 text-[10px] font-mono">
+                  <span>Taxable ₹{Math.round(cartTaxDetails.taxableAmount)}</span>
+                  <span>CGST+SGST ₹{Math.round(cartTaxDetails.totalTax)}</span>
+                </div>
+              </div>
+
+              {/* The one loud element on the whole screen */}
+              <div className="pt-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
+                    {t("grandTotal")}
+                  </span>
+                  <div className="text-4xl font-black font-mono text-[#F5A623] tracking-tight tabular-nums">
+                    ₹{cartGrandTotal.toLocaleString("en-IN")}
+                  </div>
                 </div>
               </div>
 
               <button
                 onClick={onOpenPaymentModal}
-                className="flex items-center space-x-2 bg-[#F5A623] hover:bg-amber-500 text-slate-950 font-black font-display px-6 py-4 rounded-2xl shadow-lg shadow-amber-500/20 transition-all duration-150 transform hover:scale-[1.02] active:scale-[0.98] min-h-[52px]"
+                className="w-full flex items-center justify-center gap-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display py-4 rounded-lg transition-all active:scale-[0.98] min-h-[52px]"
               >
                 <span>F8 CHECKOUT</span>
                 <ArrowRight className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Camera Live Barcode Scanner Modal */}
