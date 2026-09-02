@@ -194,7 +194,7 @@ export const CartSection = ({ onOpenPaymentModal, onOpenCustomerModal }) => {
           </form>
 
           {couponMsg && (
-            <p className="text-[10px] font-bold text-indigo-700 bg-indigo-50 p-1.5 rounded border border-indigo-200">
+            <p className="text-[10px] font-bold text-emerald-800 bg-emerald-50 p-1.5 rounded border border-emerald-200">
               {couponMsg}
             </p>
           )}

@@ -71,7 +71,7 @@ export const VerticalModules = () => {
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
         {[
           { id: "batch", label: "Batch & Expiry (Pharmacy)", iconClass: "fa-solid fa-prescription-bottle-medical", color: "text-[#E64545]" },
-          { id: "variant", label: "Variant Matrix (Apparel)", iconClass: "fa-solid fa-shirt", color: "text-indigo-600" },
+          { id: "variant", label: "Variant Matrix (Apparel)", iconClass: "fa-solid fa-shirt", color: "text-[#1E3A5F]" },
           { id: "imei", label: "IMEI & Warranty (Electronics)", iconClass: "fa-solid fa-mobile-screen-button", color: "text-blue-600" },
           { id: "salon", label: "Salon & Appointments", iconClass: "fa-solid fa-scissors", color: "text-purple-600" },
           { id: "kot", label: "Table & KOT (Restaurant)", iconClass: "fa-solid fa-utensils", color: "text-amber-600" },
@@ -130,7 +130,7 @@ export const VerticalModules = () => {
                 {pharmacyProducts.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
-                    <td className="py-3 px-4 font-mono text-indigo-700 font-semibold">
+                    <td className="py-3 px-4 font-mono text-[#1E3A5F] font-semibold">
                       {p.attributes?.batch_no || "N/A"}
                     </td>
                     <td className="py-3 px-4 font-mono text-red-600 font-bold">
@@ -168,7 +168,7 @@ export const VerticalModules = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-extrabold font-display text-slate-900 text-base flex items-center space-x-2">
-                <i className="fa-solid fa-shirt text-indigo-600"></i>
+                <i className="fa-solid fa-shirt text-[#1E3A5F]"></i>
                 <span>Apparel Size × Color Matrix Grid</span>
               </h3>
               <p className="text-xs text-slate-500">
@@ -193,7 +193,7 @@ export const VerticalModules = () => {
                   </div>
 
                   <div className="flex items-center space-x-2 text-[11px] text-slate-600 pt-2 border-t border-slate-200">
-                    <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-mono font-bold">
+                    <span className="bg-slate-100 text-slate-900 border border-slate-200 px-2 py-0.5 rounded font-mono font-bold">
                       Size: {p.attributes?.size || "M"}
                     </span>
                     <span className="bg-slate-200 px-2 py-0.5 rounded font-medium">

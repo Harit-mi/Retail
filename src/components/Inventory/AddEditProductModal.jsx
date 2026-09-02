@@ -135,16 +135,16 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col card-shadow">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white border-2 border-slate-200 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 className="font-extrabold text-slate-900 font-display text-base flex items-center space-x-2">
+        <div className="px-5 py-4 bg-[#0F1F35] flex items-center justify-between text-white">
+          <h3 className="font-extrabold text-white font-display text-sm flex items-center space-x-2">
             <span>{productToEdit ? "Edit Product Details" : "Add Vertical Inventory Item"}</span>
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition"
+            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -301,8 +301,8 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
 
           {/* 👔 APPAREL SPECIFIC FIELDS */}
           {formData.vertical === "clothing" && (
-            <div className="p-3.5 bg-indigo-50 rounded-2xl border border-indigo-200 space-y-3">
-              <h5 className="text-xs font-extrabold text-indigo-900 font-display uppercase tracking-wider">
+            <div className="p-3.5 bg-slate-50 rounded-lg border-2 border-slate-200 space-y-3">
+              <h5 className="text-xs font-extrabold text-[#1E3A5F] font-display uppercase tracking-wider">
                 👔 Apparel Size × Color × Brand Grid
               </h5>
               <div className="grid grid-cols-3 gap-2">
