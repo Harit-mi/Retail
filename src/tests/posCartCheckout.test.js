@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateCartTotals } from "../utils/moneyMath";
+import { calculateCartTotals, calculateCashChange, updateCustomerLedger } from "../utils/moneyMath";
 
 describe("POS Checkout & Cart State Machine (Production Integration Tests)", () => {
   const sampleProducts = [
@@ -28,23 +28,25 @@ describe("POS Checkout & Cart State Machine (Production Integration Tests)", () 
     expect(totals.taxableSubtotal + totals.taxAmount).toBe(544);
   });
 
-  it("calculates cash change return correctly", () => {
-    const grandTotal = 935;
-    const cashTendered = 1000;
-    const changeReturn = Math.max(0, cashTendered - grandTotal);
-    expect(changeReturn).toBe(65);
+  it("calculates cash change return correctly (real PaymentModal logic)", () => {
+    expect(calculateCashChange(1000, 935)).toBe(65);
+    // Guards against negative change if tendered is less than the total
+    expect(calculateCashChange(50, 935)).toBe(0);
   });
 
-  it("reconciles Udhaar khata settlement payment cleanly", () => {
+  it("reconciles Udhaar khata settlement without double-counting the debt (real ledger logic)", () => {
     const initialCustomers = [
-      { id: "c1", name: "Anand Verma", phone: "9876543210", balance: 1200, history: [] },
+      { id: "c1", name: "Anand Verma", phone: "9876543210", balance: 1200, loyaltyPoints: 0, history: [] },
     ];
 
-    // Customer pays ₹800 towards their ₹1200 debt
-    const paymentAmount = 800;
-    const target = initialCustomers[0];
-    const newBal = Math.max(0, target.balance - paymentAmount);
+    // Customer pays ₹800 cash toward a fresh ₹1200 bill — only the remaining
+    // ₹400 unpaid "due" should ever reach the Khata ledger. This is a
+    // regression guard for the original bug where the FULL bill amount was
+    // mistakenly added instead of just the unpaid remainder.
+    const remainingDue = 400;
+    const updated = updateCustomerLedger(initialCustomers, "c1", remainingDue, 0, 0, "INV-1001");
 
-    expect(newBal).toBe(400);
+    expect(updated[0].balance).toBe(1200 + 400);
+    expect(updated[0].history[0].amount).toBe(400);
   });
 });

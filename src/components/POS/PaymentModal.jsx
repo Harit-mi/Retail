@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "../../context/useStore";
+import { calculateCashChange } from "../../utils/moneyMath";
 import {
   Banknote,
   QrCode,
@@ -37,7 +38,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const cashChangeReturn = Math.max(0, cashTendered - cartGrandTotal);
+  const cashChangeReturn = calculateCashChange(cashTendered, cartGrandTotal);
   const isUdhar = paymentMode === "udhar";
   const upiUri = `upi://pay?pa=${encodeURIComponent(
     storeConfig.upiId || "guptakirana@upi"

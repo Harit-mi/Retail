@@ -95,6 +95,12 @@ export const calculateCartTotals = (
   };
 };
 
+// Cash Change Calculator — pure function so it's testable against
+// production logic instead of a copy re-typed into a test file.
+export const calculateCashChange = (cashTendered = 0, grandTotal = 0) => {
+  return Math.max(0, Number(cashTendered) - Number(grandTotal));
+};
+
 // 3. Deduct Stock Inventory on Sale
 export const deductStockOnSale = (products = [], cartItems = []) => {
   return products.map((p) => {
