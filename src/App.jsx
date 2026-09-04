@@ -67,15 +67,22 @@ const MainContent = () => {
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950 pb-16 md:pb-0">
       {/* Global POS Register Lock Overlay (Gates ENTIRE application when active) */}
       {isCounterLocked && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-5 text-white animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lock-modal-title"
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-5 text-white animate-fade-in motion-reduce:animate-none"
+        >
           <div className="bg-white text-slate-900 rounded-xl max-w-sm w-full shadow-2xl overflow-hidden border-2 border-slate-200">
             {/* Header */}
             <div className="bg-[#0F1F35] text-white px-5 py-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded bg-[#F5A623] text-slate-950 flex items-center justify-center font-black">
-                <Lock className="w-5 h-5" />
+                <Lock className="w-5 h-5" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="text-sm font-extrabold font-display">POS Counter Register Locked</h3>
+                <h3 id="lock-modal-title" className="text-sm font-extrabold font-display text-balance">
+                  POS Counter Register Locked
+                </h3>
                 <p className="text-[11px] text-amber-300 font-mono">
                   Cashier PIN Verification Required
                 </p>
@@ -83,30 +90,34 @@ const MainContent = () => {
             </div>
 
             <div className="p-6 space-y-4 text-center">
-              <p className="text-xs text-slate-500 font-medium font-mono">
+              <label htmlFor="cashier-pin-input" className="text-xs text-slate-500 font-medium font-mono block">
                 Enter cashier PIN to unlock register (Default: <strong className="text-slate-900 font-bold">{counterPin}</strong>)
-              </p>
+              </label>
 
               <form onSubmit={handleUnlock} className="space-y-3">
                 <input
+                  id="cashier-pin-input"
+                  name="cashierPin"
                   type="password"
                   maxLength="6"
+                  autoComplete="off"
+                  spellCheck={false}
                   value={pinInput}
                   onChange={(e) => {
                     setPinInput(e.target.value);
                     setPinError("");
                   }}
                   placeholder="••••"
-                  className="w-full text-center text-2xl font-mono tracking-widest py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-[#1E3A5F] bg-slate-50 text-slate-900"
+                  className="w-full text-center text-2xl font-mono tracking-widest py-3 border-2 border-slate-300 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] bg-slate-50 text-slate-900"
                 />
 
                 {pinError && (
-                  <p className="text-xs font-bold text-[#E64545] font-mono">{pinError}</p>
+                  <p role="alert" className="text-xs font-bold text-[#E64545] font-mono">{pinError}</p>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-lg text-xs transition min-h-[44px]"
+                  className="w-full py-3 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-lg text-xs transition focus-visible:ring-2 focus-visible:ring-[#1E3A5F] min-h-[44px]"
                 >
                   UNLOCK REGISTER NOW
                 </button>

@@ -39,18 +39,24 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="customer-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in motion-reduce:animate-none"
+    >
       <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
         {/* Header — same register-panel language as Payment modal */}
         <div className="px-5 py-4 bg-[#0F1F35] flex items-center justify-between">
-          <h3 className="font-extrabold text-white text-sm">
+          <h3 id="customer-modal-title" className="font-extrabold text-white text-sm text-balance">
             Select Customer for Bill
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition"
+            aria-label="Close customer selection modal"
+            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-white"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -61,13 +67,15 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
               {/* Search & Add New Toggle */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search by name or mobile…"
-                    className="w-full bg-white text-slate-900 text-xs pl-9 pr-3 py-2.5 rounded-lg border-2 border-slate-300 outline-none focus:border-[#1E3A5F] min-h-[44px]"
+                    aria-label="Search by name or mobile"
+                    spellCheck={false}
+                    className="w-full bg-white text-slate-900 text-xs pl-9 pr-3 py-2.5 rounded-lg border-2 border-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] min-h-[44px]"
                   />
                 </div>
 

@@ -76,16 +76,21 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="payment-modal-title"
+      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in motion-reduce:animate-none"
+    >
       <div className="bg-white rounded-xl max-w-lg w-full overflow-hidden shadow-2xl">
         {/* Register-panel header, matching the dark ledger on the main till */}
         <div className="bg-[#0F1F35] text-white px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded bg-[#F5A623] text-slate-950 flex items-center justify-center font-black text-base">
-              <i className="fa-solid fa-cash-register"></i>
+              <i className="fa-solid fa-cash-register" aria-hidden="true"></i>
             </div>
             <div>
-              <h3 className="font-extrabold font-display text-sm tracking-tight">
+              <h3 id="payment-modal-title" className="font-extrabold font-display text-sm tracking-tight text-balance">
                 {t("payBill")}
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -96,9 +101,10 @@ export const PaymentModal = ({ isOpen, onClose }) => {
 
           <button
             onClick={handleResetModal}
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition"
+            aria-label="Close payment modal"
+            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-white"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
