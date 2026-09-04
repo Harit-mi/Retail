@@ -68,39 +68,50 @@ const MainContent = () => {
       {/* Global POS Register Lock Overlay (Gates ENTIRE application when active) */}
       {isCounterLocked && (
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-5 text-white animate-fade-in">
-          <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <div className="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
-              <Lock className="w-8 h-8" />
+          <div className="bg-white text-slate-900 rounded-xl max-w-sm w-full shadow-2xl overflow-hidden border-2 border-slate-200">
+            {/* Header */}
+            <div className="bg-[#0F1F35] text-white px-5 py-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded bg-[#F5A623] text-slate-950 flex items-center justify-center font-black">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold font-display">POS Counter Register Locked</h3>
+                <p className="text-[11px] text-amber-300 font-mono">
+                  Cashier PIN Verification Required
+                </p>
+              </div>
             </div>
-            <h3 className="text-xl font-extrabold font-display">POS Counter Register Locked</h3>
-            <p className="text-xs text-slate-500 font-medium">
-              Enter {counterPin.length}-digit cashier PIN to unlock register (Default: {counterPin})
-            </p>
 
-            <form onSubmit={handleUnlock} className="space-y-3">
-              <input
-                type="password"
-                maxLength="6"
-                value={pinInput}
-                onChange={(e) => {
-                  setPinInput(e.target.value);
-                  setPinError("");
-                }}
-                placeholder="••••"
-                className="w-full text-center text-2xl font-mono tracking-widest py-3 border-2 border-slate-300 rounded-2xl outline-none focus:border-[#1E3A5F]"
-              />
+            <div className="p-6 space-y-4 text-center">
+              <p className="text-xs text-slate-500 font-medium font-mono">
+                Enter cashier PIN to unlock register (Default: <strong className="text-slate-900 font-bold">{counterPin}</strong>)
+              </p>
 
-              {pinError && (
-                <p className="text-xs font-bold text-[#E64545]">{pinError}</p>
-              )}
+              <form onSubmit={handleUnlock} className="space-y-3">
+                <input
+                  type="password"
+                  maxLength="6"
+                  value={pinInput}
+                  onChange={(e) => {
+                    setPinInput(e.target.value);
+                    setPinError("");
+                  }}
+                  placeholder="••••"
+                  className="w-full text-center text-2xl font-mono tracking-widest py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-[#1E3A5F] bg-slate-50 text-slate-900"
+                />
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold rounded-2xl text-xs shadow-md transition min-h-[44px]"
-              >
-                Unlock Register Now
-              </button>
-            </form>
+                {pinError && (
+                  <p className="text-xs font-bold text-[#E64545] font-mono">{pinError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-lg text-xs transition min-h-[44px]"
+                >
+                  UNLOCK REGISTER NOW
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
