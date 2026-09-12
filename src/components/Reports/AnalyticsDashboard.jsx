@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
+import { sanitizeCsvCell } from "../../utils/csvSanitizer";
 import {
   Download,
   Calendar,
@@ -78,15 +79,6 @@ export const AnalyticsDashboard = () => {
   });
 
   const hsnList = Object.values(hsnSummaryMap);
-
-  // Helper: Sanitize string cells to prevent CSV Formula Injection (=, +, -, @)
-  const sanitizeCsvCell = (str = "") => {
-    const s = String(str).replace(/"/g, '""');
-    if (/^[=+\-@\t\r]/.test(s)) {
-      return `'${s}`;
-    }
-    return s;
-  };
 
   // Export CSV for GSTR-1 / GSTR-3B Tax Filing with Formula Injection Defense
   const exportGstCsv = () => {
