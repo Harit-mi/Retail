@@ -4,7 +4,7 @@ import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
   const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin } = useStore();
-  const [activeTab, setActiveTab] = useState("audit"); // 'audit', 'policy', or 'pin'
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy'
   const [newPin, setNewPin] = useState("");
   const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
@@ -12,26 +12,26 @@ export const SecurityPrivacyPanel = () => {
 
   const securityPrincipleItems = [
     {
-      title: "Local-First Zero Cloud Leakage",
-      desc: "All store invoices, inventory & customer ledgers remain 100% stored in local browser storage. Zero third-party server transmission.",
-      tag: "Architecture Principle",
+      title: "100% Local-First Offline Storage",
+      desc: "All invoices, inventory & customer ledgers are stored securely inside your browser local storage. Zero data sent to cloud servers.",
+      tag: "Architecture Security",
       icon: "fa-solid fa-hard-drive text-[#1E3A5F]",
     },
     {
-      title: "DPDP Act 2023 India Privacy Guidelines",
-      desc: "Supports customer phone masking (+91 98765 *****) and DPDP Right-to-Erasure customer deletion.",
-      tag: "Configurable Guideline",
+      title: "India DPDP Act 2023 Compliance",
+      desc: "Protects customer data with phone masking (+91 98765 *****) and Section 12 Right-to-Erasure customer deletion.",
+      tag: "Privacy Compliance",
       icon: "fa-solid fa-user-shield text-[#1FAA59]",
     },
     {
-      title: "CSV / GSTR Export Formula Injection Defense",
-      desc: "Automatic escaping of leading formula triggers (=, +, -, @) during GSTR-1/3B CSV file generation.",
+      title: "GSTR Export Formula Injection Shield",
+      desc: "Escapes dangerous spreadsheet characters (=, +, -, @) during GSTR-1/3B CSV file downloads to block RCE vulnerabilities.",
       tag: "Export Defense",
       icon: "fa-solid fa-shield-halved text-teal-600",
     },
     {
       title: "Physical Counter Register PIN Lock",
-      desc: "Instant 4-digit screen lock gating the entire POS application to prevent unauthorized physical access.",
+      desc: "Instant 4-digit screen lock gating the POS counter register to prevent unauthorized access when cashiers step away.",
       tag: "Access Control",
       icon: "fa-solid fa-lock text-amber-600",
     },
@@ -66,10 +66,10 @@ export const SecurityPrivacyPanel = () => {
         <div>
           <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#F5A623]" />
-            <span>Privacy & Security Principles (DPDP Act Guidelines)</span>
+            <span>Store Security & DPDP Privacy Center</span>
           </h2>
           <p className="text-xs text-slate-400 font-mono mt-0.5">
-            India DPDP Act 2023 compliance, offline data security & store privacy policies
+            Local-first offline encryption, cashier PIN security & DPDP Act 2023 data compliance
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export const SecurityPrivacyPanel = () => {
             className="px-4 py-2.5 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg flex items-center gap-1.5 shadow transition"
           >
             <Lock className="w-4 h-4" />
-            <span>Lock Counter Register</span>
+            <span>Lock Register Now</span>
           </button>
         </div>
       </div>
@@ -87,12 +87,12 @@ export const SecurityPrivacyPanel = () => {
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2">
         <button
-          onClick={() => setActiveTab("audit")}
+          onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-            activeTab === "audit" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+            activeTab === "overview" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
-          Security Principles
+          🛡️ Security Overview & Protections
         </button>
         <button
           onClick={() => setActiveTab("pin")}
@@ -100,7 +100,7 @@ export const SecurityPrivacyPanel = () => {
             activeTab === "pin" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
-          Cashier PIN
+          🔑 Cashier PIN Settings
         </button>
         <button
           onClick={() => setActiveTab("policy")}
@@ -108,7 +108,7 @@ export const SecurityPrivacyPanel = () => {
             activeTab === "policy" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
-          Right-to-Erasure
+          🗑️ Customer Right-to-Erasure
         </button>
       </div>
 
@@ -119,36 +119,51 @@ export const SecurityPrivacyPanel = () => {
         </div>
       )}
 
-      {/* Security Principles Tab */}
-      {activeTab === "audit" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {securityPrincipleItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs flex items-start space-x-4"
-            >
-              <div className="p-3 bg-slate-100 rounded-lg">
-                <i className={`${item.icon} text-xl`}></i>
-              </div>
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-extrabold text-slate-900 text-sm font-display">
-                    {item.title}
-                  </h4>
-                  <span className="text-[10px] bg-slate-100 text-slate-700 font-mono font-bold px-2 py-0.5 rounded border border-slate-200">
-                    {item.tag}
-                  </span>
+      {/* Tab 1: Security Overview */}
+      {activeTab === "overview" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {securityPrincipleItems.map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs flex items-start space-x-4"
+              >
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <i className={`${item.icon} text-xl`}></i>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  {item.desc}
-                </p>
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-extrabold text-slate-900 text-sm font-display">
+                      {item.title}
+                    </h4>
+                    <span className="text-[10px] bg-slate-100 text-slate-700 font-mono font-bold px-2 py-0.5 rounded border border-slate-200">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
+            ))}
+          </div>
+
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900">
+            <div>
+              <h5 className="font-extrabold font-display">Test Physical Counter Lock</h5>
+              <p className="text-[11px] text-amber-800">Lock the counter to verify the 4-digit cashier PIN prompt works.</p>
             </div>
-          ))}
+            <button
+              onClick={lockCounter}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition text-xs whitespace-nowrap"
+            >
+              Test Register Lock
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Cashier PIN Configuration Tab */}
+      {/* Tab 2: Cashier PIN Configuration */}
       {activeTab === "pin" && (
         <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs max-w-md">
           <div className="border-b border-slate-100 pb-3">
@@ -157,7 +172,7 @@ export const SecurityPrivacyPanel = () => {
               <span>Configure Cashier Counter Lock PIN</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Current PIN: <strong className="font-mono text-slate-900">{counterPin}</strong>
+              Current Active PIN: <strong className="font-mono text-[#1E3A5F] text-sm bg-slate-100 px-2 py-0.5 rounded">{counterPin}</strong>
             </p>
           </div>
 
@@ -192,23 +207,23 @@ export const SecurityPrivacyPanel = () => {
         </div>
       )}
 
-      {/* DPDP Right-to-Erasure Customer Deletion Panel */}
+      {/* Tab 3: DPDP Right-to-Erasure Customer Deletion Panel */}
       {activeTab === "policy" && (
-        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs max-w-lg">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
               <Trash2 className="w-5 h-5 text-[#E64545]" />
-              <span>DPDP Act 2023 — Customer Right-to-Erasure Data Removal</span>
+              <span>DPDP Act 2023 — Right-to-Erasure Data Erasure</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Under Section 12 of India Digital Personal Data Protection Act 2023, customers have the right to request erasure of their personal identifiers and balance records.
+              Under Section 12 of India Digital Personal Data Protection Act 2023, customers can request complete deletion of their personal identifier and phone records.
             </p>
           </div>
 
-          <form onSubmit={handleDeleteCustomer} className="max-w-md space-y-3">
+          <form onSubmit={handleDeleteCustomer} className="space-y-3">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Select Customer Account to Erase
+                Select Customer Account to Erase:
               </label>
               <select
                 value={selectedCustomerIdToDelete}
