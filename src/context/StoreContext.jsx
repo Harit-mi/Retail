@@ -446,18 +446,25 @@ export const StoreProvider = ({ children }) => {
     setCustomers((prev) => [c, ...prev]);
   };
 
-  const recordCustomerPayment = (customerId, paidAmount, paymentNote = "Udhaar Payment") => {
+  const recordCustomerPayment = (customerId, paidAmount, paymentNote = "Udhaar Payment", paymentMode = "cash") => {
+    const amount = Number(paidAmount);
+    if (!amount || amount <= 0) return;
+
+    let targetCustomerName = "Customer";
+    let targetCustomerPhone = "";
+
     setCustomers((prev) =>
       prev.map((c) => {
         if (c.id === customerId) {
-          const amount = Number(paidAmount);
+          targetCustomerName = c.name;
+          targetCustomerPhone = c.phone || "";
           const newHistory = [
             {
               id: `h_${crypto.randomUUID()}`,
               date: new Date().toISOString().split("T")[0],
               type: "credit",
               amount: amount,
-              note: paymentNote,
+              note: paymentNote || "Udhaar Repayment",
             },
             ...(c.history || []),
           ];
@@ -470,6 +477,49 @@ export const StoreProvider = ({ children }) => {
         return c;
       })
     );
+
+    // Create a store sales transaction entry for the Udhaar repayment and update due amounts on past invoices
+    setSales((prevSales) => {
+      const settlementInvoice = {
+        id: `PAY-${Math.floor(1000 + Math.random() * 9000)}`,
+        date: new Date().toISOString(),
+        customerName: targetCustomerName,
+        customerPhone: targetCustomerPhone,
+        customerId: customerId,
+        items: [
+          {
+            id: "udhar_settlement",
+            name: `Udhaar Balance Repayment (${paymentNote || "Direct Settlement"})`,
+            qty: 1,
+            price: amount,
+            gst: 0,
+            total: amount,
+          },
+        ],
+        subtotal: amount,
+        taxAmount: 0,
+        discount: 0,
+        grandTotal: amount,
+        paymentMode: (paymentMode || "cash").toLowerCase(),
+        paidAmount: amount,
+        dueAmount: 0,
+        isUdhaarSettlement: true,
+        operator: storeConfig.ownerName || "Cashier",
+      };
+
+      // Reconcile due amounts on past unpaid Udhaar invoices for this customer
+      let remainingPayment = amount;
+      const updatedPrevSales = prevSales.map((s) => {
+        if (s.customerId === customerId && s.paymentMode === "udhar" && s.dueAmount > 0 && remainingPayment > 0) {
+          const deduction = Math.min(s.dueAmount, remainingPayment);
+          remainingPayment -= deduction;
+          return { ...s, dueAmount: s.dueAmount - deduction };
+        }
+        return s;
+      });
+
+      return [settlementInvoice, ...updatedPrevSales];
+    });
   };
 
   const deleteCustomer = (id) => {

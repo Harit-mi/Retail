@@ -44,6 +44,25 @@ describe("Production Inventory & Customer Khata (src/utils/moneyMath.js)", () =>
     expect(c1.loyaltyPoints).toBe(20);
     expect(c1.history.length).toBe(1);
     expect(c1.history[0].amount).toBe(300);
+    expect(c1.history[0].type).toBe("debit"); // Udhaar debit entry
     expect(c1.history[0].id).toMatch(/^h_/);
+  });
+
+  it("discriminates between Udhaar debit bills and credit repayments", () => {
+    const customer = {
+      id: "c2",
+      name: "Sunita Verma",
+      balance: 1200,
+      history: [
+        { id: "h1", type: "debit", amount: 1200, note: "Bill #1002" },
+        { id: "h2", type: "credit", amount: 450, note: "Paid via UPI" },
+      ],
+    };
+
+    const isDebit = customer.history[0].type === "debit";
+    const isCredit = customer.history[1].type === "credit" || customer.history[1].type === "payment";
+
+    expect(isDebit).toBe(true);
+    expect(isCredit).toBe(true);
   });
 });

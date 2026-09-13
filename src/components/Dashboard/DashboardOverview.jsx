@@ -237,7 +237,7 @@ export const DashboardOverview = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sales.slice(0, 5).map((s) => (
+                {sales.slice(0, 6).map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50 transition">
                     <td className="py-2.5 px-3 font-mono font-bold text-[#1E3A5F]">
                       {s.id}
@@ -246,22 +246,48 @@ export const DashboardOverview = () => {
                       {s.customerName}
                     </td>
                     <td className="py-2.5 px-3">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          s.paymentMode === "upi"
-                            ? "bg-teal-50 text-[#0EA5A5]"
-                            : s.paymentMode === "cash"
-                            ? "bg-emerald-50 text-[#1FAA59]"
-                            : s.paymentMode === "udhar"
-                            ? "bg-amber-50 text-[#F5A623]"
-                            : "bg-blue-50 text-blue-600"
-                        }`}
-                      >
-                        {s.paymentMode}
-                      </span>
+                      {s.isUdhaarSettlement ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-[#1FAA59] border border-emerald-200 inline-flex items-center gap-1">
+                          <span>✓ Udhaar Repayment ({s.paymentMode})</span>
+                        </span>
+                      ) : s.paymentMode === "udhar" ? (
+                        s.dueAmount > 0 ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-50 text-[#E64545] border border-red-200 inline-flex items-center gap-1">
+                            <span>Udhaar Unpaid (Due: ₹{s.dueAmount})</span>
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-[#1FAA59] border border-emerald-200 inline-flex items-center gap-1">
+                            <span>Udhaar (Settled ✓)</span>
+                          </span>
+                        )
+                      ) : (
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            s.paymentMode === "upi"
+                              ? "bg-teal-50 text-[#0EA5A5]"
+                              : s.paymentMode === "cash"
+                              ? "bg-emerald-50 text-[#1FAA59]"
+                              : "bg-blue-50 text-blue-600"
+                          }`}
+                        >
+                          {s.paymentMode}
+                        </span>
+                      )}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                      ₹{s.grandTotal}
+                    <td className="py-2.5 px-3 text-right">
+                      <span className={`font-mono font-bold block ${s.isUdhaarSettlement ? "text-[#1FAA59]" : "text-slate-900"}`}>
+                        {s.isUdhaarSettlement ? `+₹${s.grandTotal}` : `₹${s.grandTotal}`}
+                      </span>
+                      {s.paymentMode === "udhar" && s.dueAmount > 0 && (
+                        <span className="text-[10px] font-mono font-bold text-[#E64545] block">
+                          Unpaid Dues: ₹{s.dueAmount}
+                        </span>
+                      )}
+                      {s.paymentMode === "udhar" && s.dueAmount === 0 && (
+                        <span className="text-[10px] font-mono font-bold text-[#1FAA59] block">
+                          Fully Settled
+                        </span>
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-right">
                       <button

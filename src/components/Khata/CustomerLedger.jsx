@@ -25,6 +25,7 @@ export const CustomerLedger = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("Cash / UPI Collection");
+  const [paymentMode, setPaymentMode] = useState("cash");
   const [lastPaymentConfirmation, setLastPaymentConfirmation] = useState(null);
   const [showFullPhone, setShowFullPhone] = useState(false);
 
@@ -47,13 +48,14 @@ export const CustomerLedger = () => {
     const prevBal = activeCustomer.balance;
     const newBal = Math.max(0, prevBal - collected);
 
-    recordCustomerPayment(activeCustomer.id, collected, paymentNote);
+    recordCustomerPayment(activeCustomer.id, collected, paymentNote, paymentMode);
 
     setLastPaymentConfirmation({
       customerName: activeCustomer.name,
       collected,
       prevBal,
       newBal,
+      mode: paymentMode,
     });
 
     setPaymentAmount("");
@@ -230,9 +232,35 @@ export const CustomerLedger = () => {
 
               {/* Record Payment Form */}
               <form onSubmit={handleCollectPayment} className="bg-slate-50 border-2 border-slate-200 rounded-lg p-4 space-y-3">
-                <h4 className="text-xs font-black text-slate-900 font-display uppercase tracking-wider">
-                  Record Cash / UPI Khata Payment
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black text-slate-900 font-display uppercase tracking-wider">
+                    Record Udhaar Payment Collection
+                  </h4>
+                  <div className="flex items-center space-x-1.5 text-[10px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode("cash")}
+                      className={`px-2.5 py-1 rounded transition border ${
+                        paymentMode === "cash"
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      Cash
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode("upi")}
+                      className={`px-2.5 py-1 rounded transition border ${
+                        paymentMode === "upi"
+                          ? "bg-[#0EA5A5] text-white border-[#0EA5A5]"
+                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      UPI
+                    </button>
+                  </div>
+                </div>
 
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <input
@@ -282,18 +310,27 @@ export const CustomerLedger = () => {
                           </td>
                         </tr>
                       ) : (
-                        (activeCustomer.history || []).map((h, i) => (
-                          <tr key={i} className="hover:bg-slate-50">
-                            <td className="px-3 py-2">
-                              <span className="font-bold text-slate-800">{h.type === "payment" ? "✓ Payment" : "Udhaar Bill"}</span>
-                              <span className="block text-[10px] text-slate-400">{h.date}</span>
-                            </td>
-                            <td className="px-3 py-2 font-sans font-medium text-slate-600">{h.note || "General Transaction"}</td>
-                            <td className={`px-3 py-2 text-right font-bold ${h.type === "payment" ? "text-[#1FAA59]" : "text-[#E64545]"}`}>
-                              {h.type === "payment" ? `−₹${h.amount}` : `+₹${h.amount}`}
-                            </td>
-                          </tr>
-                        ))
+                        (activeCustomer.history || []).map((h, i) => {
+                          const isRepayment = h.type === "credit" || h.type === "payment";
+                          return (
+                            <tr key={i} className="hover:bg-slate-50">
+                              <td className="px-3 py-2">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  isRepayment
+                                    ? "bg-emerald-50 text-[#1FAA59] border border-emerald-200"
+                                    : "bg-amber-50 text-amber-900 border border-amber-200"
+                                }`}>
+                                  {isRepayment ? "✓ Payment Received" : "Udhaar Bill (Credit Sale)"}
+                                </span>
+                                <span className="block text-[10px] text-slate-400 mt-0.5">{h.date}</span>
+                              </td>
+                              <td className="px-3 py-2 font-sans font-medium text-slate-600">{h.note || "General Transaction"}</td>
+                              <td className={`px-3 py-2 text-right font-bold font-mono ${isRepayment ? "text-[#1FAA59]" : "text-[#E64545]"}`}>
+                                {isRepayment ? `−₹${h.amount}` : `+₹${h.amount}`}
+                              </td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
