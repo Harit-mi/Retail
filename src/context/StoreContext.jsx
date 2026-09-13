@@ -99,7 +99,7 @@ export const StoreProvider = ({ children }) => {
   const [stockWarningToast, setStockWarningToast] = useState(null);
 
   // App Navigation & UI States
-  const [activeTab, setActiveTab] = useState("pos"); // Default Kirana Counter POS Billing
+  const [activeTab, setActiveTab] = useState("landing"); // Default Product Landing Page Website
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 

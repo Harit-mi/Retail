@@ -64,6 +64,10 @@ const MainContent = () => {
     );
   }
 
+  if (activeTab === "landing") {
+    return <ProductLandingPage />;
+  }
+
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-slate-900 selection:bg-[#F5A623] selection:text-slate-950 pb-16 md:pb-0">
       {/* Global POS Register Lock Overlay (Gates ENTIRE application when active) */}
