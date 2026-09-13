@@ -12,6 +12,7 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
   const [newCustPhone, setNewCustPhone] = useState("");
   const [newCustCity, setNewCustCity] = useState("Delhi");
   const [newCustCreditLimit, setNewCustCreditLimit] = useState(5000);
+  const [dpdpConsent, setDpdpConsent] = useState(true);
 
   if (!isOpen) return null;
 
@@ -220,6 +221,20 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-2">
+                <label className="flex items-start gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={dpdpConsent}
+                    onChange={(e) => setDpdpConsent(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 text-[#1E3A5F] rounded border-slate-300 focus:ring-[#1E3A5F]"
+                  />
+                  <span className="text-[11px] text-slate-700 font-medium leading-tight">
+                    <strong className="text-slate-900 font-extrabold">DPDP Act 2023 Consent:</strong> Customer explicitly consents to saving PII (Name & Mobile) for local store billing, receipt generation & WhatsApp notifications.
+                  </span>
+                </label>
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
@@ -230,7 +245,8 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-[#F5A623] hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold min-h-[44px]"
+                  disabled={!dpdpConsent}
+                  className="px-4 py-2.5 bg-[#F5A623] hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded-lg text-xs font-bold min-h-[44px]"
                 >
                   Save & Link Customer
                 </button>

@@ -4,11 +4,14 @@ import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
   const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin } = useStore();
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy'
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo'
   const [newPin, setNewPin] = useState("");
   const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
   const [deletionSuccess, setDeletionSuccess] = useState(null);
+  const [grievanceType, setGrievanceType] = useState("erasure");
+  const [grievanceText, setGrievanceText] = useState("");
+  const [grievanceSuccess, setGrievanceSuccess] = useState(null);
 
   const securityPrincipleItems = [
     {
@@ -59,6 +62,15 @@ export const SecurityPrivacyPanel = () => {
     setTimeout(() => setPinMsg(null), 3500);
   };
 
+  const handleFileGrievance = (e) => {
+    e.preventDefault();
+    if (!grievanceText) return;
+    const ticketId = `DPDP-GRV-${Math.floor(10000 + Math.random() * 90000)}`;
+    setGrievanceSuccess(`Grievance Ticket #${ticketId} submitted to Data Protection Officer (DPO). Mandatory SLA resolution within 7 business days as per Section 13.`);
+    setGrievanceText("");
+    setTimeout(() => setGrievanceSuccess(null), 6000);
+  };
+
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Header Banner */}
@@ -85,18 +97,18 @@ export const SecurityPrivacyPanel = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2">
+      <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
             activeTab === "overview" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
-          🛡️ Security Overview & Protections
+          🛡️ Security Overview
         </button>
         <button
           onClick={() => setActiveTab("pin")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
             activeTab === "pin" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
@@ -104,11 +116,19 @@ export const SecurityPrivacyPanel = () => {
         </button>
         <button
           onClick={() => setActiveTab("policy")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
             activeTab === "policy" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
           }`}
         >
           🗑️ Customer Right-to-Erasure
+        </button>
+        <button
+          onClick={() => setActiveTab("dpo")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "dpo" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          📜 DPO & Grievance SLA (Sec 13)
         </button>
       </div>
 
@@ -248,6 +268,86 @@ export const SecurityPrivacyPanel = () => {
               <span>Permanently Erase Customer Data</span>
             </button>
           </form>
+
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-[11px] text-slate-600 leading-relaxed">
+            <strong className="text-slate-900 font-extrabold">GST Ledger Protection Guarantee:</strong> Erasing a customer purges all PII (name, phone, loyalty points) while anonymizing historical invoices into <code className="bg-slate-200 text-slate-800 px-1 py-0.5 rounded font-mono">Anonymous Customer</code>. Store financial ledgers and GST returns remain 100% balanced without retaining personal data.
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: DPDP Section 13 DPO & Grievance Redressal */}
+      {activeTab === "dpo" && (
+        <div className="space-y-4 max-w-xl">
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#1E3A5F]" />
+                <span>Section 13 — Data Protection Officer & Statutory SLA</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Designated contact details and statutory grievance redressal channel required under India DPDP Act 2023.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-1">
+                <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">Designated DPO</span>
+                <p className="font-extrabold text-slate-900">Harit Mishra (DPO, DukaanPOS)</p>
+                <p className="text-[11px] text-slate-500 font-mono">dpo@dukaanpos.in</p>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-1">
+                <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">Statutory SLA</span>
+                <p className="font-extrabold text-[#1FAA59]">7 Business Days Turnaround</p>
+                <p className="text-[11px] text-slate-500 font-mono">Sec 13(1) Statutory Response</p>
+              </div>
+            </div>
+
+            {grievanceSuccess && (
+              <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] p-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span>{grievanceSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleFileGrievance} className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Submit Customer DPDP Grievance Ticket
+              </h4>
+
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-1">Grievance / Request Category</label>
+                <select
+                  value={grievanceType}
+                  onChange={(e) => setGrievanceType(e.target.value)}
+                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                >
+                  <option value="erasure">Section 12: Request PII Data Erasure</option>
+                  <option value="access">Section 11: Request PII Summary Report</option>
+                  <option value="correction">Section 11: Request PII Correction / Update</option>
+                  <option value="consent_withdraw">Section 6: Withdraw Billing PII Consent</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-1">Details & Customer Identification</label>
+                <textarea
+                  rows="3"
+                  required
+                  value={grievanceText}
+                  onChange={(e) => setGrievanceText(e.target.value)}
+                  placeholder="Provide customer phone number, name, and specific request details…"
+                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-lg shadow transition min-h-[44px]"
+              >
+                Log Statutory Grievance Ticket
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

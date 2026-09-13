@@ -523,8 +523,27 @@ export const StoreProvider = ({ children }) => {
   };
 
   const deleteCustomer = (id) => {
+    const targetCust = customers.find((c) => c.id === id);
+    const targetPhone = targetCust?.phone;
+
     setCustomers((prev) => prev.filter((c) => c.id !== id));
-    if (cartCustomer && cartCustomer.id === id) {
+
+    setSales((prevSales) =>
+      prevSales.map((sale) => {
+        if (sale.customerId === id || (targetPhone && sale.customerPhone === targetPhone)) {
+          return {
+            ...sale,
+            customerName: "Anonymous Customer (DPDP Erased)",
+            customerPhone: "+91 00000 00000",
+            customerId: null,
+            pointsEarned: 0,
+          };
+        }
+        return sale;
+      })
+    );
+
+    if (cartCustomer && (cartCustomer.id === id || (targetPhone && cartCustomer.phone === targetPhone))) {
       setCartCustomer(null);
     }
   };
