@@ -13,6 +13,7 @@ import { WhatsAppMarketingHub } from "./components/Marketing/WhatsAppMarketingHu
 import { AnalyticsDashboard } from "./components/Reports/AnalyticsDashboard";
 import { SecurityPrivacyPanel } from "./components/Security/SecurityPrivacyPanel";
 import { StoreSettings } from "./components/Settings/StoreSettings";
+import { ProductLandingPage } from "./components/Landing/ProductLandingPage";
 import { PaymentModal } from "./components/POS/PaymentModal";
 import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { ThermalReceipt } from "./components/Invoice/ThermalReceipt";
@@ -139,10 +140,11 @@ const MainContent = () => {
         <Navbar onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
 
         {/* Live Payment Mix Pulse Bar */}
-        <PaymentMixPulseBar />
+        {activeTab !== "landing" && <PaymentMixPulseBar />}
 
         {/* Main View Screen */}
-        <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto overflow-x-hidden">
+        <main className={activeTab === "landing" ? "flex-1 w-full" : "flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto overflow-x-hidden"}>
+          {activeTab === "landing" && <ProductLandingPage />}
           {activeTab === "pos" && (
             <POSBillingScreen
               onOpenPaymentModal={() => setIsPaymentModalOpen(true)}

@@ -11,6 +11,8 @@ export const Navbar = ({ onOpenMobileMenu }) => {
     products,
     customers,
     lockCounter,
+    activeTab,
+    setActiveTab,
   } = useStore();
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -44,6 +46,15 @@ export const Navbar = ({ onOpenMobileMenu }) => {
               {storeConfig.name || "Gupta Kirana Store"}
             </span>
           </div>
+
+          {/* Mode Switcher Button */}
+          <button
+            onClick={() => setActiveTab(activeTab === "landing" ? "pos" : "landing")}
+            className="px-3 py-1.5 bg-[#0F1F35] hover:bg-[#1E3A5F] text-white rounded-lg text-xs font-extrabold transition flex items-center space-x-1.5 border border-white/10 shadow-2xs font-display"
+          >
+            <i className={`fa-solid ${activeTab === "landing" ? "fa-cash-register text-[#F5A623]" : "fa-globe text-blue-400"}`} aria-hidden="true"></i>
+            <span>{activeTab === "landing" ? "⚡ Open POS Counter" : "🌐 Product Website"}</span>
+          </button>
         </div>
 
         {/* Center: Global Item/Barcode Search Bar */}

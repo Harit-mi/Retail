@@ -12,6 +12,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const udharCount = customers.filter((c) => c.balance > 0).length;
 
   const navItems = [
+    { id: "landing", label: "Product Website", iconClass: "fa-solid fa-globe", badge: "Site" },
     { id: "pos", label: "Kirana Billing POS", iconClass: "fa-solid fa-cash-register", badge: "POS" },
     {
       id: "inventory",
