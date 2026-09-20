@@ -1,746 +1,701 @@
 import React, { useState } from "react";
+import confetti from "canvas-confetti";
 import { useStore } from "../../context/useStore";
-import { INDIAN_LANGUAGES } from "../../i18n/translations";
+import { PrivacyPolicyModal } from "../Legal/PrivacyPolicyModal";
 import {
-  Zap,
-  CheckCircle2,
-  Sparkles,
-  Barcode,
-  BookOpen,
-  MessageSquare,
-  FileSpreadsheet,
-  Lock,
   ArrowRight,
-  Play,
-  Star,
   Check,
-  ChevronRight,
-  ChevronDown,
+  Plus,
+  Minus,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+  QrCode,
+  CheckCircle2,
 } from "lucide-react";
 
+// Web Audio API Crisp Cash Register Beep
+const playBeep = (freq = 880, duration = 0.08) => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch {
+    // Ignore audio errors if audio context blocked
+  }
+};
+
+const playPaymentSuccessBeep = () => {
+  playBeep(587.33, 0.09);
+  setTimeout(() => playBeep(880, 0.12), 100);
+};
+
+const SAMPLE_PRODUCTS = [
+  { id: "p1", name: "Aashirvaad Shudh Chakki Atta (5kg)", price: 245, gstRate: 5, category: "Grains" },
+  { id: "p2", name: "Amul Pasteurised Butter (500g)", price: 275, gstRate: 12, category: "Dairy" },
+  { id: "p3", name: "Tata Salt Vacuum Evaporated (1kg)", price: 28, gstRate: 5, category: "Spices" },
+  { id: "p4", name: "Wagh Bakri Premium CTC Tea (500g)", price: 290, gstRate: 5, category: "Beverages" },
+  { id: "p5", name: "Fortune Sunlite Sunflower Oil (1L)", price: 165, gstRate: 5, category: "Edible Oil" },
+];
+
 export const ProductLandingPage = () => {
-  const { setActiveTab, currentLanguage, changeLanguage } = useStore();
-  const [activeVertical, setActiveVertical] = useState("kirana");
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [openFaqIdx, setOpenFaqIdx] = useState(null);
+  const { setActiveTab } = useStore();
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [privacyModalTab, setPrivacyModalTab] = useState("privacy");
 
-  const verticals = [
-    {
-      id: "kirana",
-      name: "Kirana & Grocery",
-      icon: "fa-solid fa-[#F5A623] fa-basket-shopping",
-      tagline: "Weight-based pricing & FMCG batch expiry tracking",
-      features: [
-        "Weight & loose item pricing (Kg/Gm/Ltr)",
-        "Batch & Expiry Date tracking for perishables",
-        "Barcode scanner & instant thermal receipt",
-        "Udhaar ledger integration for credit sales",
-      ],
-      color: "from-amber-500/20 to-orange-500/20 border-amber-400",
-    },
-    {
-      id: "apparel",
-      name: "Apparel & Footwear",
-      icon: "fa-solid fa-shirt",
-      tagline: "Size, Color & Style Matrix Management",
-      features: [
-        "Multi-attribute matrix (Size, Color, Brand)",
-        "Seasonal discount coupon engine",
-        "Garment tag & sticker printing",
-        "Customer loyalty points & VIP tiers",
-      ],
-      color: "from-blue-500/20 to-indigo-500/20 border-blue-400",
-    },
-    {
-      id: "pharmacy",
-      name: "Pharmacy & Medical",
-      icon: "fa-solid fa-[#1FAA59] fa-pills",
-      tagline: "Schedule H Flags & Prescription Validation",
-      features: [
-        "Schedule H & OTC drug classification flags",
-        "Doctor prescription requirement prompts",
-        "Batch expiry warning alerts before billing",
-        "HSN 3004 GST calculation (12% tax slab)",
-      ],
-      color: "from-emerald-500/20 to-teal-500/20 border-emerald-400",
-    },
-    {
-      id: "electronics",
-      name: "Electronics & Mobile",
-      icon: "fa-solid fa-mobile-screen-button",
-      tagline: "15-Digit IMEI & Serial Number Tracking",
-      features: [
-        "15-digit IMEI & Serial Number capture",
-        "12-Month warranty certificate generator",
-        "Bajaj/HDFC No-Cost EMI invoice breakdown",
-        "Trade-in exchange discount management",
-      ],
-      color: "from-purple-500/20 to-pink-500/20 border-purple-400",
-    },
-    {
-      id: "salon",
-      name: "Salon & Spa",
-      icon: "fa-solid fa-scissors",
-      tagline: "Stylist Commissions & Service Packages",
-      features: [
-        "Service duration & staff commission logs",
-        "Haircut + Beard combo package pricing",
-        "Advance appointment slot management",
-        "Customer visit history & preferred stylist",
-      ],
-      color: "from-rose-500/20 to-pink-500/20 border-rose-400",
-    },
-    {
-      id: "restaurant",
-      name: "Restaurant & Cafe",
-      icon: "fa-solid fa-utensils",
-      tagline: "KOT Kitchen Routing & Table Bills",
-      features: [
-        "Kitchen Order Ticket (KOT) department routing",
-        "Table billing & split payment modes",
-        "Spice level & special kitchen notes",
-        "5% Restaurant GST billing configuration",
-      ],
-      color: "from-red-500/20 to-amber-500/20 border-red-400",
-    },
-    {
-      id: "jewelry",
-      name: "Jewelry & Gold",
-      icon: "fa-solid fa-gem",
-      tagline: "Live Gold/Silver Rates & Hallmark Verification",
-      features: [
-        "Live 22K/24K Gold & Silver market rates",
-        "Gross vs Net weight & making charge math",
-        "BIS Hallmark certificate number on bill",
-        "3% Jewelry GST calculation slab",
-      ],
-      color: "from-[#F5A623]/20 to-yellow-500/20 border-yellow-400",
-    },
-  ];
+  // Audio Feedback Toggle
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const coreFeatures = [
-    {
-      icon: Zap,
-      title: "Lightning-Fast Billing Counter",
-      desc: "Process transactions in 0.8 seconds with hardware barcode scanner support, camera barcode scanning, F2 search, F4 customer link, and F8 checkout.",
-      badge: "F2 • F4 • F8 Shortcuts",
-    },
-    {
-      icon: BookOpen,
-      title: "Udhaar Khata & Customer Loyalty",
-      desc: "Complete credit ledger tracking with emerald green payment receipts (-₹450), red debt balances (+₹450), WhatsApp reminders, and VIP reward tiers.",
-      badge: "Udhaar + Points",
-    },
-    {
-      icon: Barcode,
-      title: "A4 Barcode Sticker Printing",
-      desc: "Auto-fill 24 (3×8) or 40 (4×10) labels per A4 sheet with vector EAN-13 barcodes, MRP tags, and custom shop logo.",
-      badge: "A4 24/40 Labels",
-    },
-    {
-      icon: MessageSquare,
-      title: "WhatsApp Marketing Engine",
-      desc: "Send 1-tap WhatsApp payment reminders, festive offer broadcasts, and new arrival alerts directly to customer phones.",
-      badge: "1-Tap Broadcasts",
-    },
-    {
-      icon: FileSpreadsheet,
-      title: "GST Compliance & Reports",
-      desc: "Real-time daily revenue analytics, live payment mix pulse (Cash/UPI/Udhaar), and GSTR-1 CSV exports with formula injection shielding.",
-      badge: "GSTR-1 CSV Export",
-    },
-    {
-      icon: Lock,
-      title: "DPDP Privacy & PIN Security",
-      desc: "100% offline-first local crypto storage, 4-digit cashier PIN counter register lock, and DPDP Section 12 Right-to-Erasure tools.",
-      badge: "DPDP Act Compliant",
-    },
-  ];
+  // Interactive Playground State
+  const [cart, setCart] = useState([
+    { id: "p1", name: "Aashirvaad Shudh Chakki Atta (5kg)", price: 245, qty: 1, gstRate: 5 },
+    { id: "p2", name: "Amul Pasteurised Butter (500g)", price: 275, qty: 1, gstRate: 12 },
+  ]);
+  const [paymentMode, setPaymentMode] = useState("cash"); // "cash" | "upi"
+  const [tenderCash, setTenderCash] = useState(600);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const faqs = [
-    {
-      q: "Does DukaanPOS work 100% offline without internet?",
-      a: "Yes! DukaanPOS is designed with a local-first offline architecture. Your products, sales, customers, and GST reports are stored safely on your device using native browser crypto storage. You never lose access to billing even during internet outages."
-    },
-    {
-      q: "Can I print barcode stickers on standard A4 sticker paper?",
-      a: "Absolutely! DukaanPOS includes built-in templates for 24-label (3×8) and 40-label (4×10) A4 sticker sheets. You can click 'Auto-Fill Sheet' to instantly populate stickers from your active inventory with vector EAN-13 barcodes."
-    },
-    {
-      q: "How does Udhaar Khata payment collection work?",
-      a: "When a customer buys on credit, the bill is logged as an Udhaar Credit sale (+₹450 in red). When the customer pays via Cash or UPI, recording the payment logs a green '✓ Payment Received' receipt (-₹450 in green), automatically updating the pending balance."
-    },
-    {
-      q: "Is DukaanPOS compliant with India's DPDP Act 2023?",
-      a: "Yes! All customer data remains local to your device. DukaanPOS provides cashier PIN counter locks, GSTR CSV formula injection shielding, and DPDP Section 12 Right-to-Erasure data deletion tools."
-    },
-    {
-      q: "What hardware printers and barcode scanners are supported?",
-      a: "DukaanPOS supports all standard 80mm thermal receipt printers, A4 desktop printers, USB barcode scanners, Bluetooth wireless scanners, and mobile/tablet built-in cameras."
+  const triggerBeep = (freq, dur) => {
+    if (soundEnabled) playBeep(freq, dur);
+  };
+
+  const addToCart = (product) => {
+    triggerBeep(880, 0.08);
+    setPaymentSuccess(false);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+  };
+
+  const updateQty = (id, delta) => {
+    triggerBeep(delta > 0 ? 880 : 660, 0.06);
+    setPaymentSuccess(false);
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === id) {
+            const nextQty = item.qty + delta;
+            return nextQty > 0 ? { ...item, qty: nextQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
+
+  const clearCart = () => {
+    triggerBeep(440, 0.1);
+    setCart([]);
+    setPaymentSuccess(false);
+  };
+
+  // Calculations
+  const grossTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const totalTax = cart.reduce((sum, i) => {
+    const itemTotal = i.price * i.qty;
+    const taxPart = itemTotal - itemTotal / (1 + i.gstRate / 100);
+    return sum + taxPart;
+  }, 0);
+  const taxableAmount = grossTotal - totalTax;
+  const itemCount = cart.reduce((sum, i) => sum + i.qty, 0);
+  const changeDue = Math.max(0, tenderCash - grossTotal);
+
+  // Simulate Payment
+  const handleSimulatePayment = () => {
+    if (cart.length === 0) return;
+    if (soundEnabled) playPaymentSuccessBeep();
+    setPaymentSuccess(true);
+    try {
+      confetti({
+        particleCount: 40,
+        spread: 55,
+        origin: { y: 0.8 },
+        colors: ["#18181b", "#059669", "#71717a"],
+      });
+    } catch {
+      // Ignore confetti error if blocked
     }
-  ];
+  };
 
-  const testimonials = [
-    {
-      name: "Rajesh Gupta",
-      store: "Gupta Kirana Store, Sector 14, Delhi",
-      quote: "DukaanPOS changed my shop completely. Billing speed increased 3x, and my customers love getting WhatsApp Udhaar payment reminders!",
-      rating: 5,
-      vertical: "Kirana",
-    },
-    {
-      name: "Sunil Verma",
-      store: "Verma Garments & Sarees, Jaipur",
-      quote: "Managing size and color variants used to be a nightmare. DukaanPOS variant matrix and barcode sticker printing solved it in 1 day.",
-      rating: 5,
-      vertical: "Apparel",
-    },
-    {
-      name: "Dr. Ananya Roy",
-      store: "MedPlus Wellness Pharmacy, Kolkata",
-      quote: "Schedule H flags and batch expiry alerts saved us from billing expired medicines multiple times. Highly recommended for medical shops!",
-      rating: 5,
-      vertical: "Pharmacy",
-    },
-  ];
-
-  const pricingTiers = [
-    {
-      name: "Offline Starter",
-      price: "₹0",
-      period: "Forever Free",
-      desc: "Perfect for single retail counters wanting offline speed and zero recurring costs.",
-      features: [
-        "Full Billing POS Counter",
-        "Unlimited Inventory & Products",
-        "Udhaar Ledger & Customer Management",
-        "A4 Barcode Printing (24 & 40 Labels)",
-        "100% Offline Local Crypto Storage",
-      ],
-      cta: "Launch Live POS Counter",
-      popular: false,
-    },
-    {
-      name: "Pro Retailer",
-      price: "₹499",
-      period: "per month",
-      desc: "Designed for growing retail outlets wanting WhatsApp marketing and multi-vertical power.",
-      features: [
-        "Everything in Starter Plan",
-        "All 7 Business Verticals (Kirana, Pharmacy, etc.)",
-        "1-Tap WhatsApp Broadcast Marketing",
-        "GSTR-1 CSV Exports & Tax Reports",
-        "Cashier 4-Digit Register PIN Lock",
-        "Customer Loyalty Tier Program",
-      ],
-      cta: "Try Pro Demo App",
-      popular: true,
-    },
-    {
-      name: "Multi-Store Enterprise",
-      price: "₹1,499",
-      period: "per month",
-      desc: "For multi-outlet retail chains needing centralized stock sync and dedicated support.",
-      features: [
-        "Everything in Pro Plan",
-        "Unlimited Multi-Counter Registers",
-        "Centralized Inventory Warehouse Sync",
-        "Custom Thermal Receipt Branding",
-        "Priority 24/7 WhatsApp Support",
-        "Custom HSN/GST Auto-Filing",
-      ],
-      cta: "Contact Enterprise Sales",
-      popular: false,
-    },
-  ];
+  const openLegal = (tab) => {
+    setPrivacyModalTab(tab);
+    setIsPrivacyModalOpen(true);
+  };
 
   return (
-    <div className="bg-[#0F1F35] text-slate-100 min-h-screen font-sans selection:bg-[#F5A623] selection:text-slate-950">
-      {/* Top Banner Announcement */}
-      <div className="bg-gradient-to-r from-amber-500 via-[#F5A623] to-orange-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
-        <Sparkles className="w-4 h-4 fill-slate-950" />
-        <span>DukaanPOS 2.0 Released: 100% Offline Multi-Vertical Retail Platform with GST, Udhaar & DPDP Security!</span>
-        <button
-          onClick={() => setActiveTab("pos")}
-          className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black"
-        >
-          Launch Live POS App →
-        </button>
-      </div>
-
-      {/* Website Navigation Header */}
-      <header className="border-b border-white/10 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-[#F5A623] flex items-center justify-center shadow text-slate-950 font-black text-base">
-              <i className="fa-solid fa-shop"></i>
-            </div>
-            <div>
-              <span className="font-black text-lg font-display text-white tracking-tight">
-                Dukaan<span className="text-[#F5A623]">POS</span>
-              </span>
-              <span className="ml-2 text-[10px] bg-amber-400/20 text-amber-300 font-mono px-2 py-0.5 rounded font-bold uppercase">
-                🇮🇳 Retail India
-              </span>
-            </div>
+    <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 selection:bg-zinc-900 selection:text-white font-sans antialiased">
+      {/* 1. MINIMALIST STICKY HEADER */}
+      <header className="sticky top-0 z-40 bg-[#FAFAF9]/90 backdrop-blur-md border-b border-zinc-200/80">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-lg tracking-tight font-display text-zinc-950">
+              DUKAAN<span className="text-zinc-400 font-normal">POS</span>
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-mono font-medium text-zinc-600 bg-zinc-100 border border-zinc-200 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Local Engine v1.0
+            </span>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
-            <a href="#verticals" className="hover:text-amber-400 transition">Verticals</a>
-            <a href="#features" className="hover:text-amber-400 transition">Features</a>
-            <a href="#video" className="hover:text-amber-400 transition">Demo Video</a>
-            <a href="#pricing" className="hover:text-amber-400 transition">Pricing</a>
-            <a href="#faq" className="hover:text-amber-400 transition">FAQ</a>
+          <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-600">
+            <a href="#playground" className="hover:text-zinc-950 transition-colors">
+              Interactive Demo
+            </a>
+            <a href="#pricing" className="hover:text-zinc-950 transition-colors">
+              Pricing
+            </a>
+            <button
+              onClick={() => openLegal("privacy")}
+              className="hover:text-zinc-950 transition-colors cursor-pointer"
+            >
+              DPDP 2023 Privacy
+            </button>
           </nav>
 
-          {/* Right Action Controls */}
-          <div className="flex items-center space-x-3">
-            {/* Language Switcher Dropdown */}
-            <select
-              value={currentLanguage}
-              onChange={(e) => changeLanguage(e.target.value)}
-              className="bg-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg border border-white/15 outline-none cursor-pointer hover:bg-white/20 transition"
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSoundEnabled((prev) => !prev)}
+              title={soundEnabled ? "Mute Cash Register Beeps" : "Enable Sound"}
+              className="p-1.5 rounded-md border border-zinc-200 bg-white text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors cursor-pointer"
             >
-              {INDIAN_LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code} className="bg-slate-900 text-white">
-                  {lang.flag} {lang.native}
-                </option>
-              ))}
-            </select>
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-zinc-400" />}
+            </button>
 
-            {/* Launch App Button */}
             <button
               onClick={() => setActiveTab("pos")}
-              className="px-4 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display text-xs rounded-lg shadow-md transition flex items-center space-x-1.5"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 active:scale-[0.98] rounded-md transition-all cursor-pointer shadow-xs"
             >
-              <Zap className="w-3.5 h-3.5 fill-slate-950" />
-              <span>Launch Live POS App</span>
+              <span>Open Register</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-20 max-w-7xl mx-auto overflow-hidden">
-        {/* Glow background accents */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#F5A623]/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute top-1/3 right-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* 2. AIRY EDITORIAL HERO */}
+      <section className="max-w-5xl mx-auto px-6 pt-20 pb-20 md:pt-28 md:pb-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+          {/* Left Column: Focused Copy */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-mono font-medium text-zinc-700 bg-zinc-100 border border-zinc-200/80 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>100% Offline Core</span>
+              <span className="text-zinc-300">/</span>
+              <span>DPDP 2023 Statutory Privacy</span>
+            </div>
 
-        <div className="text-center space-y-6 max-w-4xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-1.5 rounded-full text-xs font-bold text-amber-300">
-            <span className="w-2 h-2 rounded-full bg-[#1FAA59] animate-pulse"></span>
-            <span>🇮🇳 Built Specifically for Indian Retail Shopkeepers</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-zinc-950 leading-[1.08] font-display">
+              Pure retail checkout. Fast, offline, private.
+            </h1>
+
+            <p className="text-base sm:text-lg text-zinc-600 leading-relaxed max-w-xl font-normal">
+              Engineered for high-throughput retail counters. Instant barcode lookup with local SQLite, driverless thermal ESC/POS printing, and zero cloud lag.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-3.5">
+              <button
+                onClick={() => setActiveTab("pos")}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-zinc-950 hover:bg-zinc-800 active:scale-[0.98] rounded-lg transition-all cursor-pointer shadow-sm"
+              >
+                <span>Launch Billing Terminal</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <a
+                href="#playground"
+                className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 rounded-lg transition-all border border-zinc-200/90 bg-white"
+              >
+                <span>Try Live Demo</span>
+              </a>
+            </div>
+
+            <div className="pt-2 flex items-center gap-6 text-xs text-zinc-500 font-mono">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>WebCrypto AES-256</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>0ms Cloud Lag</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>ESC/POS Thermal</span>
+              </div>
+            </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-tight">
-            India's #1 Retail POS Platform — <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#F5A623] via-amber-300 to-amber-500 bg-clip-text text-transparent">
-              Built for Speed & 100% Offline Power
-            </span>
-          </h1>
+          {/* Right Column: Clean Tactile Thermal Receipt Preview */}
+          <div className="lg:col-span-6 flex justify-center">
+            <div className="w-full max-w-sm bg-white border border-zinc-200 rounded-xl shadow-sm p-6 font-mono text-xs text-zinc-800 space-y-4">
+              <div className="text-center space-y-1 pb-3 border-b border-dashed border-zinc-300">
+                <div className="font-bold text-sm text-zinc-950 tracking-wider">DUKAAN SUPERMARKET</div>
+                <div className="text-[10px] text-zinc-500">GSTIN: 27AAAAA0000A1Z5 · REG-01</div>
+                <div className="text-[10px] text-zinc-400">INVOICE #9812 · CASHIER: VIKRAM</div>
+              </div>
 
-          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Manage Kirana, Apparel, Pharmacy, Electronics, Salon, Restaurant & Jewelry in one 
-            lightning-fast offline app. Includes GST billing, Udhaar ledger, Barcode printing, 
-            and WhatsApp marketing out of the box.
-          </p>
+              <div className="space-y-2.5 py-1">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold text-zinc-900">Aashirvaad Atta (5kg)</div>
+                    <div className="text-[10px] text-zinc-400">HSN: 1101 · GST 5%</div>
+                  </div>
+                  <div className="text-right font-medium">1 × ₹245.00</div>
+                </div>
 
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button
-              onClick={() => setActiveTab("pos")}
-              className="w-full sm:w-auto px-8 py-4 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-sm min-h-[52px]"
-            >
-              <span>⚡ Open Live Billing Counter</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold text-zinc-900">Amul Butter (500g)</div>
+                    <div className="text-[10px] text-zinc-400">HSN: 0405 · GST 12%</div>
+                  </div>
+                  <div className="text-right font-medium">1 × ₹275.00</div>
+                </div>
 
-            <button
-              onClick={() => setIsVideoModalOpen(true)}
-              className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/15 transition flex items-center justify-center gap-2 text-sm min-h-[52px]"
-            >
-              <Play className="w-4 h-4 fill-white text-white" />
-              <span>Watch Hindi Voiceover Video (40s)</span>
-            </button>
-          </div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-semibold text-zinc-900">Tata Salt (1kg)</div>
+                    <div className="text-[10px] text-zinc-400">HSN: 2501 · GST 5%</div>
+                  </div>
+                  <div className="text-right font-medium">1 × ₹28.00</div>
+                </div>
+              </div>
 
-          {/* Key Metric Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-10 border-t border-white/10 max-w-3xl mx-auto text-left">
-            <div>
-              <div className="text-2xl font-black font-mono text-[#F5A623]">0.8 Sec</div>
-              <div className="text-xs text-slate-400 font-medium">Avg Checkout Speed</div>
-            </div>
-            <div>
-              <div className="text-2xl font-black font-mono text-[#1FAA59]">₹0 / Mo</div>
-              <div className="text-xs text-slate-400 font-medium">100% Local Offline Tier</div>
-            </div>
-            <div>
-              <div className="text-2xl font-black font-mono text-blue-400">7 Verticals</div>
-              <div className="text-xs text-slate-400 font-medium">Kirana to Jewelry</div>
-            </div>
-            <div>
-              <div className="text-2xl font-black font-mono text-amber-300">100% DPDP</div>
-              <div className="text-xs text-slate-400 font-medium">Offline Crypto Privacy</div>
+              <div className="pt-3 border-t border-dashed border-zinc-300 space-y-1 text-[11px] text-zinc-600">
+                <div className="flex justify-between">
+                  <span>Taxable Amount</span>
+                  <span>₹513.56</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>CGST + SGST (Combined)</span>
+                  <span>₹34.44</span>
+                </div>
+                <div className="flex justify-between text-sm font-bold text-zinc-950 pt-2 border-t border-zinc-900">
+                  <span>GRAND TOTAL</span>
+                  <span className="text-base">₹548.00</span>
+                </div>
+              </div>
+
+              {/* Barcode Graphic */}
+              <div className="pt-3 text-center space-y-1">
+                <div className="flex justify-center items-center h-7 gap-[1.5px] px-4 py-1 bg-zinc-50 border border-zinc-100 rounded">
+                  {[1, 2, 1, 3, 1, 1, 2, 1, 4, 1, 2, 1, 3, 2, 1, 2, 4, 1, 2, 1, 3, 1, 2].map((w, i) => (
+                    <span
+                      key={i}
+                      className="h-5 bg-zinc-900 inline-block"
+                      style={{ width: `${w}px` }}
+                    />
+                  ))}
+                </div>
+                <div className="text-[9px] text-zinc-400 tracking-widest">*INV-2026-9812*</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Video Modal Player */}
-      {isVideoModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4"
-        >
-          <div className="bg-[#0F1F35] rounded-2xl max-w-3xl w-full overflow-hidden border-2 border-white/20 shadow-2xl">
-            <div className="px-5 py-4 bg-slate-950 flex items-center justify-between border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Play className="w-4 h-4 fill-[#F5A623] text-[#F5A623]" />
-                <h4 className="font-extrabold text-sm text-white">
-                  DukaanPOS Demo Video Walkthrough (Hindi Female Voiceover)
-                </h4>
-              </div>
-              <button
-                onClick={() => setIsVideoModalOpen(false)}
-                className="text-slate-400 hover:text-white px-2.5 py-1 rounded text-xs bg-white/10 font-bold"
-              >
-                ✕ Close
-              </button>
+      {/* 3. THREE CORE PROOF METRICS STRIP */}
+      <section className="border-y border-zinc-200/80 bg-white">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 divide-y md:divide-y-0 md:divide-x divide-zinc-100">
+            <div className="space-y-1.5 md:pr-8">
+              <div className="text-3xl font-bold font-mono text-zinc-950 tracking-tight">&lt; 2ms</div>
+              <div className="text-sm font-semibold text-zinc-900">Local SKU Search</div>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Indexed in-memory B-Trees execute barcode lookups in milliseconds. Zero cloud lag.
+              </p>
             </div>
-            <div className="p-4">
-              <video
-                controls
-                autoPlay
-                className="w-full h-auto rounded-lg border border-white/10"
-                src="file:///Users/haritmishra/.gemini/antigravity/brain/1a6fb965-ca9b-442a-84a9-9384077e7b01/dukaan_pos_demo_walkthrough.webm"
-              >
-                Your browser does not support WebM video playback.
-              </video>
+
+            <div className="pt-6 md:pt-0 md:px-8 space-y-1.5">
+              <div className="text-3xl font-bold font-mono text-zinc-950 tracking-tight">100%</div>
+              <div className="text-sm font-semibold text-zinc-900">Offline Resilience</div>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Never frozen by broadband dropouts. Transactions commit straight to counter hardware.
+              </p>
+            </div>
+
+            <div className="pt-6 md:pt-0 md:pl-8 space-y-1.5">
+              <div className="text-3xl font-bold font-mono text-zinc-950 tracking-tight">DPDP 2023</div>
+              <div className="text-sm font-semibold text-zinc-900">On-Premise Privacy</div>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Customer mobile numbers and ledgers stay on your counter with AES-GCM-256 encryption.
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Multi-Vertical Showcase Section */}
-      <section id="verticals" className="px-4 sm:px-6 lg:px-8 py-16 bg-slate-950/50 border-y border-white/10">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono font-bold text-[#F5A623] uppercase tracking-widest">
-              Multi-Vertical Architecture
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-white">
-              Tailored for Every Retail Industry in India
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-              Select your business vertical to discover specialized billing workflows.
-            </p>
+      {/* 4. INTERACTIVE REGISTER PLAYGROUND */}
+      <section id="playground" className="max-w-5xl mx-auto px-6 py-20 md:py-28">
+        <div className="max-w-xl mb-10 space-y-2">
+          <div className="text-xs font-mono font-semibold tracking-wider uppercase text-zinc-500">
+            Live Terminal Playground
           </div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 font-display">
+            Experience the checkout speed.
+          </h2>
+          <p className="text-sm text-zinc-600">
+            Click items to simulate scanning. Notice the instant subtotal math, tax calculation, and cash change calculation.
+          </p>
+        </div>
 
-          {/* Vertical Tabs */}
-          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-            {verticals.map((v) => (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Item Catalog (Left) */}
+          <div className="lg:col-span-6 space-y-2.5">
+            <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider pb-1">
+              Click Item to Scan Into Till:
+            </div>
+
+            {SAMPLE_PRODUCTS.map((prod) => (
               <button
-                key={v.id}
-                onClick={() => setActiveVertical(v.id)}
-                className={`px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-2 ${
-                  activeVertical === v.id
-                    ? "bg-[#F5A623] text-slate-950 shadow-md font-black"
-                    : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10"
-                }`}
+                key={prod.id}
+                onClick={() => addToCart(prod)}
+                className="w-full p-3.5 border border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.99] rounded-lg text-left flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
               >
-                <i className={v.icon}></i>
-                <span>{v.name}</span>
+                <div>
+                  <div className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-950">
+                    {prod.name}
+                  </div>
+                  <div className="text-xs font-mono text-zinc-400">
+                    {prod.category} · GST {prod.gstRate}%
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm font-bold text-zinc-900">
+                    ₹{prod.price}
+                  </span>
+                  <span className="w-6 h-6 rounded bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-600 group-hover:bg-zinc-950 group-hover:text-white transition-colors">
+                    <Plus className="w-3.5 h-3.5" />
+                  </span>
+                </div>
               </button>
             ))}
           </div>
 
-          {/* Selected Vertical Detail Card */}
-          {verticals.map((v) => {
-            if (v.id !== activeVertical) return null;
-            return (
-              <div
-                key={v.id}
-                className={`bg-gradient-to-br ${v.color} p-6 sm:p-8 rounded-2xl border-2 backdrop-blur-xs transition-all animate-fade-in`}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                  <div className="md:col-span-7 space-y-4">
-                    <div className="inline-flex items-center gap-2 bg-slate-950/60 px-3 py-1 rounded-lg text-xs font-mono text-amber-300 font-bold border border-white/10">
-                      <i className={v.icon}></i>
-                      <span>{v.name} Vertical</span>
-                    </div>
+          {/* Interactive Receipt & Tender Box (Right) */}
+          <div className="lg:col-span-6">
+            <div className="border border-zinc-200 bg-white rounded-xl p-5 font-mono text-xs space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+                <div>
+                  <div className="font-bold text-zinc-900">COUNTER RECEIPT TAPE</div>
+                  <div className="text-[11px] text-zinc-400">POS-01 // CASH TILL</div>
+                </div>
+                {cart.length > 0 && (
+                  <button
+                    onClick={clearCart}
+                    className="text-xs text-zinc-500 hover:text-red-600 flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
 
-                    <h3 className="text-xl sm:text-2xl font-black font-display text-white">
-                      {v.tagline}
-                    </h3>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      {v.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-200">
-                          <CheckCircle2 className="w-4 h-4 text-[#1FAA59] flex-shrink-0 mt-0.5" />
-                          <span>{feat}</span>
+              {cart.length === 0 ? (
+                <div className="py-10 text-center text-zinc-400 text-xs">
+                  Cart is empty. Click any item on the left to test.
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  {/* Cart rows */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between text-xs">
+                        <div className="flex-1 pr-2 truncate">
+                          <div className="font-medium text-zinc-900 truncate">{item.name}</div>
+                          <div className="text-[11px] text-zinc-400">₹{item.price} each · GST {item.gstRate}%</div>
                         </div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => setActiveTab("pos")}
-                      className="mt-4 px-5 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold rounded-lg text-xs transition flex items-center gap-2 border border-white/15"
-                    >
-                      <span>Try {v.name} Billing Mode</span>
-                      <ChevronRight className="w-4 h-4 text-[#F5A623]" />
-                    </button>
-                  </div>
-
-                  <div className="md:col-span-5 bg-slate-950/80 p-5 rounded-xl border border-white/10 text-xs font-mono space-y-3 shadow-xl">
-                    <div className="flex justify-between text-slate-400 border-b border-white/10 pb-2">
-                      <span>Feature Spec</span>
-                      <span className="text-emerald-400 font-bold">✓ Active in DukaanPOS</span>
-                    </div>
-                    <div className="space-y-1 text-slate-300">
-                      <div className="flex justify-between">
-                        <span>Offline Hardware Sync:</span>
-                        <span className="text-amber-300 font-bold">Supported</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateQty(item.id, -1)}
+                            className="w-5 h-5 rounded border border-zinc-200 bg-white flex items-center justify-center hover:bg-zinc-100 cursor-pointer"
+                          >
+                            <Minus className="w-2.5 h-2.5" />
+                          </button>
+                          <span className="w-4 text-center font-bold text-zinc-900">{item.qty}</span>
+                          <button
+                            onClick={() => updateQty(item.id, 1)}
+                            className="w-5 h-5 rounded border border-zinc-200 bg-white flex items-center justify-center hover:bg-zinc-100 cursor-pointer"
+                          >
+                            <Plus className="w-2.5 h-2.5" />
+                          </button>
+                          <span className="w-16 text-right font-bold text-zinc-900">
+                            ₹{(item.price * item.qty).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>GST Auto Calculator:</span>
-                        <span className="text-amber-300 font-bold">5%, 12%, 18%, 28%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Thermal Slip Engine:</span>
-                        <span className="text-amber-300 font-bold">80mm & 58mm</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Core Features Grid */}
-      <section id="features" className="px-4 sm:px-6 lg:px-8 py-20 max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-xs font-mono font-bold text-[#F5A623] uppercase tracking-widest">
-            Core Modules
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-white">
-            Everything Required to Run a Modern Retail Store
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreFeatures.map((f, idx) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={idx}
-                className="bg-white/5 hover:bg-white/10 p-6 rounded-2xl border border-white/10 transition-all duration-200 group flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-[#F5A623]/10 text-[#F5A623] flex items-center justify-center border border-[#F5A623]/20 group-hover:scale-110 transition-transform">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <span className="text-[10px] font-mono font-bold bg-white/10 px-2.5 py-1 rounded text-amber-300 border border-white/10">
-                      {f.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="font-extrabold font-display text-lg text-white">
-                    {f.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {f.desc}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setActiveTab("pos")}
-                  className="pt-4 mt-4 border-t border-white/5 flex items-center text-xs font-bold text-[#F5A623] group-hover:translate-x-1 transition-transform"
-                >
-                  <span>Launch Live Module</span>
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Retailer Reviews & Testimonials */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-slate-950/60 border-t border-white/10">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono font-bold text-[#1FAA59] uppercase tracking-widest">
-              Trusted by 10,000+ Shopkeeper Owners
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-white">
-              Loved by Retailers Across India
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t, idx) => (
-              <div
-                key={idx}
-                className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex gap-1 text-amber-400">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400" />
                     ))}
                   </div>
 
-                  <p className="text-xs text-slate-200 italic leading-relaxed">
-                    "{t.quote}"
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-extrabold text-white font-display">
-                      {t.name}
-                    </h4>
-                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                      {t.store}
-                    </p>
+                  {/* Totals */}
+                  <div className="pt-3 border-t border-dashed border-zinc-300 space-y-1 text-xs">
+                    <div className="flex justify-between text-zinc-500">
+                      <span>Items: {itemCount} units</span>
+                      <span>Taxable: ₹{taxableAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-zinc-500">
+                      <span>Combined GST:</span>
+                      <span>₹{totalTax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-bold text-zinc-950 pt-2 border-t border-zinc-200">
+                      <span>NET PAYABLE:</span>
+                      <span className="text-base">₹{grossTotal.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded font-mono">
-                    {t.vertical}
-                  </span>
+
+                  {/* Quick Payment Tender Simulation */}
+                  <div className="pt-2 border-t border-zinc-200 space-y-2.5">
+                    <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                      <span>TENDER METHOD:</span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setPaymentMode("cash")}
+                          className={`px-2 py-0.5 rounded text-[11px] cursor-pointer ${
+                            paymentMode === "cash" ? "bg-zinc-950 text-white font-bold" : "bg-zinc-100 text-zinc-600"
+                          }`}
+                        >
+                          Cash
+                        </button>
+                        <button
+                          onClick={() => setPaymentMode("upi")}
+                          className={`px-2 py-0.5 rounded text-[11px] cursor-pointer ${
+                            paymentMode === "upi" ? "bg-emerald-600 text-white font-bold" : "bg-zinc-100 text-zinc-600"
+                          }`}
+                        >
+                          UPI QR
+                        </button>
+                      </div>
+                    </div>
+
+                    {paymentMode === "cash" ? (
+                      <div className="p-2.5 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-between text-xs">
+                        <div>
+                          <span className="text-zinc-600">Tender ₹{tenderCash}:</span>
+                          <span className="ml-2 font-bold text-emerald-700">Change Due: ₹{changeDue.toFixed(2)}</span>
+                        </div>
+                        <div className="flex gap-1">
+                          {[500, 1000].map((amt) => (
+                            <button
+                              key={amt}
+                              onClick={() => setTenderCash(amt)}
+                              className={`px-1.5 py-0.5 rounded text-[10px] cursor-pointer ${
+                                tenderCash === amt ? "bg-zinc-900 text-white" : "bg-white border border-zinc-300"
+                              }`}
+                            >
+                              ₹{amt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-lg flex items-center justify-between text-xs">
+                        <div>
+                          <div className="font-bold text-emerald-900">Scan UPI Dynamic QR</div>
+                          <div className="text-[10px] text-emerald-700">GPay, PhonePe, Paytm</div>
+                        </div>
+                        <QrCode className="w-6 h-6 text-emerald-800" />
+                      </div>
+                    )}
+
+                    <div className="pt-1 flex gap-2">
+                      <button
+                        onClick={handleSimulatePayment}
+                        className="flex-1 py-2 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{paymentSuccess ? "Payment Settled ✓" : "Settle Bill"}</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("pos")}
+                        className="px-3.5 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer border border-zinc-200"
+                      >
+                        <span>Open Live Terminal</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Comparison Table */}
-      <section id="pricing" className="px-4 sm:px-6 lg:px-8 py-20 max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-xs font-mono font-bold text-[#F5A623] uppercase tracking-widest">
-            Transparent Pricing
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-white">
-            Simple Plans with Zero Hidden Fees
-          </h2>
-        </div>
+      {/* 5. TRANSPARENT PRICING */}
+      <section id="pricing" className="border-t border-zinc-200/80 bg-white py-20 md:py-28">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-xl mb-12 space-y-2">
+            <div className="text-xs font-mono font-semibold tracking-wider uppercase text-zinc-500">
+              Fair Pricing
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 font-display">
+              Honest retail terms. No lock-in.
+            </h2>
+            <p className="text-sm text-zinc-600">
+              You own your billing terminal. The local standalone core is free and runs indefinitely on your counter without subscriptions.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {pricingTiers.map((p, idx) => (
-            <div
-              key={idx}
-              className={`p-8 rounded-2xl border-2 flex flex-col justify-between relative ${
-                p.popular
-                  ? "bg-gradient-to-b from-[#1E3A5F] to-[#0F1F35] border-[#F5A623] shadow-2xl shadow-amber-500/10 scale-105"
-                  : "bg-white/5 border-white/10"
-              }`}
-            >
-              {p.popular && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#F5A623] text-slate-950 text-[10px] font-black uppercase font-mono px-3 py-1 rounded-full shadow-md">
-                  Most Popular for Retail Shops
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl">
+            {/* Local Free */}
+            <div className="p-7 border border-zinc-200 bg-[#FAFAF9] rounded-xl space-y-5">
+              <div className="space-y-1">
+                <div className="inline-block px-2 py-0.5 text-[10px] font-mono font-medium text-zinc-600 bg-white rounded border border-zinc-200">
+                  Single Counter
                 </div>
-              )}
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-extrabold font-display text-white">{p.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1">{p.desc}</p>
-                </div>
-
-                <div>
-                  <span className="text-4xl font-black font-mono text-white">{p.price}</span>
-                  <span className="text-xs text-slate-400 font-mono ml-2">{p.period}</span>
-                </div>
-
-                <ul className="space-y-3 pt-2 border-t border-white/10">
-                  {p.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-slate-200">
-                      <Check className="w-4 h-4 text-[#1FAA59] flex-shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
+                <h3 className="text-xl font-bold text-zinc-950 font-display">Local Core</h3>
+                <p className="text-xs text-zinc-500">For standalone kiranas, pharmacies, and single retail counters.</p>
               </div>
+
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold font-mono text-zinc-950">₹0</span>
+                <span className="text-xs text-zinc-500 font-medium">/ forever</span>
+              </div>
+
+              <ul className="space-y-2.5 text-xs text-zinc-700">
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Unlimited invoices and SKU items</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>100% Offline SQLite local storage</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>ESC/POS thermal printer driver support</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Local Udhaar Khata ledger</span>
+                </li>
+              </ul>
 
               <button
                 onClick={() => setActiveTab("pos")}
-                className={`w-full mt-8 py-3.5 rounded-xl font-extrabold text-xs transition font-display flex items-center justify-center gap-2 ${
-                  p.popular
-                    ? "bg-[#F5A623] hover:bg-amber-400 text-slate-950 shadow-lg"
-                    : "bg-white/10 hover:bg-white/20 text-white border border-white/15"
-                }`}
+                className="w-full py-2.5 text-xs font-semibold text-zinc-900 bg-white hover:bg-zinc-100 active:scale-[0.98] rounded-lg transition-all cursor-pointer border border-zinc-200 shadow-2xs"
               >
-                <span>{p.cta}</span>
-                <ArrowRight className="w-4 h-4" />
+                Start Billing Free
               </button>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* FAQ Accordion Section */}
-      <section id="faq" className="px-4 sm:px-6 lg:px-8 py-16 bg-slate-950/60 border-t border-white/10">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono font-bold text-[#F5A623] uppercase tracking-widest">
-              Got Questions?
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIdx === idx;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 cursor-pointer hover:border-white/20 transition"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-sm font-extrabold font-display text-white">
-                      {faq.q}
-                    </h4>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180 text-[#F5A623]" : ""}`} />
-                  </div>
-                  {isOpen && (
-                    <p className="text-xs text-slate-300 mt-3 pt-3 border-t border-white/10 leading-relaxed font-sans">
-                      {faq.a}
-                    </p>
-                  )}
+            {/* Pro Sync */}
+            <div className="p-7 border-2 border-zinc-900 bg-white rounded-xl space-y-5 relative shadow-xs">
+              <div className="space-y-1">
+                <div className="inline-block px-2 py-0.5 text-[10px] font-mono font-medium text-white bg-zinc-900 rounded">
+                  Multi-Device Retail
                 </div>
-              );
-            })}
+                <h3 className="text-xl font-bold text-zinc-950 font-display">Multi-Counter Sync</h3>
+                <p className="text-xs text-zinc-500">For multi-till supermarkets, apparel chains, and branch outlets.</p>
+              </div>
+
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold font-mono text-zinc-950">₹499</span>
+                <span className="text-xs text-zinc-500 font-medium">/ month</span>
+              </div>
+
+              <ul className="space-y-2.5 text-xs text-zinc-700">
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Everything in Local Core</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Real-time multi-counter inventory sync</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Encrypted automated daily cloud backups</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>One-click WhatsApp payment reminders</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={() => setActiveTab("pos")}
+                className="w-full py-2.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] rounded-lg transition-all cursor-pointer shadow-xs"
+              >
+                Get Started with Sync
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-950 border-t border-white/10 px-4 sm:px-6 lg:px-8 py-10 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-[#F5A623] text-slate-950 flex items-center justify-center font-black text-xs">
-              D
+      {/* 6. REFINED EDITORIAL FOOTER */}
+      <footer className="border-t border-zinc-200 bg-[#FAFAF9] py-14">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-zinc-200/80">
+            <div className="space-y-1">
+              <div className="font-bold text-base tracking-tight font-display text-zinc-950">
+                DUKAAN<span className="text-zinc-400 font-normal">POS</span>
+              </div>
+              <p className="text-xs text-zinc-500 max-w-sm">
+                Local-first point of sale software for independent retailers across India.
+              </p>
             </div>
-            <span className="font-extrabold font-display text-white text-sm">
-              Dukaan<span className="text-[#F5A623]">POS</span> Platform
-            </span>
+
+            <div className="flex flex-wrap items-center gap-5 text-xs text-zinc-600">
+              <button
+                onClick={() => openLegal("privacy")}
+                className="hover:text-zinc-950 transition-colors cursor-pointer"
+              >
+                Privacy (DPDP 2023)
+              </button>
+              <button
+                onClick={() => openLegal("terms")}
+                className="hover:text-zinc-950 transition-colors cursor-pointer"
+              >
+                Terms of Service
+              </button>
+              <button
+                onClick={() => openLegal("refund")}
+                className="hover:text-zinc-950 transition-colors cursor-pointer"
+              >
+                Refund Policy
+              </button>
+              <button
+                onClick={() => openLegal("dpo")}
+                className="hover:text-zinc-950 transition-colors cursor-pointer"
+              >
+                DPO Grievance
+              </button>
+            </div>
           </div>
 
-          <p className="text-center sm:text-right text-slate-500 font-mono">
-            © 2026 DukaanPOS Inc. 100% Local-First Offline Technology • Made with ❤️ in India
-          </p>
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
+            <div>© {new Date().getFullYear()} DukaanPOS Retail Technologies. All rights reserved.</div>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Local Encryption: AES-GCM-256</span>
+            </div>
+          </div>
         </div>
       </footer>
+
+      {/* Statutory DPDP 2023 Privacy & Legal Modal */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        initialTab={privacyModalTab}
+      />
     </div>
   );
 };

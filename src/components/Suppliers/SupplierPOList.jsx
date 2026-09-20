@@ -172,21 +172,21 @@ export const SupplierPOList = () => {
 
       {/* ADD SUPPLIER MODAL */}
       {showAddSupplierModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold font-display text-slate-900 text-base">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-fade-in my-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 bg-slate-50 shrink-0">
+              <h3 className="font-bold font-display text-slate-900 text-sm">
                 Add Distributor / Supplier
               </h3>
               <button
                 onClick={() => setShowAddSupplierModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAddSupplierSubmit} className="space-y-3">
+            <form onSubmit={handleAddSupplierSubmit} className="p-5 space-y-3 flex-1 overflow-y-auto">
               <div>
                 <label className="text-[11px] text-slate-600 font-semibold block mb-1">
                   Distributor Name *

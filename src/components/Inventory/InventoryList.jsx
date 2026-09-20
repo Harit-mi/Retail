@@ -9,6 +9,7 @@ import {
   Trash2,
   RefreshCw,
   Boxes,
+  X,
 } from "lucide-react";
 
 export const InventoryList = () => {
@@ -18,6 +19,10 @@ export const InventoryList = () => {
   const [stockFilter, setStockFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // In-App Quick Refill Modal State (replaces native browser prompt)
+  const [refillTarget, setRefillTarget] = useState(null);
+  const [refillQty, setRefillQty] = useState(10);
 
   // Statistics
   const totalItems = products.length;
@@ -55,12 +60,12 @@ export const InventoryList = () => {
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-  const handleRefillStock = (product) => {
-    const addQty = prompt(`Refill stock for "${product.name}". Enter quantity to add:`, "10");
-    if (addQty && !isNaN(addQty)) {
-      const updatedStock = (product.stock || 0) + Number(addQty);
-      updateProduct(product.id, { stock: updatedStock });
-    }
+  const handleConfirmRefill = (e) => {
+    e.preventDefault();
+    if (!refillTarget || isNaN(refillQty) || Number(refillQty) <= 0) return;
+    const updatedStock = (refillTarget.stock || 0) + Number(refillQty);
+    updateProduct(refillTarget.id, { stock: updatedStock });
+    setRefillTarget(null);
   };
 
   const handleDelete = (id, name) => {
@@ -70,36 +75,42 @@ export const InventoryList = () => {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Till Register Summary Bar */}
-      <div className="bg-[#0F1F35] text-white rounded-xl p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-white/10">
+    <div className="space-y-5 animate-fade-in text-zinc-900">
+      {/* Top Inventory Ledger Summary Bar */}
+      <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
-            <Boxes className="w-5 h-5 text-[#F5A623]" />
-            <span>Kirana Inventory Ledger</span>
-          </h2>
-          <p className="text-xs text-slate-400 font-mono mt-0.5">
-            Real-time stock valuation & replenishment control
-          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Boxes className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold font-display text-zinc-950 tracking-tight">
+                Stock & Inventory Ledger
+              </h2>
+              <p className="text-xs text-zinc-400 font-mono">
+                Real-time stock valuation & replenishment control
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Counter Stats Pills */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
-          <div className="bg-white/10 px-3 py-2 rounded-lg text-center">
-            <p className="text-[10px] text-slate-400 font-mono uppercase font-bold">Total Items</p>
-            <p className="text-base font-black font-mono text-white tabular-nums">{totalItems}</p>
+          <div className="bg-zinc-50 border border-zinc-200/80 px-3 py-2 rounded-lg text-center">
+            <p className="text-[10px] text-zinc-400 font-mono uppercase font-semibold">Total Items</p>
+            <p className="text-base font-bold font-mono text-zinc-950 tabular-nums">{totalItems}</p>
           </div>
-          <div className="bg-white/10 px-3 py-2 rounded-lg text-center">
-            <p className="text-[10px] text-amber-300 font-mono uppercase font-bold">Low Stock</p>
-            <p className="text-base font-black font-mono text-[#F5A623] tabular-nums">{lowStockItems.length}</p>
+          <div className="bg-zinc-50 border border-zinc-200/80 px-3 py-2 rounded-lg text-center">
+            <p className="text-[10px] text-amber-600 font-mono uppercase font-semibold">Low Stock</p>
+            <p className="text-base font-bold font-mono text-amber-700 tabular-nums">{lowStockItems.length}</p>
           </div>
-          <div className="bg-white/10 px-3 py-2 rounded-lg text-center">
-            <p className="text-[10px] text-red-300 font-mono uppercase font-bold">Out of Stock</p>
-            <p className="text-base font-black font-mono text-red-400 tabular-nums">{outOfStockItems.length}</p>
+          <div className="bg-zinc-50 border border-zinc-200/80 px-3 py-2 rounded-lg text-center">
+            <p className="text-[10px] text-red-600 font-mono uppercase font-semibold">Out of Stock</p>
+            <p className="text-base font-bold font-mono text-red-600 tabular-nums">{outOfStockItems.length}</p>
           </div>
-          <div className="bg-white/10 px-3 py-2 rounded-lg text-center">
-            <p className="text-[10px] text-emerald-300 font-mono uppercase font-bold">Stock Value</p>
-            <p className="text-base font-black font-mono text-[#1FAA59] tabular-nums">
+          <div className="bg-zinc-50 border border-zinc-200/80 px-3 py-2 rounded-lg text-center">
+            <p className="text-[10px] text-emerald-600 font-mono uppercase font-semibold">Stock Value</p>
+            <p className="text-base font-bold font-mono text-emerald-700 tabular-nums">
               ₹{Math.round(totalInventoryValue).toLocaleString("en-IN")}
             </p>
           </div>
@@ -110,49 +121,49 @@ export const InventoryList = () => {
             setEditingProduct(null);
             setModalOpen(true);
           }}
-          className="px-4 py-3 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-lg text-xs transition flex items-center justify-center gap-1.5 w-full md:w-auto min-h-[44px]"
+          className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-white font-semibold rounded-lg text-xs transition flex items-center justify-center gap-1.5 w-full md:w-auto cursor-pointer shadow-xs whitespace-nowrap active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>ADD NEW ITEM</span>
+          <Plus className="w-4 h-4" />
+          <span>Add New Item</span>
         </button>
       </div>
 
       {/* Filter & Search Rail */}
-      <div className="bg-white border-2 border-slate-200 rounded-xl p-4 space-y-3">
+      <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-2xs">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by product name, barcode, or HSN code..."
-              className="w-full bg-slate-50 text-slate-900 text-xs font-semibold pl-10 pr-3 py-3 rounded-lg border-2 border-slate-200 outline-none focus:border-[#1E3A5F] transition"
+              placeholder="Search product name, barcode, or HSN code..."
+              className="w-full bg-white text-zinc-900 text-xs font-medium pl-10 pr-3 py-2.5 rounded-lg border border-zinc-200 outline-none focus:border-zinc-950 transition placeholder-zinc-400"
             />
           </div>
 
           {/* Stock Filter Buttons */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-lg border border-zinc-200/80">
             <button
               onClick={() => setStockFilter("all")}
-              className={`px-3 py-2 text-xs font-bold rounded transition ${
-                stockFilter === "all" ? "bg-[#1E3A5F] text-white shadow" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                stockFilter === "all" ? "bg-white text-zinc-950 font-semibold shadow-2xs" : "text-zinc-600 hover:text-zinc-950"
               }`}
             >
               All Items
             </button>
             <button
               onClick={() => setStockFilter("low")}
-              className={`px-3 py-2 text-xs font-bold rounded transition ${
-                stockFilter === "low" ? "bg-[#F5A623] text-slate-950 shadow" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                stockFilter === "low" ? "bg-white text-amber-800 font-semibold shadow-2xs" : "text-zinc-600 hover:text-zinc-950"
               }`}
             >
               Low Stock ({lowStockItems.length})
             </button>
             <button
               onClick={() => setStockFilter("out")}
-              className={`px-3 py-2 text-xs font-bold rounded transition ${
-                stockFilter === "out" ? "bg-[#E64545] text-white shadow" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                stockFilter === "out" ? "bg-white text-red-700 font-semibold shadow-2xs" : "text-zinc-600 hover:text-zinc-950"
               }`}
             >
               Out of Stock ({outOfStockItems.length})
@@ -161,43 +172,47 @@ export const InventoryList = () => {
         </div>
 
         {/* Category Tabs */}
-        <div className="flex items-stretch gap-1 overflow-x-auto no-scrollbar pt-1 border-t border-slate-100">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition whitespace-nowrap ${
-                categoryFilter === cat
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-zinc-100">
+          {categories.map((cat) => {
+            const isSelected = categoryFilter === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  isSelected
+                    ? "bg-zinc-950 text-white font-semibold"
+                    : "bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-950 border border-zinc-200/60"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-white border-2 border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0F1F35] text-white font-mono uppercase text-[10px] tracking-wider border-b border-slate-700">
+            <thead className="bg-zinc-50 text-zinc-500 font-mono uppercase text-[10px] tracking-wider border-b border-zinc-200">
               <tr>
-                <th className="px-4 py-3.5 font-extrabold">Item Description</th>
-                <th className="px-4 py-3.5 font-extrabold">Category</th>
-                <th className="px-4 py-3.5 font-extrabold text-right">Retail Price</th>
-                <th className="px-4 py-3.5 font-extrabold text-center">GST Rate</th>
-                <th className="px-4 py-3.5 font-extrabold text-right">Current Stock</th>
-                <th className="px-4 py-3.5 font-extrabold text-center">Actions</th>
+                <th className="px-4 py-3 font-semibold">Item Description</th>
+                <th className="px-4 py-3 font-semibold">Category</th>
+                <th className="px-4 py-3 font-semibold text-right">Retail Price</th>
+                <th className="px-4 py-3 font-semibold text-center">GST Rate</th>
+                <th className="px-4 py-3 font-semibold text-right">Current Stock</th>
+                <th className="px-4 py-3 font-semibold text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 font-medium">
+            <tbody className="divide-y divide-zinc-100 font-medium text-zinc-700">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-12 text-center text-slate-400">
-                    <Package className="w-10 h-10 mx-auto mb-2 text-slate-300 stroke-[1.5]" />
-                    <p className="font-bold text-slate-700 font-display">No Kirana products found</p>
+                  <td colSpan="6" className="px-4 py-12 text-center text-zinc-400">
+                    <Package className="w-9 h-9 mx-auto mb-2 text-zinc-300 stroke-[1.5]" />
+                    <p className="font-semibold text-zinc-700 text-sm">No products found</p>
+                    <p className="text-xs text-zinc-400 font-mono mt-0.5">Try searching with a different term</p>
                   </td>
                 </tr>
               ) : (
@@ -209,37 +224,42 @@ export const InventoryList = () => {
                     p.stock <= (p.minStockWarning || 5);
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={p.id} className="hover:bg-zinc-50/70 transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-extrabold text-slate-900 text-sm font-display">{p.name}</div>
-                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                        <div className="font-semibold text-zinc-950 text-xs">{p.name}</div>
+                        <div className="text-[10px] font-mono text-zinc-400 mt-0.5">
                           {p.barcode ? `Barcode: ${p.barcode}` : "No Barcode"} {p.hsn ? `· HSN: ${p.hsn}` : ""}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="bg-slate-100 text-slate-800 font-bold px-2.5 py-1 rounded text-[10px] border border-slate-200">
+                        <span className="bg-zinc-100 text-zinc-700 font-medium px-2 py-0.5 rounded text-[10px] border border-zinc-200">
                           {p.category}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-black font-mono text-[#1E3A5F] text-sm tabular-nums">
+                      <td className="px-4 py-3 text-right font-bold font-mono text-zinc-950 text-xs tabular-nums">
                         ₹{p.retailPrice.toLocaleString("en-IN")}
-                        <span className="text-[10px] font-normal text-slate-400">/{p.unit}</span>
+                        <span className="text-[10px] font-normal text-zinc-400 ml-0.5">/{p.unit}</span>
                       </td>
-                      <td className="px-4 py-3 text-center font-mono font-bold text-slate-600">
+                      <td className="px-4 py-3 text-center font-mono font-medium text-zinc-600">
                         {p.gst}%
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="font-black font-mono text-sm tabular-nums">
-                          {isOutOfStock ? (
-                            <span className="text-[#E64545]">0 {p.unit}</span>
-                          ) : isLowStock ? (
-                            <span className="text-[#F5A623]">{p.stock} {p.unit}</span>
-                          ) : (
-                            <span className="text-slate-900">{p.stock} {p.unit}</span>
-                          )}
+                        <div className="font-bold font-mono text-xs tabular-nums flex items-center justify-end gap-1.5">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              isOutOfStock
+                                ? "bg-red-500"
+                                : isLowStock
+                                ? "bg-amber-500"
+                                : "bg-emerald-500"
+                            }`}
+                          />
+                          <span className={isOutOfStock ? "text-red-600" : isLowStock ? "text-amber-700" : "text-zinc-900"}>
+                            {p.stock} {p.unit}
+                          </span>
                         </div>
                         {isLowStock && (
-                          <span className="text-[9px] font-mono font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
+                          <span className="text-[9px] font-mono font-semibold text-amber-700 block mt-0.5">
                             LOW STOCK
                           </span>
                         )}
@@ -247,26 +267,32 @@ export const InventoryList = () => {
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
-                            onClick={() => handleRefillStock(p)}
+                            type="button"
+                            onClick={() => {
+                              setRefillTarget(p);
+                              setRefillQty(10);
+                            }}
                             title="Quick Refill Stock"
-                            className="p-1.5 bg-emerald-50 text-[#1FAA59] hover:bg-emerald-100 rounded transition"
+                            className="p-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-md transition-colors cursor-pointer"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditingProduct(p);
                               setModalOpen(true);
                             }}
                             title="Edit Product"
-                            className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded transition"
+                            className="p-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-md transition-colors cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleDelete(p.id, p.name)}
                             title="Delete Product"
-                            className="p-1.5 bg-red-50 text-[#E64545] hover:bg-red-100 rounded transition"
+                            className="p-1.5 hover:bg-red-50 text-zinc-400 hover:text-red-600 rounded-md transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -280,6 +306,104 @@ export const InventoryList = () => {
           </table>
         </div>
       </div>
+
+      {/* In-App Quick Refill Stock Modal (Replaces native browser prompt) */}
+      {refillTarget && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[99999] bg-zinc-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setRefillTarget(null)}
+        >
+          <div
+            className="bg-white border border-zinc-200 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 text-zinc-800" />
+                <h3 className="font-bold text-sm text-zinc-950">
+                  Quick Refill Stock
+                </h3>
+              </div>
+              <button
+                onClick={() => setRefillTarget(null)}
+                className="p-1 rounded text-zinc-400 hover:text-zinc-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-zinc-900 truncate">
+                {refillTarget.name}
+              </p>
+              <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
+                Current Stock: <strong className="text-zinc-900">{refillTarget.stock} {refillTarget.unit}</strong>
+              </p>
+            </div>
+
+            {/* Quick Refill Increment Buttons */}
+            <div className="flex items-center gap-1.5">
+              {[5, 10, 25, 50, 100].map((inc) => (
+                <button
+                  key={inc}
+                  type="button"
+                  onClick={() => setRefillQty(inc)}
+                  className={`flex-1 py-1 text-xs font-mono font-medium rounded-lg border transition-colors cursor-pointer ${
+                    refillQty === inc
+                      ? "bg-zinc-950 text-white border-zinc-950"
+                      : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                  }`}
+                >
+                  +{inc}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleConfirmRefill} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
+                  Quantity to Add ({refillTarget.unit}):
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="any"
+                  required
+                  value={refillQty}
+                  onChange={(e) => setRefillQty(Number(e.target.value))}
+                  className="w-full bg-white border border-zinc-300 focus:border-zinc-950 rounded-lg px-3 py-2 text-sm font-mono font-bold text-zinc-950 outline-none"
+                />
+              </div>
+
+              {/* Preview resulting stock */}
+              <div className="bg-zinc-50 rounded-lg p-2.5 border border-zinc-200 text-xs font-mono flex justify-between">
+                <span className="text-zinc-500">Updated Total Stock:</span>
+                <span className="font-bold text-emerald-700">
+                  {(refillTarget.stock || 0) + (Number(refillQty) || 0)} {refillTarget.unit}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setRefillTarget(null)}
+                  className="px-3 py-1.5 text-xs text-zinc-600 hover:text-zinc-900 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-xs"
+                >
+                  Confirm Refill
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add / Edit Product Modal */}
       <AddEditProductModal

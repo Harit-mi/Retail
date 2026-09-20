@@ -410,7 +410,7 @@ export const VerticalModules = () => {
                       : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                   }`}
                 >
-                  <i className="fa-solid fa-[#F5A623] fa-utensils text-xl mb-2"></i>
+                  <i className="fa-solid fa-utensils text-[#F5A623] text-xl mb-2"></i>
                   <span className="text-sm font-extrabold font-display">Table #{tNo}</span>
                   <span className="text-[10px] mt-1 font-bold">
                     {isOccupied ? "Occupied (Bill Active)" : "Vacant"}

@@ -1,16 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Sora:wght@600;700;800&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --bg-main: #F7F8FA;
+    --bg-main: #F8FAFC;
     --surface-card: #FFFFFF;
-    --primary-navy: #1E3A5F;
-    --accent-marigold: #F5A623;
-    --success-green: #1FAA59;
-    --alert-red: #E64545;
-    --teal-chart: #0EA5A5;
+    --primary-slate: #0F172A;
+    --brand-emerald: #059669;
+    --brand-emerald-hover: #047857;
+    --accent-amber: #D97706;
+    --alert-red: #DC2626;
   }
 
   * {
@@ -18,17 +18,19 @@
   }
 
   html, body {
-    font-family: 'Inter', sans-serif;
-    background-color: #F7F8FA;
-    color: #0F172A;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #FAFAF9;
+    color: #18181B;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   h1, h2, h3, h4, .font-display {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Sora', sans-serif;
+    letter-spacing: -0.02em;
   }
 
   .font-mono, .font-numeric {
@@ -37,33 +39,119 @@
   }
 }
 
-/* FontAwesome Helper Utility Classes */
-.fa-icon {
-  display: inline-block;
-  font-style: normal;
-  font-variant: normal;
-  text-rendering: auto;
-  line-height: 1;
+/* Modern Clean Financial Display (Square / Shopify POS tier) */
+.terminal-led {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: #0F172A;
+  letter-spacing: -0.03em;
 }
 
-/* Custom Card Shadows */
+.terminal-green {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: #059669;
+}
+
+/* Crisp Clean Keycap Badge (Linear / Stripe style) */
+.keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px 5.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #475569;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 5px;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.05);
+}
+
+.keycap-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px 5.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #FFFFFF;
+  background: #0F172A;
+  border: 1px solid #334155;
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Modern Soft Haptic Physics */
+.haptic-btn {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.haptic-btn:active {
+  transform: scale(0.98);
+}
+
+.haptic-card {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease;
+}
+.haptic-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.06);
+}
+.haptic-card:active {
+  transform: translateY(0px) scale(0.995);
+}
+
+/* Banknote Currency Chips */
+.currency-chip {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.currency-chip:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+}
+.currency-chip:active {
+  transform: translateY(0.5px);
+}
+
+/* Modern Card Shadows */
 .card-shadow {
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+}
+
+.card-shadow-md {
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
 }
 
 .card-shadow-lg {
-  box-shadow: 0 10px 25px -5px rgba(30, 58, 95, 0.1), 0 8px 10px -6px rgba(30, 58, 95, 0.05);
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -4px rgba(15, 23, 42, 0.03);
 }
 
-/* Payment Mix Pulse Bar Segment Animations */
-.pulse-bar-segment {
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+/* QR Scanner Line Animation (Subtle, Clean) */
+@keyframes qrScanLine {
+  0% { transform: translateY(0%); opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { transform: translateY(128px); opacity: 0.7; }
+}
+
+.scanner-sweep-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #059669, transparent);
+  animation: qrScanLine 2s ease-in-out infinite alternate;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pulse-bar-segment, .animate-scan, .animate-pulse {
+  .scanner-sweep-line, .animate-pulse, .haptic-btn, .haptic-card {
     animation: none !important;
     transition: none !important;
+    transform: none !important;
   }
 }
 
@@ -91,13 +179,13 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
@@ -105,14 +193,4 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
-}
-
-@keyframes scanPulse {
-  0% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.02); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.9; }
-}
-
-.animate-scan {
-  animation: scanPulse 1.5s infinite ease-in-out;
 }

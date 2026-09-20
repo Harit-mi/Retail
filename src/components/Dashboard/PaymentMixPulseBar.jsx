@@ -1,6 +1,5 @@
 import React from "react";
 import { useStore } from "../../context/useStore";
-// Simple payment breakdown pulse bar component
 
 export const PaymentMixPulseBar = () => {
   const { sales } = useStore();
@@ -27,72 +26,72 @@ export const PaymentMixPulseBar = () => {
   const udharPct = Math.max(0, 100 - (cashPct + upiPct + cardPct));
 
   return (
-    <div className="bg-white border-b border-slate-200 shadow-xs px-4 py-2 sticky top-16 z-20 transition-all">
+    <div className="bg-[#FAFAF9]/90 backdrop-blur-md border-b border-zinc-200/80 px-4 py-2 sticky top-16 z-20 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
         {/* Title Badge */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span className="font-bold text-slate-800 text-[11px] tracking-wide uppercase font-display">
-            Live Payment Mix Pulse
+          <span className="font-mono text-[11px] font-semibold tracking-wider uppercase text-zinc-600">
+            Payment Mix
           </span>
-          <span className="text-[10px] text-slate-400">
-            Total Today: <strong className="font-mono text-slate-900">₹{totals.total.toLocaleString("en-IN")}</strong>
+          <span className="text-[11px] text-zinc-400 font-mono">
+            Total Today: <strong className="font-mono text-zinc-950 font-semibold">₹{totals.total.toLocaleString("en-IN")}</strong>
           </span>
         </div>
 
         {/* Pulse Bar Segments */}
         <div className="flex-1 w-full max-w-md mx-2">
-          <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden flex p-0.5 border border-slate-200/80 shadow-inner">
+          <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden flex border border-zinc-200/80">
             <div
               style={{ width: `${cashPct}%` }}
               title={`Cash: ₹${totals.cash} (${cashPct}%)`}
-              className="h-full bg-[#1FAA59] rounded-l-full pulse-bar-segment"
+              className="h-full bg-zinc-950 transition-all duration-300"
             />
             <div
               style={{ width: `${upiPct}%` }}
               title={`UPI: ₹${totals.upi} (${upiPct}%)`}
-              className="h-full bg-[#0EA5A5] pulse-bar-segment"
+              className="h-full bg-emerald-600 transition-all duration-300"
             />
             <div
               style={{ width: `${cardPct}%` }}
               title={`Card: ₹${totals.card} (${cardPct}%)`}
-              className="h-full bg-blue-500 pulse-bar-segment"
+              className="h-full bg-zinc-400 transition-all duration-300"
             />
             <div
               style={{ width: `${udharPct}%` }}
               title={`Udhaar: ₹${totals.udhar} (${udharPct}%)`}
-              className="h-full bg-[#F5A623] rounded-r-full pulse-bar-segment"
+              className="h-full bg-amber-500 transition-all duration-300"
             />
           </div>
         </div>
 
         {/* Legend Values */}
-        <div className="flex items-center space-x-3 text-[11px] font-medium text-slate-600 overflow-x-auto">
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#1FAA59]" />
+        <div className="flex items-center space-x-3 text-[11px] font-mono text-zinc-500 overflow-x-auto shrink-0">
+          <span className="flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-950" />
             <span>Cash:</span>
-            <strong className="font-mono text-slate-900">{cashPct}%</strong>
+            <strong className="text-zinc-900 font-semibold">{cashPct}%</strong>
           </span>
 
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#0EA5A5]" />
+          <span className="flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
             <span>UPI:</span>
-            <strong className="font-mono text-slate-900">{upiPct}%</strong>
+            <strong className="text-zinc-900 font-semibold">{upiPct}%</strong>
           </span>
 
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
             <span>Card:</span>
-            <strong className="font-mono text-slate-900">{cardPct}%</strong>
+            <strong className="text-zinc-900 font-semibold">{cardPct}%</strong>
           </span>
 
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#F5A623]" />
+          <span className="flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             <span>Udhaar:</span>
-            <strong className="font-mono text-slate-900">{udharPct}%</strong>
+            <strong className="text-zinc-900 font-semibold">{udharPct}%</strong>
           </span>
         </div>
       </div>

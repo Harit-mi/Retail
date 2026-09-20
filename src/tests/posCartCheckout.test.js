@@ -49,4 +49,28 @@ describe("POS Checkout & Cart State Machine (Production Integration Tests)", () 
     expect(updated[0].balance).toBe(1200 + 400);
     expect(updated[0].history[0].amount).toBe(400);
   });
+
+  it("accurately computes decimal and fractional weights for loose Kirana goods", () => {
+    const looseCart = [
+      { id: "loose_sugar", name: "Loose Sugar", price: 44, qty: 2.5, gst: 5 }, // 2.5 kg @ ₹44 = ₹110
+      { id: "loose_dal", name: "Toor Dal", price: 160, qty: 0.75, gst: 0 },    // 0.75 kg (750g) @ ₹160 = ₹120
+    ];
+
+    const totals = calculateCartTotals(looseCart, 0);
+
+    expect(totals.subtotal).toBe(230);
+    expect(totals.grandTotal).toBe(230);
+    expect(totals.taxableSubtotal + totals.taxAmount).toBe(230);
+  });
+
+  it("safely guards customer ledger when customerId is null on checkout", () => {
+    const initialCustomers = [
+      { id: "c1", name: "Anand Verma", phone: "9876543210", balance: 1200 },
+    ];
+
+    // Anonymous walk-in checkout with due amount should return customers untouched
+    const result = updateCustomerLedger(initialCustomers, null, 500, 0, 0, "INV-1002");
+    expect(result).toEqual(initialCustomers);
+    expect(result[0].balance).toBe(1200);
+  });
 });

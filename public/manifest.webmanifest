@@ -1,0 +1,18 @@
+{
+  "name": "DukaanPOS — Fast Kirana & Retail POS",
+  "short_name": "DukaanPOS",
+  "description": "Local-First, Offline-Capable POS Counter Register for Indian Kirana & Retail Stores",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#1E3A5F",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

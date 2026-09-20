@@ -30,7 +30,6 @@ export const useBarcodeScanner = (onScannedSuccess) => {
       if (e.key === "Enter") {
         const barcodeStr = bufferRef.current.trim();
         if (barcodeStr.length >= 3) {
-          e.preventDefault();
           // Find product matching barcode or HSN
           const matched = products.find(
             (p) =>
@@ -40,8 +39,19 @@ export const useBarcodeScanner = (onScannedSuccess) => {
           );
 
           if (matched) {
+            e.preventDefault();
+            if (typeof e.stopImmediatePropagation === "function") {
+              e.stopImmediatePropagation();
+            } else if (typeof e.stopPropagation === "function") {
+              e.stopPropagation();
+            }
+            // Clear input element if scanner was focused in a text field
+            if (isInput && e.target) {
+              e.target.value = "";
+              e.target.dispatchEvent(new Event("input", { bubbles: true }));
+            }
             addToCart(matched, 1);
-            if (onScannedSuccess) onScannedSuccess(matched);
+            if (onScannedSuccess) onScannedSuccess(matched, barcodeStr);
           }
           bufferRef.current = "";
         }

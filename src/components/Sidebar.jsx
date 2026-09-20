@@ -1,5 +1,23 @@
 import React, { useState } from "react";
 import { useStore } from "../context/useStore";
+import {
+  ShoppingBag,
+  LayoutDashboard,
+  Boxes,
+  Truck,
+  Barcode,
+  BookOpen,
+  MessageSquare,
+  Layers,
+  FileSpreadsheet,
+  ShieldCheck,
+  Sliders,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Store,
+  Globe,
+} from "lucide-react";
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const { activeTab, setActiveTab, products, customers, t } = useStore();
@@ -11,28 +29,50 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
 
   const udharCount = customers.filter((c) => c.balance > 0).length;
 
-  const navItems = [
-    { id: "landing", label: "Product Website", iconClass: "fa-solid fa-globe", badge: "Site" },
-    { id: "pos", label: "Kirana Billing POS", iconClass: "fa-solid fa-cash-register", badge: "POS" },
+  const navGroups = [
     {
-      id: "inventory",
-      label: "Kirana Inventory",
-      iconClass: "fa-solid fa-boxes-stacked",
-      badge: lowStockCount > 0 ? `${lowStockCount}` : null,
-      badgeColor: "bg-red-500/20 text-red-300",
+      title: "Billing & Counter",
+      items: [
+        { id: "pos", label: "Billing Register", icon: ShoppingBag, badge: "F8" },
+        { id: "dashboard", label: "Till Overview", icon: LayoutDashboard, badge: null },
+      ],
     },
-    { id: "barcodes", label: "Barcode Printing", iconClass: "fa-solid fa-barcode", badge: "Print" },
     {
-      id: "khata",
-      label: "Udhaar & Loyalty",
-      iconClass: "fa-solid fa-book-bookmark",
-      badge: udharCount > 0 ? `${udharCount} Due` : null,
-      badgeColor: "bg-amber-500/20 text-amber-300",
+      title: "Inventory & Supply",
+      items: [
+        {
+          id: "inventory",
+          label: "Products & Stock",
+          icon: Boxes,
+          badge: lowStockCount > 0 ? `${lowStockCount} low` : null,
+          badgeColor: "bg-amber-100 text-amber-900 border border-amber-200",
+        },
+        { id: "suppliers", label: "Suppliers & POs", icon: Truck, badge: null },
+        { id: "barcodes", label: "Barcode Printing", icon: Barcode, badge: null },
+      ],
     },
-    { id: "whatsapp", label: "WhatsApp Marketing", iconClass: "fa-brands fa-whatsapp", badge: "New" },
-    { id: "reports", label: t("reports"), iconClass: "fa-solid fa-file-invoice-dollar", badge: null },
-    { id: "security", label: "Security & Privacy", iconClass: "fa-solid fa-shield-halved", badge: "DPDP" },
-    { id: "settings", label: t("settings"), iconClass: "fa-solid fa-sliders", badge: null },
+    {
+      title: "Customers & Growth",
+      items: [
+        {
+          id: "khata",
+          label: "Udhaar & Loyalty",
+          icon: BookOpen,
+          badge: udharCount > 0 ? `${udharCount} due` : null,
+          badgeColor: "bg-red-100 text-red-900 border border-red-200",
+        },
+        { id: "whatsapp", label: "WhatsApp Marketing", icon: MessageSquare, badge: null },
+        { id: "modules", label: "Specialty Verticals", icon: Layers, badge: "Multi" },
+      ],
+    },
+    {
+      title: "Compliance & Store",
+      items: [
+        { id: "reports", label: t("reports") || "GST Reports", icon: FileSpreadsheet, badge: "GSTR" },
+        { id: "security", label: "Security & DPDP", icon: ShieldCheck, badge: "DPDP" },
+        { id: "settings", label: t("settings") || "Settings", icon: Sliders, badge: null },
+      ],
+    },
   ];
 
   const handleNavClick = (tabId) => {
@@ -46,31 +86,31 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="md:hidden fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+          className="md:hidden fixed inset-0 z-40 bg-zinc-950/60 backdrop-blur-xs animate-fade-in"
         />
       )}
 
       {/* Main Responsive Sidebar Drawer */}
       <aside
-        className={`bg-[#0F1F35] text-slate-100 min-h-screen flex flex-col transition-all duration-300 border-r border-white/10 shadow-xl z-50 ${
+        className={`bg-[#FAFAF9] text-zinc-900 min-h-screen flex flex-col transition-all duration-200 border-r border-zinc-200/80 shadow-xs z-50 select-none ${
           isMobileOpen
-            ? "fixed inset-y-0 left-0 w-64 translate-x-0"
-            : "hidden md:flex " + (collapsed ? "w-16" : "w-64")
+            ? "fixed inset-y-0 left-0 w-64 translate-x-0 bg-white"
+            : "hidden md:flex " + (collapsed ? "w-[72px]" : "w-64")
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-white/10 bg-slate-950/40">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#F5A623] flex items-center justify-center shadow text-slate-950 text-base font-black">
-              <i className="fa-solid fa-shop"></i>
+        <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200/80 bg-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white shrink-0 shadow-2xs">
+              <Store className="w-4 h-4" />
             </div>
             {(!collapsed || isMobileOpen) && (
-              <div>
-                <span className="font-black text-base font-display text-white tracking-tight">
-                  Gupta<span className="text-[#F5A623]">Kirana</span>
+              <div className="leading-tight">
+                <span className="font-bold text-sm font-display text-zinc-950 tracking-tight block">
+                  DUKAAN<span className="text-zinc-400 font-normal">POS</span>
                 </span>
-                <span className="block text-[10px] text-amber-400 font-mono tracking-wider uppercase font-bold">
-                  Kirana Counter POS
+                <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase font-semibold block">
+                  Retail Edition
                 </span>
               </div>
             )}
@@ -79,71 +119,97 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition hidden md:block"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition hidden md:flex items-center justify-center cursor-pointer"
           >
-            <i className={`fa-solid ${collapsed ? "fa-chevron-right" : "fa-chevron-left"} text-xs`}></i>
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
 
           {/* Mobile Close Drawer Button */}
           {isMobileOpen && (
             <button
               onClick={onCloseMobile}
-              className="md:hidden p-1.5 rounded text-slate-400 hover:text-white"
+              aria-label="Close mobile navigation"
+              className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition cursor-pointer"
             >
-              <i className="fa-solid fa-xmark text-lg"></i>
+              <X className="w-5 h-5" />
             </button>
           )}
         </div>
 
-        {/* Nav Menu Links */}
-        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                title={collapsed && !isMobileOpen ? item.label : undefined}
-                className={`w-full flex items-center ${
-                  collapsed && !isMobileOpen ? "justify-center px-2" : "px-3.5"
-                } py-2.5 rounded-lg text-xs font-bold transition-all duration-150 ${
-                  isActive
-                    ? "bg-[#F5A623] text-slate-950 font-black shadow"
-                    : "text-slate-300 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <i className={`${item.iconClass} text-base w-5 text-center ${isActive ? "text-slate-950" : "text-[#F5A623]"}`}></i>
-                {(!collapsed || isMobileOpen) && (
-                  <div className="ml-3 flex-1 flex items-center justify-between truncate">
-                    <span className="truncate">{item.label}</span>
-                    {item.badge && (
-                      <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                          isActive
-                            ? "bg-slate-950/20 text-slate-950"
-                            : item.badgeColor || "bg-white/10 text-slate-300"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
+        {/* Navigation Sections */}
+        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+          {navGroups.map((group, gIdx) => (
+            <div key={gIdx} className="space-y-1">
+              {(!collapsed || isMobileOpen) && (
+                <p className="px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400">
+                  {group.title}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    title={collapsed && !isMobileOpen ? item.label : undefined}
+                    className={`w-full flex items-center ${
+                      collapsed && !isMobileOpen ? "justify-center px-2" : "px-3"
+                    } py-2 rounded-lg text-xs font-medium transition-colors relative group cursor-pointer ${
+                      isActive
+                        ? "bg-zinc-950 text-white font-semibold shadow-xs"
+                        : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-950"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-4 h-4 shrink-0 transition-transform ${
+                        isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-800"
+                      }`}
+                    />
+
+                    {(!collapsed || isMobileOpen) && (
+                      <div className="ml-3 flex-1 flex items-center justify-between truncate">
+                        <span className="truncate">{item.label}</span>
+                        {item.badge && (
+                          <span
+                            className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded ${
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : item.badgeColor || "bg-zinc-200/80 text-zinc-600 border border-zinc-300/70"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Sidebar Footer */}
         {(!collapsed || isMobileOpen) && (
-          <div className="p-3 m-3 rounded-lg bg-slate-950/50 border border-white/10 text-xs text-slate-300">
-            <div className="flex items-center gap-2 font-black font-display text-[#F5A623]">
-              <i className="fa-solid fa-[#1FAA59] fa-store"></i>
-              <span>Kirana Store Edition</span>
+          <div className="p-3 m-3 rounded-xl bg-white border border-zinc-200/80 text-xs text-zinc-600 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-zinc-900 text-[11px] font-display">Local Engine</span>
+              <span className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Ready (0ms)
+              </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-mono mt-1">
-              Billing · Barcode · Khata · GST
+            <p className="text-[10px] text-zinc-400 font-mono mt-1 leading-relaxed">
+              AES-256 · DPDP 2023 · ESC/POS
             </p>
+            <button
+              onClick={() => handleNavClick("landing")}
+              className="w-full mt-2.5 flex items-center justify-center gap-2 py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium transition-colors cursor-pointer border border-zinc-200"
+            >
+              <Globe className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Back to Storefront</span>
+            </button>
           </div>
         )}
       </aside>
