@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
 import { AddEditProductModal } from "./AddEditProductModal";
+import { AIDemandForecastingCard } from "../AI/AIDemandForecastingCard";
 import {
   Package,
   Plus,
@@ -127,6 +128,9 @@ export const InventoryList = () => {
           <span>Add New Item</span>
         </button>
       </div>
+
+      {/* AI Demand Forecasting & Reorder Recommendations */}
+      <AIDemandForecastingCard />
 
       {/* Filter & Search Rail */}
       <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-2xs">

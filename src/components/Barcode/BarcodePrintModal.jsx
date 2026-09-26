@@ -241,8 +241,8 @@ export const BarcodePrintModal = () => {
           {/* Printable Area Container */}
           <div
             id="barcode-printable-area"
-            className={`grid gap-2.5 p-4 bg-slate-100 rounded-2xl border border-slate-300 max-h-[500px] overflow-y-auto ${
-              gridFormat === 24 ? "grid-cols-3" : "grid-cols-4"
+            className={`grid gap-2.5 p-3 sm:p-4 bg-slate-100 rounded-2xl border border-slate-300 max-h-[500px] overflow-y-auto ${
+              gridFormat === 24 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
             }`}
           >
             {stickerStream.length === 0 ? (
@@ -253,32 +253,32 @@ export const BarcodePrintModal = () => {
               stickerStream.map((item, idx) => (
                 <div
                   key={idx}
-                  className="bg-white border border-slate-300 rounded-lg p-2 flex flex-col items-center justify-between text-center font-mono select-none shadow-xs"
-                  style={{ minHeight: gridFormat === 24 ? "100px" : "85px" }}
+                  className="bg-white border border-slate-300 rounded-lg p-2 flex flex-col items-center justify-between text-center font-mono select-none shadow-xs w-full overflow-hidden box-border"
+                  style={{ minHeight: gridFormat === 24 ? "105px" : "90px" }}
                 >
-                  <div className="text-[9px] font-black text-slate-900 font-display truncate max-w-[130px]">
+                  <div className="text-[9px] font-black text-slate-900 font-display truncate w-full px-0.5 leading-tight">
                     {storeConfig.name || "Gupta Kirana Store"}
                   </div>
-                  <div className="text-[10px] font-bold text-slate-800 truncate max-w-[130px] mt-0.5">
+                  <div className="text-[10px] font-bold text-slate-800 truncate w-full px-0.5 mt-0.5 leading-tight">
                     {item.name}
                   </div>
 
                   {/* High-Contrast Crisp EAN-13 Barcode Vector Visual */}
-                  <div className="w-full my-1 flex justify-center items-center space-x-0.5 h-6 px-1">
+                  <div className="w-full my-1 flex justify-center items-center space-x-0.5 h-6 px-1 overflow-hidden">
                     {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 4, 1, 3, 1].map((w, i) => (
                       <div
                         key={i}
-                        className="bg-slate-950 h-full"
+                        className="bg-slate-950 h-full shrink-0"
                         style={{ width: `${w}px` }}
                       />
                     ))}
                   </div>
 
-                  <div className="text-[8px] text-slate-600 font-bold tracking-widest">
+                  <div className="text-[8px] text-slate-600 font-bold tracking-widest truncate w-full">
                     {item.barcode || "890105800124"}
                   </div>
 
-                  <div className="text-[11px] font-black text-slate-950 mt-0.5">
+                  <div className="text-[10px] font-black text-slate-950 mt-0.5 truncate w-full">
                     MRP: ₹{item.retailPrice}/{item.unit || "kg"}
                   </div>
                 </div>

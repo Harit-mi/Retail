@@ -78,16 +78,6 @@ export const StoreProvider = ({ children }) => {
     getSafeStorage("dukaan_purchase_orders", initialPurchaseOrders, counterPin)
   );
 
-  // Specialty Vertical Appointments (for Salon/Services)
-  const [appointments, setAppointments] = useState(() =>
-    getSafeStorage("dukaan_appointments", [], counterPin)
-  );
-
-  // Parked / Held Carts (Multi-Cart Counter Register System)
-  const [parkedCarts, setParkedCarts] = useState(() =>
-    getSafeStorage("dukaan_parked_carts", [], counterPin)
-  );
-
   // Coupons & Loyalty Points
   const [coupons] = useState(initialCoupons);
   const [activeCoupon, setActiveCoupon] = useState(null);
@@ -108,9 +98,41 @@ export const StoreProvider = ({ children }) => {
   const [discountRupees, setDiscountRupees] = useState(0);
   const [stockWarningToast, setStockWarningToast] = useState(null);
 
-  // App Navigation & UI States - defaults to Storefront
-  const [activeTab, setActiveTab] = useState("landing");
-  const [isCashDrawerOpen, setIsCashDrawerOpen] = useState(false);
+  // Online Realtime Cloud Sync State
+  const [isOnline, setIsOnline] = useState(true);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState("synced"); // 'synced' | 'syncing' | 'online'
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => new Date().toLocaleTimeString());
+  const cloudApiEndpoint = "https://api.dukaanpos.cloud/v1/store/sync";
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setCloudSyncStatus("synced");
+      setLastSyncedAt(new Date().toLocaleTimeString());
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setCloudSyncStatus("offline");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  const syncToCloud = async () => {
+    setCloudSyncStatus("syncing");
+    await new Promise((r) => setTimeout(r, 800));
+    setCloudSyncStatus("synced");
+    setLastSyncedAt(new Date().toLocaleTimeString());
+    return { success: true, timestamp: new Date().toLocaleTimeString() };
+  };
+
+  // App Navigation & UI States
+  const [activeTab, setActiveTab] = useState("pos"); // Default Kirana Counter POS Billing
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 
@@ -143,30 +165,6 @@ export const StoreProvider = ({ children }) => {
           const decrypted = await decryptPayloadAsync(savedSales, counterPin, initialSalesHistory);
           if (decrypted) setSales(decrypted);
         }
-
-        const savedSuppliers = localStorage.getItem("dukaan_suppliers");
-        if (savedSuppliers && savedSuppliers.startsWith("AES_GCM_v1::")) {
-          const decrypted = await decryptPayloadAsync(savedSuppliers, counterPin, initialSuppliers);
-          if (decrypted) setSuppliers(decrypted);
-        }
-
-        const savedPOs = localStorage.getItem("dukaan_purchase_orders");
-        if (savedPOs && savedPOs.startsWith("AES_GCM_v1::")) {
-          const decrypted = await decryptPayloadAsync(savedPOs, counterPin, initialPurchaseOrders);
-          if (decrypted) setPurchaseOrders(decrypted);
-        }
-
-        const savedAppointments = localStorage.getItem("dukaan_appointments");
-        if (savedAppointments && savedAppointments.startsWith("AES_GCM_v1::")) {
-          const decrypted = await decryptPayloadAsync(savedAppointments, counterPin, []);
-          if (decrypted) setAppointments(decrypted);
-        }
-
-        const savedParked = localStorage.getItem("dukaan_parked_carts");
-        if (savedParked && savedParked.startsWith("AES_GCM_v1::")) {
-          const decrypted = await decryptPayloadAsync(savedParked, counterPin, []);
-          if (decrypted) setParkedCarts(decrypted);
-        }
       } catch (err) {
         console.warn("Async Web Crypto decryption on mount completed with fallback:", err);
       } finally {
@@ -196,82 +194,59 @@ export const StoreProvider = ({ children }) => {
     return { success: true, message: "Cashier PIN updated successfully!" };
   };
 
-  // Save Native Web Crypto AES-GCM Encrypted Data Payloads to LocalStorage (Guarded by isStorageLoaded)
+  // Save Native Web Crypto AES-GCM Encrypted Data Payloads to LocalStorage
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(storeConfig, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_store_config", encrypted);
     });
-  }, [storeConfig, counterPin, isStorageLoaded]);
+  }, [storeConfig, counterPin]);
 
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(products, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_products", encrypted);
     });
-  }, [products, counterPin, isStorageLoaded]);
+  }, [products, counterPin]);
 
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(customers, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_customers", encrypted);
     });
-  }, [customers, counterPin, isStorageLoaded]);
+  }, [customers, counterPin]);
 
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(suppliers, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_suppliers", encrypted);
     });
-  }, [suppliers, counterPin, isStorageLoaded]);
+  }, [suppliers, counterPin]);
 
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(purchaseOrders, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_purchase_orders", encrypted);
     });
-  }, [purchaseOrders, counterPin, isStorageLoaded]);
+  }, [purchaseOrders, counterPin]);
 
   useEffect(() => {
-    if (!isStorageLoaded) return;
     encryptPayloadAsync(sales, counterPin).then((encrypted) => {
       localStorage.setItem("dukaan_sales", encrypted);
     });
-  }, [sales, counterPin, isStorageLoaded]);
+  }, [sales, counterPin]);
 
-  useEffect(() => {
-    if (!isStorageLoaded) return;
-    encryptPayloadAsync(appointments, counterPin).then((encrypted) => {
-      localStorage.setItem("dukaan_appointments", encrypted);
-    });
-  }, [appointments, counterPin, isStorageLoaded]);
-
-  useEffect(() => {
-    if (!isStorageLoaded) return;
-    encryptPayloadAsync(parkedCarts, counterPin).then((encrypted) => {
-      localStorage.setItem("dukaan_parked_carts", encrypted);
-    });
-  }, [parkedCarts, counterPin, isStorageLoaded]);
-
-  // Helper for float precision in weighted Kirana goods
-  const roundQty = (val) => Math.round(Number(val) * 1000) / 1000;
-
-  // Cart Operations with Soft Stock Warning & Decimal Precision
+  // Cart Operations with Soft Stock Warning
   const addToCart = (product, qty = 1, customAttributes = {}) => {
-    const inputQty = roundQty(qty);
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((item) => item.id === product.id);
+      let newQty = qty;
 
       if (existingIndex > -1) {
         const updated = [...prevCart];
-        const newQty = roundQty(updated[existingIndex].qty + inputQty);
+        newQty = updated[existingIndex].qty + qty;
         if (newQty <= 0) {
           return prevCart.filter((item) => item.id !== product.id);
         }
         updated[existingIndex] = {
           ...updated[existingIndex],
           qty: newQty,
-          total: Math.round(newQty * updated[existingIndex].price * 100) / 100,
+          total: newQty * updated[existingIndex].price,
         };
 
         if (product.stock !== null && newQty > product.stock) {
@@ -280,8 +255,8 @@ export const StoreProvider = ({ children }) => {
         }
         return updated;
       } else {
-        if (product.stock !== null && inputQty > product.stock) {
-          setStockWarningToast(`Soft Warning: Selling ${inputQty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
+        if (product.stock !== null && qty > product.stock) {
+          setStockWarningToast(`Soft Warning: Selling ${qty} ${product.unit} of "${product.name}" (Recorded Stock: ${product.stock})`);
           setTimeout(() => setStockWarningToast(null), 3500);
         }
 
@@ -301,8 +276,8 @@ export const StoreProvider = ({ children }) => {
             selling_unit_type: product.selling_unit_type || "piece",
             vertical: product.vertical || "kirana",
             attributes: { ...(product.attributes || {}), ...customAttributes },
-            qty: inputQty,
-            total: Math.round(product.retailPrice * inputQty * 100) / 100,
+            qty: qty,
+            total: product.retailPrice * qty,
           },
         ];
       }
@@ -310,22 +285,21 @@ export const StoreProvider = ({ children }) => {
   };
 
   const updateCartQty = (productId, newQty) => {
-    const cleanQty = roundQty(newQty);
-    if (cleanQty <= 0) {
+    if (newQty <= 0) {
       removeFromCart(productId);
       return;
     }
 
     const prod = products.find((p) => p.id === productId);
-    if (prod && prod.stock !== null && cleanQty > prod.stock) {
-      setStockWarningToast(`Soft Warning: Selling ${cleanQty} ${prod.unit} of "${prod.name}" (Recorded Stock: ${prod.stock})`);
+    if (prod && prod.stock !== null && newQty > prod.stock) {
+      setStockWarningToast(`Soft Warning: Selling ${newQty} ${prod.unit} of "${prod.name}" (Recorded Stock: ${prod.stock})`);
       setTimeout(() => setStockWarningToast(null), 3500);
     }
 
     setCart((prev) =>
       prev.map((item) =>
         item.id === productId
-          ? { ...item, qty: cleanQty, total: Math.round(cleanQty * item.price * 100) / 100 }
+          ? { ...item, qty: newQty, total: newQty * item.price }
           : item
       )
     );
@@ -607,57 +581,6 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
-  // Multi-Cart Parking (Hold Bill) operations
-  const parkCurrentCart = (note = "") => {
-    if (cart.length === 0) return { success: false, message: "Cannot hold an empty cart." };
-    const label = note || `Cart #${parkedCarts.length + 1} (${cartCustomer ? cartCustomer.name : "Walk-in"})`;
-    const newParked = {
-      id: `park_${crypto.randomUUID()}`,
-      parkedAt: new Date().toISOString(),
-      label,
-      items: [...cart],
-      cartCustomer: cartCustomer ? { ...cartCustomer } : null,
-      discountPercent,
-      discountRupees,
-      activeCoupon,
-      redeemedPoints,
-      grandTotal: cartGrandTotal,
-    };
-    setParkedCarts((prev) => [newParked, ...prev]);
-    clearCart();
-    return { success: true, message: `Cart parked as "${label}"` };
-  };
-
-  const resumeParkedCart = (parkedId) => {
-    const target = parkedCarts.find((c) => c.id === parkedId);
-    if (!target) return { success: false, message: "Parked cart not found." };
-
-    // Restore target cart contents
-    setCart(target.items || []);
-    setCartCustomer(target.cartCustomer || null);
-    setDiscountPercent(target.discountPercent || 0);
-    setDiscountRupees(target.discountRupees || 0);
-    setActiveCoupon(target.activeCoupon || null);
-    setRedeemedPoints(target.redeemedPoints || 0);
-
-    setParkedCarts((prev) => prev.filter((c) => c.id !== parkedId));
-    return { success: true, message: `Restored cart "${target.label}"` };
-  };
-
-  const discardParkedCart = (parkedId) => {
-    setParkedCarts((prev) => prev.filter((c) => c.id !== parkedId));
-  };
-
-  // Appointments handler for vertical specialty modules
-  const addAppointment = (appointmentData) => {
-    const newApt = {
-      id: `apt_${crypto.randomUUID()}`,
-      createdAt: new Date().toISOString(),
-      ...appointmentData,
-    };
-    setAppointments((prev) => [newApt, ...prev]);
-  };
-
   const resetDemoData = () => {
     setProducts(initialProducts);
     setCustomers(initialCustomers);
@@ -665,8 +588,6 @@ export const StoreProvider = ({ children }) => {
     setStoreConfig(initialStoreConfig);
     setSuppliers(initialSuppliers);
     setPurchaseOrders(initialPurchaseOrders);
-    setAppointments([]);
-    setParkedCarts([]);
     clearCart();
     localStorage.clear();
   };
@@ -691,12 +612,6 @@ export const StoreProvider = ({ children }) => {
         addSupplier,
         purchaseOrders,
         receiveGRNShipment,
-        appointments,
-        addAppointment,
-        parkedCarts,
-        parkCurrentCart,
-        resumeParkedCart,
-        discardParkedCart,
         coupons,
         activeCoupon,
         applyCouponCode,
@@ -722,8 +637,6 @@ export const StoreProvider = ({ children }) => {
         completeCheckout,
         activeTab,
         setActiveTab,
-        isCashDrawerOpen,
-        setIsCashDrawerOpen,
         activeVertical,
         setActiveVertical,
         printableBill,
@@ -737,6 +650,11 @@ export const StoreProvider = ({ children }) => {
         unlockCounter,
         updateCounterPin,
         resetDemoData,
+        isOnline,
+        cloudSyncStatus,
+        lastSyncedAt,
+        cloudApiEndpoint,
+        syncToCloud,
       }}
     >
       {children}

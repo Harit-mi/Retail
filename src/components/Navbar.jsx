@@ -1,23 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useStore } from "../context/useStore";
 import { INDIAN_LANGUAGES } from "../i18n/translations";
-import { PrivacyPolicyModal } from "./Legal/PrivacyPolicyModal";
-import {
-  Lock,
-  Coins,
-  Bell,
-  Search,
-  Store,
-  Clock,
-  Menu,
-  Globe,
-  AlertTriangle,
-  BookOpen,
-  ShieldCheck,
-  Check,
-  ChevronDown,
-  CheckCircle2,
-} from "lucide-react";
+import { ShiftReconciliationModal } from "./CashDrawer/ShiftReconciliationModal";
 
 export const Navbar = ({ onOpenMobileMenu }) => {
   const {
@@ -29,58 +13,12 @@ export const Navbar = ({ onOpenMobileMenu }) => {
     lockCounter,
     activeTab,
     setActiveTab,
-    addToCart,
-    setIsCashDrawerOpen,
+    cloudSyncStatus,
+    syncToCloud,
   } = useStore();
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
-  const [showLangDropdown, setShowLangDropdown] = useState(false);
-  const [navSearch, setNavSearch] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  const notifRef = useRef(null);
-  const langRef = useRef(null);
-
-  // Real-time digital clock for till operations
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setShowNotifications(false);
-      }
-      if (langRef.current && !langRef.current.contains(e.target)) {
-        setShowLangDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleNavSearchSubmit = (e) => {
-    if (e.key === "Enter" && navSearch.trim()) {
-      e.preventDefault();
-      const q = navSearch.toLowerCase().trim();
-      const matched = products.find(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.barcode && p.barcode.toLowerCase() === q) ||
-          (p.hsn && p.hsn.toLowerCase() === q)
-      );
-      if (activeTab !== "pos") {
-        setActiveTab("pos");
-      }
-      if (matched) {
-        addToCart(matched, 1);
-        setNavSearch("");
-      }
-    }
-  };
+  const [showShiftAuditModal, setShowShiftAuditModal] = useState(false);
 
   const lowStockCount = products.filter(
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
@@ -89,245 +27,166 @@ export const Navbar = ({ onOpenMobileMenu }) => {
   const overdueUdharCount = customers.filter((c) => c.balance > 0).length;
   const totalAlerts = lowStockCount + overdueUdharCount;
 
-  // Selected language object
-  const currentLangObj = INDIAN_LANGUAGES.find((l) => l.code === currentLanguage) || INDIAN_LANGUAGES[0];
-
   return (
-    <header className="bg-[#FAFAF9]/90 backdrop-blur-md text-zinc-900 border-b border-zinc-200/80 sticky top-0 z-30 h-16 flex items-center px-3 sm:px-6 shadow-2xs">
+    <header className="bg-white border-b-2 border-slate-200 sticky top-0 z-30 h-16 flex items-center px-4 sm:px-6">
       <div className="w-full mx-auto flex items-center justify-between gap-3">
-        {/* Left: Mobile Toggle & Store Identity */}
-        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
-          {/* Mobile Menu Button */}
+        {/* Left: Mobile Hamburger & Store Branding */}
+        <div className="flex items-center space-x-3 flex-shrink-0">
+          {/* Mobile Hamburger Button */}
           <button
             onClick={onOpenMobileMenu}
             aria-label="Open mobile navigation menu"
-            className="md:hidden p-2 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition focus-visible:ring-2 focus-visible:ring-[#1E3A5F]"
           >
-            <Menu className="w-5 h-5" />
+            <i className="fa-solid fa-bars text-lg text-[#1E3A5F]" aria-hidden="true"></i>
           </button>
 
-          {/* Clean Store Identity Pill */}
-          <div className="flex items-center gap-2.5 bg-white px-3 py-1.5 rounded-lg border border-zinc-200/80 shadow-2xs">
-            <div className="w-6 h-6 rounded bg-zinc-950 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
-              <Store className="w-3.5 h-3.5" />
-            </div>
-            <div className="hidden sm:block leading-tight">
-              <span className="text-xs font-bold font-display text-zinc-950 tracking-tight block truncate max-w-[130px] lg:max-w-[170px]">
-                {storeConfig.name || "Gupta Kirana Store"}
-              </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-[10px] text-zinc-500 font-mono font-medium">
-                  Online · Till #01
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick POS / Storefront View Toggle */}
-          <button
-            onClick={() => setActiveTab(activeTab === "landing" ? "pos" : "landing")}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-semibold transition-colors border border-zinc-200 cursor-pointer"
-          >
-            <Globe className="w-3.5 h-3.5 text-zinc-500" />
-            <span>{activeTab === "landing" ? "Open Register" : "Storefront"}</span>
-          </button>
-        </div>
-
-        {/* Center: Clean Global Rapid Search */}
-        <div className="flex-1 max-w-md hidden md:block relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-          <input
-            type="text"
-            value={navSearch}
-            onChange={(e) => setNavSearch(e.target.value)}
-            onKeyDown={handleNavSearchSubmit}
-            placeholder="Search items, barcode, HSN… (Enter adds to cart)"
-            aria-label="Search items, barcode or HSN"
-            spellCheck={false}
-            className="w-full bg-white border border-zinc-200 text-zinc-900 text-xs font-medium pl-10 pr-20 py-2 rounded-lg outline-none focus:border-zinc-950 shadow-2xs transition placeholder-zinc-400"
-          />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200 rounded select-none">
-            ↵ Enter
-          </kbd>
-        </div>
-
-        {/* Right: Clock, Drawer Audit, Lock, Notifications, Privacy & Custom Language Popover */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Real-time Clock */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs font-mono font-medium text-zinc-600 shadow-2xs">
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
-            <span>
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {/* Kirana Store Title Badge */}
+          <div className="flex items-center space-x-2 bg-amber-50 p-2 px-3 rounded-lg border border-amber-200 shadow-2xs">
+            <i className="fa-solid fa-shop text-[#F5A623] text-sm" aria-hidden="true"></i>
+            <span className="text-slate-900 text-xs font-black font-display tracking-tight whitespace-nowrap">
+              {storeConfig.name || "Gupta Kirana Store"}
             </span>
           </div>
 
-          {/* Cash Drawer Reconciliation Button */}
+          {/* Mode Switcher Button */}
           <button
-            onClick={() => setIsCashDrawerOpen(true)}
-            title="Cash Drawer Audit & Shift Reconciliation"
-            aria-label="Open Cash Drawer Audit Modal"
-            className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 border border-zinc-200 cursor-pointer shadow-2xs"
+            onClick={() => setActiveTab(activeTab === "landing" ? "pos" : "landing")}
+            className="px-3 py-1.5 bg-[#0F1F35] hover:bg-[#1E3A5F] text-white rounded-lg text-xs font-extrabold transition flex items-center space-x-1.5 border border-white/10 shadow-2xs font-display"
           >
-            <Coins className="w-3.5 h-3.5 text-zinc-700" />
-            <span className="inline">Drawer</span>
+            <i className={`fa-solid ${activeTab === "landing" ? "fa-cash-register text-[#F5A623]" : "fa-globe text-blue-400"}`} aria-hidden="true"></i>
+            <span>{activeTab === "landing" ? "⚡ Open POS Counter" : "🌐 Product Website"}</span>
+          </button>
+        </div>
+
+        {/* Center: Global Item/Barcode Search Bar */}
+        <div className="flex-1 max-w-md hidden md:block relative">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" aria-hidden="true"></i>
+          <input
+            type="text"
+            placeholder="Search items, barcode, HSN… (F2)"
+            aria-label="Search items, barcode or HSN"
+            spellCheck={false}
+            className="w-full bg-slate-50 border-2 border-slate-200 text-slate-900 text-xs font-semibold pl-10 pr-4 py-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] focus:bg-white transition"
+          />
+        </div>
+
+        {/* Right: Online Cloud Sync, Cashier Lock, Cash Audit, Notifications */}
+        <div className="flex items-center space-x-2 flex-shrink-0">
+          {/* Online Cloud Sync Status Badge */}
+          <button
+            onClick={() => syncToCloud()}
+            title={`Online Cloud Server Connected (${cloudSyncStatus.toUpperCase()}). Click to trigger instant cloud sync.`}
+            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#2F5E3D] rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border border-emerald-200 whitespace-nowrap"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="font-mono text-[11px] uppercase tracking-wider font-extrabold">
+              {cloudSyncStatus === "syncing" ? "Syncing..." : "Online Cloud Sync"}
+            </span>
           </button>
 
-          {/* Register Lock Button */}
+          {/* POS Register PIN Lock Trigger Button */}
           <button
             onClick={lockCounter}
-            title="Lock POS Counter Register"
+            title="Lock POS Counter Register (PIN Required)"
             aria-label="Lock POS Counter Register"
-            className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-zinc-950 hover:bg-zinc-800 text-white font-semibold rounded-lg text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap active:scale-[0.98]"
+            className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border border-amber-300 shadow-2xs focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
           >
-            <Lock className="w-3.5 h-3.5 stroke-[2.2]" />
-            <span className="hidden sm:inline">Lock</span>
+            <i className="fa-solid fa-lock text-amber-600" aria-hidden="true"></i>
+            <span className="font-display">Lock Counter</span>
           </button>
 
-          {/* Privacy & DPDP Policy Button */}
+          {/* Shift Drawer Audit Trigger Button */}
           <button
-            onClick={() => setShowPrivacyModal(true)}
-            title="Privacy Policies & DPDP 2023 Compliance Center"
-            aria-label="Open Privacy Policies"
-            className="p-2 rounded-lg text-zinc-600 hover:text-zinc-900 bg-white hover:bg-zinc-100 transition-colors relative cursor-pointer border border-zinc-200 shadow-2xs"
+            onClick={() => setShowShiftAuditModal(true)}
+            title="Day-End Cash Drawer Audit"
+            aria-label="Open Cash Drawer Audit Modal"
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border border-slate-200 focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
           >
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <i className="fa-solid fa-vault text-[#F5A623]" aria-hidden="true"></i>
+            <span>Cash Audit</span>
           </button>
 
-          {/* Notification Bell Badge with Refined Popover */}
-          <div className="relative" ref={notifRef}>
+          {/* Notification Bell Badge */}
+          <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               aria-label={`Store Notifications (${totalAlerts} alerts)`}
-              className="p-2 rounded-lg text-zinc-600 hover:text-zinc-900 bg-white hover:bg-zinc-100 transition-colors relative cursor-pointer border border-zinc-200 shadow-2xs"
+              className="p-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition relative focus-visible:ring-2 focus-visible:ring-[#1E3A5F]"
             >
-              <Bell className="w-4 h-4" />
+              <i className="fa-solid fa-bell text-base" aria-hidden="true"></i>
               {totalAlerts > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-zinc-950 text-white font-bold text-[9px] rounded-full flex items-center justify-center font-mono ring-2 ring-white">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-[#E64545] text-white font-bold text-[10px] rounded-full flex items-center justify-center font-mono">
                   {totalAlerts}
                 </span>
               )}
             </button>
 
-            {/* Notification Dropdown Popover */}
+            {/* Notification Popup Dropdown */}
             {showNotifications && (
               <div
                 role="dialog"
                 aria-label="Notifications Panel"
-                className="absolute right-0 mt-2 w-80 bg-white text-zinc-900 border border-zinc-200 rounded-xl shadow-xl p-4 z-50 animate-fade-in text-xs space-y-2.5"
+                className="absolute right-0 mt-2 w-72 bg-white border-2 border-slate-200 rounded-xl shadow-xl p-3.5 z-50 animate-fade-in text-xs space-y-2 motion-reduce:animate-none"
               >
-                <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                  <h4 className="font-semibold text-zinc-950 font-display flex items-center gap-1.5">
-                    <Bell className="w-4 h-4 text-zinc-700" />
-                    <span>Store Alerts</span>
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h4 className="font-bold text-slate-900 font-display">
+                    Store Notifications
                   </h4>
-                  <span className="text-[10px] bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded-full font-semibold font-mono border border-zinc-200">
-                    {totalAlerts} Action Required
+                  <span className="text-[10px] bg-red-50 text-[#E64545] px-2 py-0.5 rounded font-bold font-mono border border-red-200">
+                    {totalAlerts} Alerts
                   </span>
                 </div>
 
-                <div className="space-y-2 max-h-56 overflow-y-auto">
+                <div className="space-y-2 max-h-48 overflow-y-auto">
                   {lowStockCount > 0 && (
-                    <div className="p-3 bg-amber-50/80 rounded-lg border border-amber-200 flex items-start gap-2.5 text-amber-950">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex items-start space-x-2 text-amber-900">
+                      <i className="fa-solid fa-triangle-exclamation text-amber-600 text-xs mt-0.5" aria-hidden="true"></i>
                       <div>
-                        <p className="font-semibold text-xs text-amber-950">Low Inventory Warning</p>
-                        <p className="text-[11px] text-amber-800 font-mono mt-0.5">
-                          {lowStockCount} items at or below reorder threshold.
+                        <p className="font-bold text-[11px]">Low Stock Alert</p>
+                        <p className="text-[10px] text-amber-700 font-mono">
+                          {lowStockCount} Kirana items below minimum warning threshold.
                         </p>
                       </div>
                     </div>
                   )}
 
                   {overdueUdharCount > 0 && (
-                    <div className="p-3 bg-red-50/80 rounded-lg border border-red-200 flex items-start gap-2.5 text-red-950">
-                      <BookOpen className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="p-2.5 bg-red-50 rounded-lg border border-red-200 flex items-start space-x-2 text-red-900">
+                      <i className="fa-solid fa-book-bookmark text-[#E64545] text-xs mt-0.5" aria-hidden="true"></i>
                       <div>
-                        <p className="font-semibold text-xs text-red-950">Pending Udhaar Dues</p>
-                        <p className="text-[11px] text-red-800 font-mono mt-0.5">
-                          {overdueUdharCount} customer ledgers have unsettled balances.
+                        <p className="font-bold text-[11px]">Overdue Udhaar Dues</p>
+                        <p className="text-[10px] text-red-700 font-mono">
+                          {overdueUdharCount} customer accounts have pending balances.
                         </p>
                       </div>
                     </div>
                   )}
-
-                  {totalAlerts === 0 && (
-                    <div className="text-center py-5 space-y-1.5 bg-zinc-50 rounded-lg border border-zinc-100">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
-                      <p className="font-semibold text-xs text-zinc-800">All Clear</p>
-                      <p className="text-[11px] text-zinc-500 font-mono">No inventory or Udhaar alerts.</p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Custom High-Contrast Language Dropdown Popover */}
-          <div className="relative" ref={langRef}>
-            <button
-              type="button"
-              onClick={() => setShowLangDropdown(!showLangDropdown)}
-              aria-label="Select Store Language"
-              className="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <span className="text-sm">{currentLangObj.flag}</span>
-              <span className="text-zinc-900 font-semibold">{currentLangObj.native}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${showLangDropdown ? "rotate-180 text-zinc-900" : ""}`} />
-            </button>
-
-            {/* Floating Language Menu */}
-            {showLangDropdown && (
-              <div
-                role="listbox"
-                aria-label="Languages list"
-                className="absolute right-0 mt-2 w-56 bg-white text-zinc-900 border border-zinc-200 rounded-xl shadow-xl p-1.5 z-50 animate-fade-in space-y-0.5 max-h-72 overflow-y-auto"
-              >
-                <div className="px-2.5 py-1.5 border-b border-zinc-100 mb-1">
-                  <span className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block">
-                    Language / भाषा
-                  </span>
-                </div>
-
-                {INDIAN_LANGUAGES.map((lang) => {
-                  const isSelected = currentLanguage === lang.code;
-                  return (
-                    <button
-                      type="button"
-                      key={lang.code}
-                      onClick={() => {
-                        changeLanguage(lang.code);
-                        setShowLangDropdown(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors text-left cursor-pointer ${
-                        isSelected
-                          ? "bg-zinc-100 text-zinc-950 font-semibold"
-                          : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="text-base">{lang.flag}</span>
-                        <div className="truncate">
-                          <span className="text-zinc-900 font-semibold block">{lang.native}</span>
-                          <span className="text-[10px] text-zinc-400 font-mono block">{lang.name}</span>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <Check className="w-4 h-4 text-zinc-950 flex-shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Language Switcher Dropdown */}
+          <select
+            value={currentLanguage}
+            onChange={(e) => changeLanguage(e.target.value)}
+            aria-label="Select Store Interface Language"
+            className="bg-slate-100 border-2 border-slate-200 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-[#1E3A5F] transition"
+          >
+            {INDIAN_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.nativeName}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Global Privacy & DPDP Policy Modal */}
-      <PrivacyPolicyModal
-        isOpen={showPrivacyModal}
-        onClose={() => setShowPrivacyModal(false)}
+      {/* Cash Drawer Audit Modal */}
+      <ShiftReconciliationModal
+        isOpen={showShiftAuditModal}
+        onClose={() => setShowShiftAuditModal(false)}
       />
     </header>
   );

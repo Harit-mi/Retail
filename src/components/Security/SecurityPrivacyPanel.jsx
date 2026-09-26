@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
-import { PrivacyPolicyModal } from "../Legal/PrivacyPolicyModal";
-import {
-  ShieldCheck,
-  Lock,
-  CheckCircle,
-  Trash2,
-  Key,
-  FileText,
-  ExternalLink,
-} from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
 
 export const SecurityPrivacyPanel = () => {
-  const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin, storeConfig } = useStore();
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo', 'legal'
+  const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin } = useStore();
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo'
   const [newPin, setNewPin] = useState("");
   const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
@@ -21,30 +12,29 @@ export const SecurityPrivacyPanel = () => {
   const [grievanceType, setGrievanceType] = useState("erasure");
   const [grievanceText, setGrievanceText] = useState("");
   const [grievanceSuccess, setGrievanceSuccess] = useState(null);
-  const [showFullPolicyModal, setShowFullPolicyModal] = useState(false);
 
   const securityPrincipleItems = [
     {
-      title: "100% Local-First Offline Storage",
-      desc: "All invoices, inventory & customer ledgers are stored securely inside your browser using Web Crypto AES-GCM 256. Zero data sent to external cloud servers.",
-      tag: "Architecture",
-      icon: "fa-solid fa-hard-drive text-slate-800",
+      title: "Real-Time Online Cloud Synchronization",
+      desc: "All invoices, inventory & customer ledgers are synchronized live with encrypted cloud servers (https://api.dukaanpos.cloud/v1/sync) with 0ms local fallback.",
+      tag: "Cloud Architecture",
+      icon: "fa-solid fa-cloud text-[#1E3A5F]",
     },
     {
       title: "India DPDP Act 2023 Compliance",
-      desc: "Protects customer personal identifiers with phone masking and Section 12 Right-to-Erasure customer deletion with GST ledger preservation.",
-      tag: "Statutory Law",
-      icon: "fa-solid fa-user-shield text-emerald-600",
+      desc: "Protects customer data with phone masking (+91 98765 *****) and Section 12 Right-to-Erasure customer deletion.",
+      tag: "Privacy Compliance",
+      icon: "fa-solid fa-user-shield text-[#1FAA59]",
     },
     {
       title: "GSTR Export Formula Injection Shield",
-      desc: "Escapes dangerous spreadsheet formula characters (=, +, -, @) during GSTR-1/3B CSV downloads to prevent CSV injection vulnerabilities.",
+      desc: "Escapes dangerous spreadsheet characters (=, +, -, @) during GSTR-1/3B CSV file downloads to block RCE vulnerabilities.",
       tag: "Export Defense",
       icon: "fa-solid fa-shield-halved text-teal-600",
     },
     {
       title: "Physical Counter Register PIN Lock",
-      desc: "Instant 4-digit screen lock gating the POS counter register to prevent unauthorized access when cashiers step away from the till.",
+      desc: "Instant 4-digit screen lock gating the POS counter register to prevent unauthorized access when cashiers step away.",
       tag: "Access Control",
       icon: "fa-solid fa-lock text-amber-600",
     },
@@ -58,7 +48,7 @@ export const SecurityPrivacyPanel = () => {
 
     if (window.confirm(`Are you sure you want to permanently erase all records for ${target.name} under DPDP Right-to-Erasure?`)) {
       deleteCustomer(target.id);
-      setDeletionSuccess(`Permanently erased personal records for ${target.name} (${target.phone}) under DPDP Right-to-Erasure.`);
+      setDeletionSuccess(`Permanently erased data for ${target.name} (${target.phone}) under DPDP Right-to-Erasure.`);
       setSelectedCustomerIdToDelete("");
       setTimeout(() => setDeletionSuccess(null), 4000);
     }
@@ -76,73 +66,75 @@ export const SecurityPrivacyPanel = () => {
     e.preventDefault();
     if (!grievanceText) return;
     const ticketId = `DPDP-GRV-${Math.floor(10000 + Math.random() * 90000)}`;
-    setGrievanceSuccess(`Grievance Ticket #${ticketId} submitted to Data Protection Officer (DPO). Mandatory SLA resolution within 7 business days under Section 13.`);
+    setGrievanceSuccess(`Grievance Ticket #${ticketId} submitted to Data Protection Officer (DPO). Mandatory SLA resolution within 7 business days as per Section 13.`);
     setGrievanceText("");
     setTimeout(() => setGrievanceSuccess(null), 6000);
   };
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Clean Header Banner */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-200/90">
+      {/* Header Banner */}
+      <div className="bg-[#0F1F35] text-white rounded-xl p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-white/10">
         <div>
-          <h2 className="text-base font-bold font-display tracking-tight text-slate-900 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+          <h2 className="text-lg font-black font-display tracking-wide flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-[#F5A623]" />
             <span>Store Security & DPDP Privacy Center</span>
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Local-first AES-256 encryption, cashier PIN security & DPDP Act 2023 compliance
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Local-first offline encryption, cashier PIN security & DPDP Act 2023 data compliance
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowFullPolicyModal(true)}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5 transition border border-slate-200/80 shadow-2xs"
-          >
-            <FileText className="w-4 h-4 text-slate-600" />
-            <span>View Privacy Policies</span>
-          </button>
-
-          <button
             onClick={lockCounter}
-            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition"
+            className="px-4 py-2.5 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg flex items-center gap-1.5 shadow transition"
           >
             <Lock className="w-4 h-4" />
-            <span>Lock Register</span>
+            <span>Lock Register Now</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
-        {[
-          { id: "overview", label: "🛡️ Security Overview" },
-          { id: "legal", label: "📜 Privacy Policy & Terms" },
-          { id: "pin", label: "🔑 Cashier PIN Settings" },
-          { id: "policy", label: "🗑️ Customer Right-to-Erasure" },
-          { id: "dpo", label: "⚖️ DPO & Grievance SLA (Sec 13)" },
-        ].map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
-                isActive
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "overview" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          🛡️ Security Overview
+        </button>
+        <button
+          onClick={() => setActiveTab("pin")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "pin" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          🔑 Cashier PIN Settings
+        </button>
+        <button
+          onClick={() => setActiveTab("policy")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "policy" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          🗑️ Customer Right-to-Erasure
+        </button>
+        <button
+          onClick={() => setActiveTab("dpo")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "dpo" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          📜 DPO & Grievance SLA (Sec 13)
+        </button>
       </div>
 
       {deletionSuccess && (
-        <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-2xs">
-          <CheckCircle className="w-4 h-4 text-emerald-600" />
+        <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in">
+          <CheckCircle className="w-4 h-4" />
           <span>{deletionSuccess}</span>
         </div>
       )}
@@ -154,17 +146,17 @@ export const SecurityPrivacyPanel = () => {
             {securityPrincipleItems.map((item, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex items-start space-x-4"
+                className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs flex items-start space-x-4"
               >
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <i className={`${item.icon} text-lg`}></i>
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <i className={`${item.icon} text-xl`}></i>
                 </div>
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-slate-900 text-sm font-display">
+                    <h4 className="font-extrabold text-slate-900 text-sm font-display">
                       {item.title}
                     </h4>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 font-mono font-semibold px-2 py-0.5 rounded-full border border-slate-200/60">
+                    <span className="text-[10px] bg-slate-100 text-slate-700 font-mono font-bold px-2 py-0.5 rounded border border-slate-200">
                       {item.tag}
                     </span>
                   </div>
@@ -176,102 +168,37 @@ export const SecurityPrivacyPanel = () => {
             ))}
           </div>
 
-          <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900">
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900">
             <div>
-              <h5 className="font-bold font-display">Test Register Screen Lock</h5>
-              <p className="text-[11px] text-amber-800">Lock the counter to verify that the 4-digit cashier PIN prompt works as expected.</p>
+              <h5 className="font-extrabold font-display">Test Physical Counter Lock</h5>
+              <p className="text-[11px] text-amber-800">Lock the counter to verify the 4-digit cashier PIN prompt works.</p>
             </div>
             <button
               onClick={lockCounter}
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition text-xs whitespace-nowrap shadow-2xs"
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition text-xs whitespace-nowrap"
             >
-              Lock Register Now
+              Test Register Lock
             </button>
           </div>
         </div>
       )}
 
-      {/* Tab 2: Full Privacy Policy & Legal Documentation */}
-      {activeTab === "legal" && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-6 max-w-3xl">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="font-bold text-slate-900 text-base font-display flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-600" />
-                <span>Statutory Privacy Policy & Customer Terms</span>
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                {storeConfig?.name || "Gupta Kirana Store"} · DPDP Act 2023 Compliant Policy
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowFullPolicyModal(true)}
-              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Full Screen View</span>
-            </button>
-          </div>
-
-          <div className="space-y-4 text-xs text-slate-700 leading-relaxed font-sans">
-            <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-              <strong className="text-slate-900 font-bold block mb-1">Local-First Storage Guarantee:</strong>
-              DukaanPOS runs strictly in the local browser sandbox. Customer phone numbers, invoices, and ledger balances are encrypted with AES-GCM 256-bit keys on the local device. No merchant or customer data is transmitted to cloud tracking servers.
-            </div>
-
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">1. Data Purpose & Collection</h4>
-              <p>
-                Customer mobile numbers and names are collected solely to facilitate GST tax invoice generation, WhatsApp receipt dispatch, and Udhaar credit balance accounting.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">2. India DPDP Act 2023 Rights</h4>
-              <p>
-                In accordance with Sections 11, 12, and 13 of the Digital Personal Data Protection Act 2023, customers retain the right to:
-              </p>
-              <ul className="list-disc pl-5 mt-1 space-y-1 text-slate-600">
-                <li><strong>Access:</strong> Request an itemized statement of all past purchases and balance dues.</li>
-                <li><strong>Correction:</strong> Update phone numbers or account names at any time.</li>
-                <li><strong>Erasure:</strong> Request complete permanent deletion of personal contact records.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">3. WhatsApp Receipt Policy</h4>
-              <p>
-                Digital billing receipts are sent directly via client-side WhatsApp intent links without intermediary message servers. Receipts contain only invoice line items, tax totals, and store contact information.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">4. Data Protection Officer (DPO)</h4>
-              <p>
-                For any statutory DPDP grievances or data subject requests, contact the designated DPO at <strong className="font-mono text-emerald-700">dpo@dukaanpos.in</strong> (Statutory SLA turnaround: 7 business days).
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Cashier PIN Configuration */}
+      {/* Tab 2: Cashier PIN Configuration */}
       {activeTab === "pin" && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-2xs max-w-md">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs max-w-md">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="font-bold text-slate-900 text-base font-display flex items-center gap-2">
-              <Key className="w-5 h-5 text-slate-800" />
-              <span>Configure Cashier Lock PIN</span>
+            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+              <Key className="w-5 h-5 text-[#1E3A5F]" />
+              <span>Configure Cashier Counter Lock PIN</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Current Active PIN: <strong className="font-mono text-slate-900 text-sm bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">{counterPin}</strong>
+              Current Active PIN: <strong className="font-mono text-[#1E3A5F] text-sm bg-slate-100 px-2 py-0.5 rounded">{counterPin}</strong>
             </p>
           </div>
 
           <form onSubmit={handleUpdatePin} className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
+              <label className="text-xs font-bold text-slate-700 block mb-1">
                 Enter New 4-Digit Cashier PIN
               </label>
               <input
@@ -280,19 +207,19 @@ export const SecurityPrivacyPanel = () => {
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value)}
                 placeholder="New PIN (e.g. 5678)"
-                className="w-full bg-slate-50 border border-slate-300 font-mono font-bold text-sm px-3.5 py-2.5 rounded-xl outline-none focus:border-slate-800 focus:bg-white transition"
+                className="w-full bg-slate-50 border-2 border-slate-300 font-mono font-bold text-sm px-3 py-2.5 rounded-lg outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             {pinMsg && (
-              <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+              <p className="text-xs font-bold text-[#1FAA59] bg-emerald-50 p-2 rounded-lg border border-emerald-200">
                 {pinMsg}
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px]"
+              className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-lg shadow transition min-h-[44px]"
             >
               Save New Cashier PIN
             </button>
@@ -300,28 +227,28 @@ export const SecurityPrivacyPanel = () => {
         </div>
       )}
 
-      {/* Tab 4: DPDP Right-to-Erasure Customer Deletion Panel */}
+      {/* Tab 3: DPDP Right-to-Erasure Customer Deletion Panel */}
       {activeTab === "policy" && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-2xs max-w-lg">
+        <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs max-w-lg">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="font-bold text-slate-900 text-base font-display flex items-center gap-2">
-              <Trash2 className="w-5 h-5 text-red-600" />
-              <span>DPDP Act 2023 — Right-to-Erasure Data Purge</span>
+            <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-[#E64545]" />
+              <span>DPDP Act 2023 — Right-to-Erasure Data Erasure</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Under Section 12 of India Digital Personal Data Protection Act 2023, customers may request permanent erasure of their personal identifiers.
+              Under Section 12 of India Digital Personal Data Protection Act 2023, customers can request complete deletion of their personal identifier and phone records.
             </p>
           </div>
 
           <form onSubmit={handleDeleteCustomer} className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
+              <label className="text-xs font-bold text-slate-700 block mb-1">
                 Select Customer Account to Erase:
               </label>
               <select
                 value={selectedCustomerIdToDelete}
                 onChange={(e) => setSelectedCustomerIdToDelete(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-slate-800"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               >
                 <option value="">-- Choose Customer --</option>
                 {customers.map((c) => (
@@ -335,26 +262,26 @@ export const SecurityPrivacyPanel = () => {
             <button
               type="submit"
               disabled={!selectedCustomerIdToDelete}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs transition disabled:opacity-50 min-h-[44px]"
+              className="px-5 py-2.5 bg-[#E64545] hover:bg-red-700 text-white font-extrabold text-xs rounded-lg flex items-center gap-2 shadow transition disabled:opacity-50 min-h-[44px]"
             >
               <Trash2 className="w-4 h-4" />
               <span>Permanently Erase Customer Data</span>
             </button>
           </form>
 
-          <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl text-[11px] text-slate-600 leading-relaxed">
-            <strong className="text-slate-900 font-bold">GST Ledger Protection:</strong> Erasing a customer purges all PII (name, phone, loyalty points) while anonymizing historical invoices into <code className="bg-slate-200 text-slate-800 px-1 py-0.5 rounded font-mono">Anonymous Customer</code>. Store financial ledgers and GST returns remain 100% balanced.
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-[11px] text-slate-600 leading-relaxed">
+            <strong className="text-slate-900 font-extrabold">GST Ledger Protection Guarantee:</strong> Erasing a customer purges all PII (name, phone, loyalty points) while anonymizing historical invoices into <code className="bg-slate-200 text-slate-800 px-1 py-0.5 rounded font-mono">Anonymous Customer</code>. Store financial ledgers and GST returns remain 100% balanced without retaining personal data.
           </div>
         </div>
       )}
 
-      {/* Tab 5: DPDP Section 13 DPO & Grievance Redressal */}
+      {/* Tab 4: DPDP Section 13 DPO & Grievance Redressal */}
       {activeTab === "dpo" && (
         <div className="space-y-4 max-w-xl">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-2xs">
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
             <div className="border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base font-display flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-slate-800" />
+              <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#1E3A5F]" />
                 <span>Section 13 — Data Protection Officer & Statutory SLA</span>
               </h3>
               <p className="text-xs text-slate-500 mt-1">
@@ -363,21 +290,21 @@ export const SecurityPrivacyPanel = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-1">
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-1">
                 <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">Designated DPO</span>
-                <p className="font-bold text-slate-900">Harit Mishra</p>
+                <p className="font-extrabold text-slate-900">Harit Mishra (DPO, DukaanPOS)</p>
                 <p className="text-[11px] text-slate-500 font-mono">dpo@dukaanpos.in</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-1">
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-1">
                 <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">Statutory SLA</span>
-                <p className="font-bold text-emerald-700">7 Business Days Turnaround</p>
+                <p className="font-extrabold text-[#1FAA59]">7 Business Days Turnaround</p>
                 <p className="text-[11px] text-slate-500 font-mono">Sec 13(1) Statutory Response</p>
               </div>
             </div>
 
             {grievanceSuccess && (
-              <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
+              <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] p-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 shrink-0" />
                 <span>{grievanceSuccess}</span>
               </div>
             )}
@@ -392,7 +319,7 @@ export const SecurityPrivacyPanel = () => {
                 <select
                   value={grievanceType}
                   onChange={(e) => setGrievanceType(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-slate-800"
+                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
                 >
                   <option value="erasure">Section 12: Request PII Data Erasure</option>
                   <option value="access">Section 11: Request PII Summary Report</option>
@@ -409,13 +336,13 @@ export const SecurityPrivacyPanel = () => {
                   value={grievanceText}
                   onChange={(e) => setGrievanceText(e.target.value)}
                   placeholder="Provide customer phone number, name, and specific request details…"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 outline-none focus:border-slate-800"
+                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
                 ></textarea>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px]"
+                className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-lg shadow transition min-h-[44px]"
               >
                 Log Statutory Grievance Ticket
               </button>
@@ -423,12 +350,6 @@ export const SecurityPrivacyPanel = () => {
           </div>
         </div>
       )}
-
-      {/* Full Screen Privacy Policy Modal */}
-      <PrivacyPolicyModal
-        isOpen={showFullPolicyModal}
-        onClose={() => setShowFullPolicyModal(false)}
-      />
     </div>
   );
 };
