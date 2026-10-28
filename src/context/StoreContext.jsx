@@ -127,6 +127,53 @@ export const StoreProvider = ({ children }) => {
     };
   });
 
+  const recordShiftReconciliation = (actualCash, notes = "") => {
+    const openingFloat = currentShift?.openingFloat || 2000;
+    const shiftSales = (sales || []).filter((s) => {
+      if (s.paymentMode !== "cash") return false;
+      if (!currentShift?.startTime) return true;
+      return new Date(s.date) >= new Date(currentShift.startTime);
+    });
+    const cashSalesTotal = shiftSales.reduce(
+      (acc, s) => acc + (s.paidAmount || s.grandTotal || 0),
+      0
+    );
+    const expectedCash = openingFloat + cashSalesTotal;
+    const discrepancy = actualCash - expectedCash;
+
+    const auditRecord = {
+      id: `AUDIT-${Date.now()}`,
+      shiftId: currentShift.id,
+      shiftStartTime: currentShift.startTime,
+      timestamp: new Date().toISOString(),
+      openingFloat,
+      cashSalesTotal,
+      expectedCash,
+      actualCash,
+      discrepancy,
+      notes,
+    };
+
+    try {
+      const existingAudits = JSON.parse(localStorage.getItem("dukaan_drawer_audits") || "[]");
+      existingAudits.unshift(auditRecord);
+      localStorage.setItem("dukaan_drawer_audits", JSON.stringify(existingAudits.slice(0, 50)));
+    } catch {}
+
+    const nextShift = {
+      id: `shift_${Date.now()}`,
+      startTime: new Date().toISOString(),
+      openingFloat: actualCash > 0 ? actualCash : 2000,
+      cashier: storeConfig?.ownerName || "Cashier",
+    };
+    setCurrentShift(nextShift);
+    try {
+      localStorage.setItem("dukaan_current_shift", JSON.stringify(nextShift));
+    } catch {}
+
+    return auditRecord;
+  };
+
   // Request browser storage persistence to prevent unexpected eviction
   useEffect(() => {
     if (typeof navigator !== "undefined" && navigator.storage && navigator.storage.persist) {
