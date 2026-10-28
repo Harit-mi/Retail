@@ -8,8 +8,13 @@ export const calculateGstSplit = (price, gstRate = 5, isInterState = false) => {
   const priceNum = Number(price) || 0;
   const gstNum = Number(gstRate) || 0;
   
-  const taxableAmount = Math.round((priceNum / (1 + gstNum / 100)) * 100) / 100;
-  const totalTax = Math.round((priceNum - taxableAmount) * 100) / 100;
+  // High-precision paise arithmetic to strictly prevent floating-point drift
+  const pricePaise = Math.round(priceNum * 100);
+  const taxablePaise = Math.round(pricePaise / (1 + gstNum / 100));
+  const totalTaxPaise = pricePaise - taxablePaise;
+
+  const taxableAmount = taxablePaise / 100;
+  const totalTax = totalTaxPaise / 100;
 
   if (isInterState) {
     return {
@@ -21,12 +26,14 @@ export const calculateGstSplit = (price, gstRate = 5, isInterState = false) => {
     };
   }
 
+  // Exact split ensuring cgst + sgst === totalTax
   const halfTax = Math.round((totalTax / 2) * 100) / 100;
+  const otherHalf = Math.round((totalTax - halfTax) * 100) / 100;
   return {
     taxableAmount,
     totalTax,
     cgst: halfTax,
-    sgst: halfTax,
+    sgst: otherHalf,
     igst: 0,
   };
 };
@@ -82,9 +89,11 @@ export const calculateCartTotals = (
 
   const grandTotal = Math.max(0, Math.round(subtotal - calculatedDiscount));
 
-  // Independent rounding for taxable subtotal and total tax amount
-  const exactTaxableSubtotal = Math.round(taxDetails.taxableAmount * 100) / 100;
-  const exactTaxAmount = Math.round(taxDetails.totalTax * 100) / 100;
+  // Independent rounding for taxable subtotal and total tax amount using paise precision
+  const subtotalPaise = Math.round(subtotal * 100);
+  const taxableSubtotalPaise = Math.round(taxDetails.taxableAmount * 100);
+  const exactTaxableSubtotal = taxableSubtotalPaise / 100;
+  const exactTaxAmount = Math.round((subtotalPaise - taxableSubtotalPaise)) / 100;
 
   return {
     subtotal,

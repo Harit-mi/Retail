@@ -26,6 +26,8 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   const [paymentMode, setPaymentMode] = useState("upi"); // 'cash', 'upi', 'card', 'udhar'
   const [cashTendered, setCashTendered] = useState(cartGrandTotal);
   const [completedBill, setCompletedBill] = useState(null);
+  const [upiVerified, setUpiVerified] = useState(false);
+  const [cardAuthCode, setCardAuthCode] = useState("");
 
   // Re-sync cash tendered to the CURRENT bill total every time the register
   // opens. Without this, cash-tendered carries over from the previous sale
@@ -34,6 +36,8 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       setCashTendered(cartGrandTotal);
+      setUpiVerified(false);
+      setCardAuthCode("");
     }
   }, [isOpen, cartGrandTotal]);
 
@@ -51,6 +55,8 @@ export const PaymentModal = ({ isOpen, onClose }) => {
     const details = {
       mode: paymentMode,
       paidAmount: isUdhar ? 0 : cartGrandTotal,
+      upiVerified: paymentMode === "upi" ? upiVerified : undefined,
+      cardAuthCode: paymentMode === "card" ? cardAuthCode : undefined,
     };
     const bill = completeCheckout(details);
     setCompletedBill(bill);
@@ -161,7 +167,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
             {/* Mode 1: Dynamic NPCI UPI QR Generator */}
             {paymentMode === "upi" && (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center text-center gap-2">
-                <div className="bg-white p-3 rounded-lg border border-slate-200 flex justify-center">
+                <div className="bg-white p-3 rounded-lg border border-slate-200 flex justify-center shadow-xs">
                   <OfflineQrCode value={upiUri} size={140} />
                 </div>
                 <div>
@@ -172,6 +178,37 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                     VPA: {storeConfig.upiId || "guptakirana@upi"}
                   </p>
                 </div>
+                <div className="w-full mt-1 pt-2 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setUpiVerified(!upiVerified)}
+                    className={`w-full py-2 px-3 rounded text-xs font-bold transition flex items-center justify-center gap-2 ${
+                      upiVerified
+                        ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                        : "bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300"
+                    }`}
+                  >
+                    <CheckCircle2 className={`w-4 h-4 ${upiVerified ? "text-emerald-700" : "text-amber-700"}`} />
+                    <span>{upiVerified ? "✓ UPI Payment Confirmed on Terminal/Soundbox" : "Click to Confirm UPI Soundbox/App Receipt"}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mode 3: Card Swiper Terminal */}
+            {paymentMode === "card" && (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
+                <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                  <span>Card POS Swiper Terminal</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-mono">Manual Swiper</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Optional: Card Last 4 Digits or Auth Ref"
+                  value={cardAuthCode}
+                  onChange={(e) => setCardAuthCode(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
+                />
               </div>
             )}
 

@@ -26,14 +26,21 @@ const playDrawerKickSound = () => {
 };
 
 export const ShiftReconciliationModal = ({ isOpen, onClose }) => {
-  const { sales, storeConfig } = useStore();
+  const { sales, storeConfig, currentShift, recordShiftReconciliation } = useStore();
 
-  const openingFloat = storeConfig?.shiftOpeningFloat || 2000;
+  const openingFloat = currentShift?.openingFloat || storeConfig?.shiftOpeningFloat || 2000;
 
-  // Calculate Cash Sales Total
-  const cashSalesTotal = sales
-    .filter((s) => s.paymentMode === "cash")
-    .reduce((acc, s) => acc + (s.paidAmount || s.grandTotal || 0), 0);
+  // Calculate Cash Sales Total ONLY for the active shift
+  const shiftCashSales = sales.filter((s) => {
+    if (s.paymentMode !== "cash") return false;
+    if (!currentShift?.startTime) return true;
+    return new Date(s.date) >= new Date(currentShift.startTime);
+  });
+
+  const cashSalesTotal = shiftCashSales.reduce(
+    (acc, s) => acc + (s.paidAmount || s.grandTotal || 0),
+    0
+  );
 
   const expectedCashInDrawer = openingFloat + cashSalesTotal;
 
@@ -80,22 +87,8 @@ export const ShiftReconciliationModal = ({ isOpen, onClose }) => {
     setIsSubmitted(true);
     setAuditTimestamp(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
 
-    // Save audit record to localStorage for audit history
-    try {
-      const existingAudits = JSON.parse(localStorage.getItem("dukaan_drawer_audits") || "[]");
-      existingAudits.unshift({
-        id: `AUDIT-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        openingFloat,
-        cashSalesTotal,
-        expectedCash: expectedCashInDrawer,
-        actualCash: actualCountedCash,
-        discrepancy,
-        notes: cashierNotes,
-      });
-      localStorage.setItem("dukaan_drawer_audits", JSON.stringify(existingAudits.slice(0, 50)));
-    } catch {
-      // Ignore storage errors
+    if (recordShiftReconciliation) {
+      recordShiftReconciliation(actualCountedCash, cashierNotes);
     }
   };
 

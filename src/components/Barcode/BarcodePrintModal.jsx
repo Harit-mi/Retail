@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
 import { Printer, LayoutGrid, Plus, Minus } from "lucide-react";
+import { getEan13Bars } from "../../utils/ean13";
 
 export const BarcodePrintModal = () => {
   const { products, storeConfig } = useStore();
@@ -263,20 +264,27 @@ export const BarcodePrintModal = () => {
                     {item.name}
                   </div>
 
-                  {/* High-Contrast Crisp EAN-13 Barcode Vector Visual */}
-                  <div className="w-full my-1 flex justify-center items-center space-x-0.5 h-6 px-1 overflow-hidden">
-                    {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 4, 1, 3, 1].map((w, i) => (
-                      <div
-                        key={i}
-                        className="bg-slate-950 h-full shrink-0"
-                        style={{ width: `${w}px` }}
-                      />
-                    ))}
-                  </div>
+                  {/* Algorithmic Standard GS1 EAN-13 Barcode Vector Visual */}
+                  {(() => {
+                    const { ean13, runs } = getEan13Bars(item.barcode || "890105800124");
+                    return (
+                      <>
+                        <div className="w-full my-1 flex justify-center items-center h-6 px-1 overflow-hidden">
+                          {runs.map((r, i) => (
+                            <div
+                              key={i}
+                              className={r.isBar ? "bg-slate-950 h-full shrink-0" : "bg-transparent h-full shrink-0"}
+                              style={{ width: `${r.width * 1.2}px` }}
+                            />
+                          ))}
+                        </div>
 
-                  <div className="text-[8px] text-slate-600 font-bold tracking-widest truncate w-full">
-                    {item.barcode || "890105800124"}
-                  </div>
+                        <div className="text-[8px] text-slate-600 font-bold tracking-widest truncate w-full">
+                          {ean13}
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   <div className="text-[10px] font-black text-slate-950 mt-0.5 truncate w-full">
                     MRP: ₹{item.retailPrice}/{item.unit || "kg"}

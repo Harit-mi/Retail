@@ -3,18 +3,36 @@ import { useStore } from "../../context/useStore";
 import { Sparkles, TrendingUp, AlertTriangle, ArrowRight, PackageCheck } from "lucide-react";
 
 export const AIDemandForecastingCard = () => {
-  const { products } = useStore();
+  const { products, sales } = useStore();
 
   const lowStockItems = products.filter(
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
   );
 
-  const forecastData = lowStockItems.map((p) => ({
-    ...p,
-    predictedRunoutDays: Math.max(1, Math.floor(Math.random() * 3) + 1),
-    recommendedOrderQty: Math.max(10, (p.minStockWarning || 5) * 3),
-    demandVelocity: "High (Peak Shift)",
-  }));
+  // Calculate historical sales velocity deterministically from actual sales log
+  const forecastData = lowStockItems.map((p) => {
+    // Total units sold of this product
+    const unitsSold = sales.reduce((acc, s) => {
+      const match = (s.items || []).find((item) => item.id === p.id || item.name === p.name);
+      return acc + (match ? Number(match.qty) || 0 : 0);
+    }, 0);
+
+    // Estimate daily velocity (baseline 7-day rolling window or at least 1 unit/day)
+    const dailyVelocity = Math.max(0.5, Math.round((unitsSold / 7) * 10) / 10);
+    const runoutDays = Math.max(1, Math.ceil((p.stock || 0) / dailyVelocity));
+    const reorderTarget = Math.max(10, Math.ceil((p.minStockWarning || 5) * 3 - (p.stock || 0)));
+
+    let velocityLabel = "Moderate Velocity";
+    if (dailyVelocity >= 4) velocityLabel = "Very High (Peak Demand)";
+    else if (dailyVelocity >= 1.5) velocityLabel = "High (Peak Shift)";
+
+    return {
+      ...p,
+      predictedRunoutDays: runoutDays,
+      recommendedOrderQty: reorderTarget,
+      demandVelocity: velocityLabel,
+    };
+  });
 
   if (forecastData.length === 0) {
     return (

@@ -49,10 +49,20 @@ export const CustomerLedger = () => {
     if (!activeCustomer || !paymentAmount || Number(paymentAmount) <= 0) return;
 
     const collected = Number(paymentAmount);
-    const prevBal = activeCustomer.balance;
-    const newBal = Math.max(0, prevBal - collected);
+    const prevBal = activeCustomer.balance || 0;
 
-    recordCustomerPayment(activeCustomer.id, collected, paymentNote, paymentMode);
+    if (collected > prevBal) {
+      alert(`Payment amount (₹${collected}) cannot exceed outstanding Udhaar balance of ₹${prevBal}.`);
+      return;
+    }
+
+    const res = recordCustomerPayment(activeCustomer.id, collected, paymentNote, paymentMode);
+    if (res && res.success === false) {
+      alert(res.message);
+      return;
+    }
+
+    const newBal = Math.max(0, prevBal - collected);
 
     setLastPaymentConfirmation({
       customerName: activeCustomer.name,

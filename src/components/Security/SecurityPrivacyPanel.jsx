@@ -1,10 +1,28 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
-import { ShieldCheck, Lock, CheckCircle, Trash2, Key } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle, Trash2, Key, Download, Upload, HardDrive, RefreshCw } from "lucide-react";
+import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 
 export const SecurityPrivacyPanel = () => {
-  const { customers, deleteCustomer, lockCounter, counterPin, updateCounterPin } = useStore();
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo'
+  const {
+    storeConfig,
+    setStoreConfig,
+    products,
+    setProducts,
+    customers,
+    setCustomers,
+    suppliers,
+    purchaseOrders,
+    sales,
+    setSales,
+    deleteCustomer,
+    lockCounter,
+    counterPin,
+    updateCounterPin,
+    syncOutbox = [],
+    syncToCloud,
+  } = useStore();
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo', 'backup'
   const [newPin, setNewPin] = useState("");
   const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
@@ -12,13 +30,15 @@ export const SecurityPrivacyPanel = () => {
   const [grievanceType, setGrievanceType] = useState("erasure");
   const [grievanceText, setGrievanceText] = useState("");
   const [grievanceSuccess, setGrievanceSuccess] = useState(null);
+  const [backupStatus, setBackupStatus] = useState(null);
+  const [restorePin, setRestorePin] = useState("");
 
   const securityPrincipleItems = [
     {
-      title: "Real-Time Online Cloud Synchronization",
-      desc: "All invoices, inventory & customer ledgers are synchronized live with encrypted cloud servers (https://api.dukaanpos.cloud/v1/sync) with 0ms local fallback.",
-      tag: "Cloud Architecture",
-      icon: "fa-solid fa-cloud text-[#1E3A5F]",
+      title: "Durable Offline-First Outbox Architecture",
+      desc: "All transactions and ledger movements commit locally first in an encrypted outbox queue, operating with 100% reliability with or without active internet connectivity.",
+      tag: "Local-First Architecture",
+      icon: "fa-solid fa-hard-drive text-[#1E3A5F]",
     },
     {
       title: "India DPDP Act 2023 Compliance",
@@ -65,10 +85,69 @@ export const SecurityPrivacyPanel = () => {
   const handleFileGrievance = (e) => {
     e.preventDefault();
     if (!grievanceText) return;
-    const ticketId = `DPDP-GRV-${Math.floor(10000 + Math.random() * 90000)}`;
+    const ticketId = `DPDP-GRV-${Date.now()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
     setGrievanceSuccess(`Grievance Ticket #${ticketId} submitted to Data Protection Officer (DPO). Mandatory SLA resolution within 7 business days as per Section 13.`);
     setGrievanceText("");
     setTimeout(() => setGrievanceSuccess(null), 6000);
+  };
+
+  const handleExportBackup = async () => {
+    try {
+      setBackupStatus({ type: "loading", message: "Encrypting store database vault with AES-GCM 256-bit..." });
+      const bundle = {
+        storeConfig,
+        products,
+        customers,
+        suppliers,
+        purchaseOrders,
+        sales,
+      };
+      const encryptedBlob = await createEncryptedBackup(bundle, counterPin);
+      downloadBackupFile(encryptedBlob, storeConfig.name || "DukaanPOS");
+      setBackupStatus({
+        type: "success",
+        message: `Vault backup downloaded successfully (${products.length} products, ${customers.length} customers, ${sales.length} invoices).`,
+      });
+      setTimeout(() => setBackupStatus(null), 6000);
+    } catch (err) {
+      setBackupStatus({ type: "error", message: `Backup export failed: ${err.message}` });
+    }
+  };
+
+  const handleImportBackup = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const pinToUse = restorePin.trim() || counterPin;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        setBackupStatus({ type: "loading", message: "Verifying backup integrity and decrypting..." });
+        const res = await verifyAndDecryptBackup(text, pinToUse);
+        if (!res.success) {
+          setBackupStatus({ type: "error", message: res.message });
+          return;
+        }
+
+        const data = res.data;
+        if (data.storeConfig) setStoreConfig(data.storeConfig);
+        if (data.products) setProducts(data.products);
+        if (data.customers) setCustomers(data.customers);
+        if (data.sales) setSales(data.sales);
+
+        setBackupStatus({
+          type: "success",
+          message: `Restore complete! Recovered ${res.metadata?.stats?.productsCount || data.products.length} products, ${res.metadata?.stats?.customersCount || data.customers.length} customers, ${res.metadata?.stats?.salesCount || data.sales.length} sales from ${res.metadata?.exportDate?.split("T")[0] || "backup"}.`,
+        });
+        setRestorePin("");
+        setTimeout(() => setBackupStatus(null), 8000);
+      } catch (err) {
+        setBackupStatus({ type: "error", message: `Corrupted file or invalid format: ${err.message}` });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   return (
@@ -130,7 +209,27 @@ export const SecurityPrivacyPanel = () => {
         >
           📜 DPO & Grievance SLA (Sec 13)
         </button>
+        <button
+          onClick={() => setActiveTab("backup")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+            activeTab === "backup" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          💾 Vault Backup & Recovery
+        </button>
       </div>
+
+      {backupStatus && (
+        <div className={`px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in ${
+          backupStatus.type === "error"
+            ? "bg-red-50 border border-red-300 text-red-700"
+            : backupStatus.type === "loading"
+            ? "bg-blue-50 border border-blue-300 text-blue-700"
+            : "bg-emerald-50 border border-emerald-300 text-emerald-800"
+        }`}>
+          <span>{backupStatus.message}</span>
+        </div>
+      )}
 
       {deletionSuccess && (
         <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in">
@@ -347,6 +446,132 @@ export const SecurityPrivacyPanel = () => {
                 Log Statutory Grievance Ticket
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: Encrypted Vault Backup, Recovery & Offline Outbox Queue */}
+      {activeTab === "backup" && (
+        <div className="space-y-4 max-w-2xl animate-fade-in">
+          {/* Section 1: Backup & Export */}
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+                <Download className="w-5 h-5 text-[#1E3A5F]" />
+                <span>Encrypted Vault Backup Export</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Download a cryptographically sealed offline backup (.dukaan file) encrypted with AES-GCM 256-bit using your cashier PIN.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-xs space-y-1">
+              <div className="flex justify-between font-mono text-[11px] text-slate-600">
+                <span>Products in Catalog:</span>
+                <strong className="text-slate-900">{products.length}</strong>
+              </div>
+              <div className="flex justify-between font-mono text-[11px] text-slate-600">
+                <span>Khata Customers & Ledgers:</span>
+                <strong className="text-slate-900">{customers.length}</strong>
+              </div>
+              <div className="flex justify-between font-mono text-[11px] text-slate-600">
+                <span>Sales Invoices Recorded:</span>
+                <strong className="text-slate-900">{sales.length}</strong>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportBackup}
+              className="px-5 py-3 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 shadow transition min-h-[44px]"
+            >
+              <Download className="w-4 h-4 text-[#F5A623]" />
+              <span>Download Encrypted Vault (.dukaan)</span>
+            </button>
+          </div>
+
+          {/* Section 2: Vault Restore */}
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base font-display flex items-center gap-2">
+                <Upload className="w-5 h-5 text-[#2F5E3D]" />
+                <span>Restore Encrypted Backup</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Restore store database from a previously exported .dukaan file. The file is validated and decrypted using your PIN.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Cashier PIN for Decryption (Leave blank to use current PIN)
+                </label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={restorePin}
+                  onChange={(e) => setRestorePin(e.target.value)}
+                  placeholder="Enter PIN used when backup was created…"
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none focus:border-[#1E3A5F]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Select .dukaan Vault File
+                </label>
+                <input
+                  type="file"
+                  accept=".dukaan,.json,.txt"
+                  onChange={handleImportBackup}
+                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Durable Offline Outbox Queue */}
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h4 className="font-extrabold text-slate-900 text-sm font-display flex items-center gap-2">
+                  <HardDrive className="w-4 h-4 text-[#C2782A]" />
+                  <span>Durable Local Outbox Sync Queue</span>
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Transactions committed locally in outbox with deterministic idempotency keys.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => syncToCloud()}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-200 flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Check Cloud Sync</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs p-2 bg-slate-50 rounded border border-slate-200">
+                <span className="font-semibold text-slate-700">Total Outbox Events:</span>
+                <span className="font-mono font-bold text-slate-900">{syncOutbox.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2 bg-slate-50 rounded border border-slate-200">
+                <span className="font-semibold text-slate-700">Pending Cloud Delivery:</span>
+                <span className="font-mono font-bold text-amber-700">
+                  {syncOutbox.filter((e) => e.status === "pending_sync").length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2 bg-slate-50 rounded border border-slate-200">
+                <span className="font-semibold text-slate-700">Acknowledged Synced:</span>
+                <span className="font-mono font-bold text-emerald-700">
+                  {syncOutbox.filter((e) => e.status === "synced").length}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
