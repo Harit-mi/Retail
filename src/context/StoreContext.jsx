@@ -382,8 +382,21 @@ export const StoreProvider = ({ children }) => {
         const interruptedTx = localStorage.getItem("dukaan_staged_transaction");
         if (interruptedTx) {
           console.warn("DukaanPOS: Interrupted transaction detected from browser crash. Auto-recovering database from rollback checkpoint...");
-          restoreFromRollbackCheckpoint();
-          localStorage.removeItem("dukaan_staged_transaction");
+          const recoveryResult = restoreFromRollbackCheckpoint();
+          if (recoveryResult && recoveryResult.success) {
+            console.log("DukaanPOS: Successfully restored store vault from rollback checkpoint.");
+            localStorage.removeItem("dukaan_staged_transaction");
+          } else {
+            console.error("DukaanPOS: Failed to restore store database from recovery checkpoint:", recoveryResult?.message);
+            // Fail closed: Do NOT clear recovery marker. Lock UI and prevent write effects from overwriting corrupted state!
+            if (!isCancelled) {
+              setIsCounterLocked(true);
+              setDecryptionFailedClosed(true);
+              isStorageReadyRef.current = false;
+              setIsStorageLoaded(true);
+            }
+            return;
+          }
         }
 
         const savedConfigRaw = localStorage.getItem("dukaan_store_config");
@@ -598,13 +611,26 @@ export const StoreProvider = ({ children }) => {
     }
 
     // 1. Stage rollback checkpoint before modifying anything in localStorage
-    saveRollbackCheckpoint("pre_pin_change");
+    const checkpoint = saveRollbackCheckpoint("pre_pin_change");
+    if (!checkpoint) {
+      return {
+        success: false,
+        message: "Failed to create safety rollback checkpoint (storage may be full). Aborting PIN update to prevent data loss.",
+      };
+    }
 
     // 2. Write-Ahead Transaction Intent to survive unexpected browser termination
-    localStorage.setItem(
-      "dukaan_staged_transaction",
-      JSON.stringify({ type: "PIN_CHANGE", status: "in_progress", timestamp: Date.now() })
-    );
+    try {
+      localStorage.setItem(
+        "dukaan_staged_transaction",
+        JSON.stringify({ type: "PIN_CHANGE", status: "in_progress", timestamp: Date.now() })
+      );
+    } catch (stageErr) {
+      return {
+        success: false,
+        message: `Failed to write transaction recovery marker: ${stageErr.message}. Aborting PIN update.`,
+      };
+    }
 
     try {
       // 3. Generate new PBKDF2 verifier string
@@ -639,9 +665,15 @@ export const StoreProvider = ({ children }) => {
       return { success: true, message: "Cashier PIN updated and store vault re-encrypted successfully!" };
     } catch (err) {
       console.error("Atomic PIN re-encryption error, rolling back:", err);
-      restoreFromRollbackCheckpoint();
-      localStorage.removeItem("dukaan_staged_transaction");
-      return { success: false, message: "Failed to re-encrypt records. PIN change rolled back to prevent data loss." };
+      const rollbackRes = restoreFromRollbackCheckpoint();
+      if (rollbackRes && rollbackRes.success) {
+        localStorage.removeItem("dukaan_staged_transaction");
+        return { success: false, message: "Failed to re-encrypt records. PIN change rolled back safely to prevent data loss." };
+      } else {
+        console.error("Critical: Rollback restoration also failed:", rollbackRes?.message);
+        // Do NOT remove dukaan_staged_transaction so startup recovery or diagnosis can detect interrupted state
+        return { success: false, message: "Failed to re-encrypt records and automatic rollback failed. Database locked to prevent data corruption." };
+      }
     }
   };
 

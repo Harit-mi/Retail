@@ -145,7 +145,15 @@ export const saveRollbackCheckpoint = (label = "checkpoint") => {
       pinVerifier: storage.getItem("dukaan_pin_verifier"),
     };
 
-    storage.setItem("dukaan_recovery_checkpoint", JSON.stringify(checkpoint));
+    const serialized = JSON.stringify(checkpoint);
+    storage.setItem("dukaan_recovery_checkpoint", serialized);
+
+    // Verify written checkpoint was persisted properly
+    const verified = storage.getItem("dukaan_recovery_checkpoint");
+    if (!verified || verified.length === 0) {
+      throw new Error("Checkpoint persistence verification failed.");
+    }
+
     return checkpoint;
   } catch (err) {
     console.warn("Failed to create recovery checkpoint in localStorage:", err);
@@ -166,6 +174,10 @@ export const restoreFromRollbackCheckpoint = () => {
     }
 
     const checkpoint = JSON.parse(raw);
+    if (!checkpoint || typeof checkpoint !== "object") {
+      return { success: false, message: "Recovery checkpoint is corrupt or malformed." };
+    }
+
     const keys = [
       "storeConfig",
       "products",
@@ -188,8 +200,11 @@ export const restoreFromRollbackCheckpoint = () => {
           ? "dukaan_sync_outbox"
           : `dukaan_${key.replace(/([A-Z])/g, "_$1").toLowerCase()}`;
 
-      if (checkpoint[key]) {
+      if (checkpoint[key] !== null && checkpoint[key] !== undefined) {
         storage.setItem(storageKey, checkpoint[key]);
+      } else {
+        // Clean up partial keys that were not present when checkpoint was taken
+        storage.removeItem(storageKey);
       }
     }
 

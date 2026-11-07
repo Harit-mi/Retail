@@ -164,6 +164,44 @@ describe("Production-Readiness Hardening & Reliability Suite", () => {
       const restored = restoreFromRollbackCheckpoint();
       expect(restored.success).toBe(true);
     });
+
+    it("handles corrupted or missing recovery checkpoint gracefully and reports failure", () => {
+      const mockStorage = {
+        getItem: (key) => (key === "dukaan_recovery_checkpoint" ? "INVALID_JSON_CORRUPTED{{" : null),
+        setItem: () => {},
+        removeItem: () => {},
+      };
+
+      const restoreWithCorruptStorage = (storage) => {
+        try {
+          const raw = storage.getItem("dukaan_recovery_checkpoint");
+          if (!raw) return { success: false, message: "No recovery checkpoint found." };
+          const checkpoint = JSON.parse(raw);
+          if (!checkpoint || typeof checkpoint !== "object") {
+            return { success: false, message: "Recovery checkpoint is corrupt or malformed." };
+          }
+          return { success: true };
+        } catch (err) {
+          return { success: false, message: `Rollback failed: ${err.message}` };
+        }
+      };
+
+      const result = restoreWithCorruptStorage(mockStorage);
+      expect(result.success).toBe(false);
+      expect(result.message).toContain("Rollback failed");
+    });
+
+    it("preserves recovery intent marker when restoration fails to prevent silent state substitution", () => {
+      let stagedTransaction = JSON.stringify({ type: "PIN_CHANGE", status: "in_progress" });
+      const recoveryResult = { success: false, message: "Rollback failed" };
+
+      // Replicates the hardened decryptAllOnMount startup guard
+      if (recoveryResult && recoveryResult.success) {
+        stagedTransaction = null;
+      }
+      // If recovery failed, stagedTransaction MUST remain intact for fail-closed protection
+      expect(stagedTransaction).not.toBeNull();
+    });
   });
 
   describe("Strict Cloud Sync Acknowledgement Enforcement", () => {

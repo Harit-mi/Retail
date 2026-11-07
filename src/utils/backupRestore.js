@@ -81,7 +81,13 @@ export const verifyAndDecryptBackup = async (backupRawText, pin, createCheckpoin
 
   // Save rollback checkpoint of current local storage before applying restore
   if (createCheckpoint) {
-    saveRollbackCheckpoint("pre_restore");
+    const cp = saveRollbackCheckpoint("pre_restore");
+    if (!cp) {
+      return {
+        success: false,
+        message: "Failed to create safety rollback checkpoint before restore (storage quota may be exceeded). Restore aborted to protect existing data.",
+      };
+    }
   }
 
   // Run schema migration if from an earlier version
