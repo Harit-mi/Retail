@@ -142,6 +142,7 @@ export const saveRollbackCheckpoint = (label = "checkpoint") => {
       sales: storage.getItem("dukaan_sales"),
       currentShift: storage.getItem("dukaan_current_shift"),
       syncOutbox: storage.getItem("dukaan_sync_outbox"),
+      pinVerifier: storage.getItem("dukaan_pin_verifier"),
     };
 
     storage.setItem("dukaan_recovery_checkpoint", JSON.stringify(checkpoint));
@@ -174,6 +175,7 @@ export const restoreFromRollbackCheckpoint = () => {
       "sales",
       "currentShift",
       "syncOutbox",
+      "pinVerifier",
     ];
 
     for (const key of keys) {

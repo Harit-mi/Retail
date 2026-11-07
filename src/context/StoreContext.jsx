@@ -309,25 +309,37 @@ export const StoreProvider = ({ children }) => {
       clearTimeout(timeoutId);
 
       if (res && res.ok) {
-        const resData = await res.json().catch(() => ({}));
-        const acceptedIds = new Set(
-          Array.isArray(resData.acceptedEventIds)
-            ? resData.acceptedEventIds
-            : pendingEvents.map((e) => e.eventId)
-        );
+        let resData = null;
+        try {
+          resData = await res.json();
+        } catch {
+          resData = null;
+        }
 
+        // Strict validation: Require explicit server acknowledgement array before updating sync status
+        if (!resData || !Array.isArray(resData.acceptedEventIds)) {
+          setCloudSyncStatus("error");
+          return {
+            success: false,
+            status: "error",
+            message: "Cloud sync failed: Server response is missing a valid 'acceptedEventIds' acknowledgement list.",
+          };
+        }
+
+        const acceptedIds = new Set(resData.acceptedEventIds);
         const updated = syncOutbox.map((e) =>
           acceptedIds.has(e.eventId) ? { ...e, status: "synced" } : e
         );
         setSyncOutbox(updated);
         persistSyncOutbox(updated);
 
-        setCloudSyncStatus("synced");
+        const acceptedCount = updated.filter((e) => acceptedIds.has(e.eventId)).length;
+        setCloudSyncStatus(acceptedCount > 0 ? "synced" : "online");
         setLastSyncedAt(new Date().toLocaleTimeString());
         return {
           success: true,
-          status: "synced",
-          message: `Cloud sync complete. ${acceptedIds.size} transactions acknowledged by server.`,
+          status: acceptedCount > 0 ? "synced" : "online",
+          message: `Cloud sync processed. Server acknowledged ${acceptedCount} of ${pendingEvents.length} transactions.`,
         };
       } else {
         const errorDetail = res && res.status
@@ -366,6 +378,14 @@ export const StoreProvider = ({ children }) => {
     const decryptAllOnMount = async () => {
       if (isStorageReadyRef.current) return;
       try {
+        // Crash Recovery Check: Detect interrupted transactions from an unexpected browser crash
+        const interruptedTx = localStorage.getItem("dukaan_staged_transaction");
+        if (interruptedTx) {
+          console.warn("DukaanPOS: Interrupted transaction detected from browser crash. Auto-recovering database from rollback checkpoint...");
+          restoreFromRollbackCheckpoint();
+          localStorage.removeItem("dukaan_staged_transaction");
+        }
+
         const savedConfigRaw = localStorage.getItem("dukaan_store_config");
         const savedProductsRaw = localStorage.getItem("dukaan_products");
         const savedCustomersRaw = localStorage.getItem("dukaan_customers");
@@ -574,17 +594,23 @@ export const StoreProvider = ({ children }) => {
 
   const updateCounterPin = async (newPin) => {
     if (!newPin || newPin.length < 4) {
-      return { success: false, message: "PIN must be at least 4 digits." };
+      return { success: false, message: "PIN must be at least 4 digits or characters." };
     }
 
-    // Stage rollback checkpoint before modifying anything in localStorage
+    // 1. Stage rollback checkpoint before modifying anything in localStorage
     saveRollbackCheckpoint("pre_pin_change");
 
+    // 2. Write-Ahead Transaction Intent to survive unexpected browser termination
+    localStorage.setItem(
+      "dukaan_staged_transaction",
+      JSON.stringify({ type: "PIN_CHANGE", status: "in_progress", timestamp: Date.now() })
+    );
+
     try {
-      // 1. Generate new PBKDF2 verifier string
+      // 3. Generate new PBKDF2 verifier string
       const { verifierString } = await hashPinAsync(newPin);
 
-      // 2. Re-encrypt all existing state tables with the new PIN
+      // 4. Re-encrypt all existing state tables with the new PIN in memory first
       const [encConfig, encProducts, encCustomers, encSuppliers, encPO, encSales] = await Promise.all([
         encryptPayloadAsync({ ...storeConfig, _schemaVersion: CURRENT_SCHEMA_VERSION }, newPin),
         encryptPayloadAsync(products, newPin),
@@ -594,7 +620,7 @@ export const StoreProvider = ({ children }) => {
         encryptPayloadAsync(sales, newPin),
       ]);
 
-      // 3. Staged commit to localStorage
+      // 5. Commit re-encrypted records and verifier to localStorage
       localStorage.setItem("dukaan_store_config", encConfig);
       localStorage.setItem("dukaan_products", encProducts);
       localStorage.setItem("dukaan_customers", encCustomers);
@@ -604,6 +630,9 @@ export const StoreProvider = ({ children }) => {
       localStorage.setItem("dukaan_pin_verifier", verifierString);
       localStorage.removeItem("dukaan_counter_pin"); // eliminate any legacy plaintext PIN
 
+      // 6. Transaction committed: clear transaction intent log
+      localStorage.removeItem("dukaan_staged_transaction");
+
       setCounterPin(newPin);
       setIsCounterLocked(false);
       setDecryptionFailedClosed(false);
@@ -611,6 +640,7 @@ export const StoreProvider = ({ children }) => {
     } catch (err) {
       console.error("Atomic PIN re-encryption error, rolling back:", err);
       restoreFromRollbackCheckpoint();
+      localStorage.removeItem("dukaan_staged_transaction");
       return { success: false, message: "Failed to re-encrypt records. PIN change rolled back to prevent data loss." };
     }
   };

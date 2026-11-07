@@ -298,14 +298,14 @@ export const SecurityPrivacyPanel = () => {
           <form onSubmit={handleUpdatePin} className="space-y-3">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Enter New 4-Digit Cashier PIN
+                Enter New Cashier PIN / Passcode (Min 4 characters)
               </label>
               <input
                 type="password"
-                maxLength="6"
+                maxLength="32"
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value)}
-                placeholder="New PIN (e.g. 5678)"
+                placeholder="PIN or Passphrase (e.g. 5678 or storePass#24)"
                 className="w-full bg-slate-50 border-2 border-slate-300 font-mono font-bold text-sm px-3 py-2.5 rounded-lg outline-none focus:border-[#1E3A5F]"
               />
             </div>
@@ -320,8 +320,12 @@ export const SecurityPrivacyPanel = () => {
               type="submit"
               className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold text-xs rounded-lg shadow transition min-h-[44px]"
             >
-              Save New Cashier PIN
+              Save New Cashier PIN / Passcode
             </button>
+
+            <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg text-[11px] text-slate-500 leading-normal">
+              <strong className="text-slate-800">Security Recommendation:</strong> A 4-digit PIN provides convenient register screen locking during shift operations. For enhanced cryptographic defense against offline password guessing, a 6–12 digit or alphanumeric passphrase is recommended.
+            </div>
           </form>
         </div>
       )}

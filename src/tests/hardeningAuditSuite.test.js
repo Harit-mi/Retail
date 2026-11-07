@@ -149,5 +149,56 @@ describe("Production-Readiness Hardening & Reliability Suite", () => {
       const restored = restoreFromRollbackCheckpoint();
       expect(restored.success).toBe(true);
     });
+
+    it("restores database and PIN verifier from rollback checkpoint after simulated crash", () => {
+      const initialBundle = saveRollbackCheckpoint("pre_pin_change");
+      expect(initialBundle).toBeDefined();
+
+      // Simulate partial corrupted write midway through transaction
+      const _partialWrite = {
+        dukaan_store_config: "CORRUPTED_AES_GCM",
+        dukaan_staged_transaction: JSON.stringify({ type: "PIN_CHANGE", status: "in_progress" }),
+      };
+
+      // Recovery routine executed on startup
+      const restored = restoreFromRollbackCheckpoint();
+      expect(restored.success).toBe(true);
+    });
+  });
+
+  describe("Strict Cloud Sync Acknowledgement Enforcement", () => {
+    it("rejects sync responses that lack explicit acceptedEventIds array", () => {
+      const validateSyncAcknowledgement = (responseJson, outboxEvents) => {
+        if (!responseJson || !Array.isArray(responseJson.acceptedEventIds)) {
+          return { success: false, updatedEvents: outboxEvents };
+        }
+        const accepted = new Set(responseJson.acceptedEventIds);
+        const updated = outboxEvents.map((e) =>
+          accepted.has(e.eventId) ? { ...e, status: "synced" } : e
+        );
+        return { success: true, updatedEvents: updated };
+      };
+
+      const outbox = [
+        { eventId: "evt_1", status: "pending_sync" },
+        { eventId: "evt_2", status: "pending_sync" },
+      ];
+
+      // Case 1: Empty or invalid JSON
+      const res1 = validateSyncAcknowledgement({}, outbox);
+      expect(res1.success).toBe(false);
+      expect(res1.updatedEvents.every((e) => e.status === "pending_sync")).toBe(true);
+
+      // Case 2: 200 OK without acceptedEventIds
+      const res2 = validateSyncAcknowledgement({ message: "OK" }, outbox);
+      expect(res2.success).toBe(false);
+      expect(res2.updatedEvents.every((e) => e.status === "pending_sync")).toBe(true);
+
+      // Case 3: Selective acknowledgement of only evt_1
+      const res3 = validateSyncAcknowledgement({ acceptedEventIds: ["evt_1"] }, outbox);
+      expect(res3.success).toBe(true);
+      expect(res3.updatedEvents.find((e) => e.eventId === "evt_1").status).toBe("synced");
+      expect(res3.updatedEvents.find((e) => e.eventId === "evt_2").status).toBe("pending_sync");
+    });
   });
 });

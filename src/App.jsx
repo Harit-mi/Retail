@@ -124,7 +124,7 @@ const MainContent = () => {
                   id="cashier-pin-input"
                   name="cashierPin"
                   type="password"
-                  maxLength="6"
+                  maxLength="32"
                   autoComplete="off"
                   spellCheck={false}
                   value={pinInput}
