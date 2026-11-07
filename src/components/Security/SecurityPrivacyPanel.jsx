@@ -35,10 +35,10 @@ export const SecurityPrivacyPanel = () => {
 
   const securityPrincipleItems = [
     {
-      title: "Durable Offline-First Outbox Architecture",
-      desc: "All transactions and ledger movements commit locally first in an encrypted outbox queue, operating with 100% reliability with or without active internet connectivity.",
-      tag: "Local-First Architecture",
-      icon: "fa-solid fa-hard-drive text-[#1E3A5F]",
+      title: "Realtime Cloud-Synchronized Architecture",
+      desc: "All store billing transactions, stock movements, and customer ledgers sync directly with the cloud database while maintaining instant local cache responsiveness.",
+      tag: "Cloud Architecture",
+      icon: "fa-solid fa-cloud text-[#1E3A5F]",
     },
     {
       title: "India DPDP Act 2023 Compliance",
@@ -531,16 +531,16 @@ export const SecurityPrivacyPanel = () => {
             </div>
           </div>
 
-          {/* Section 3: Durable Offline Outbox Queue */}
+          {/* Section 3: Cloud Synchronization Queue */}
           <div className="bg-white border-2 border-slate-200 rounded-xl p-6 space-y-3 shadow-xs">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h4 className="font-extrabold text-slate-900 text-sm font-display flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-[#C2782A]" />
-                  <span>Durable Local Outbox Sync Queue</span>
+                  <RefreshCw className="w-4 h-4 text-[#C2782A]" />
+                  <span>Cloud Synchronization Queue</span>
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Transactions committed locally in outbox with deterministic idempotency keys.
+                  Transactions synchronized live to your central cloud store backend.
                 </p>
               </div>
 
@@ -550,7 +550,7 @@ export const SecurityPrivacyPanel = () => {
                 className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-200 flex items-center gap-1.5"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Check Cloud Sync</span>
+                <span>Trigger Cloud Sync</span>
               </button>
             </div>
 

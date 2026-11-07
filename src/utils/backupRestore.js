@@ -1,9 +1,11 @@
 /**
  * DukaanPOS — Encrypted Backup & Restore Utility
- * Secure offline JSON vault with integrity verification.
+ * Secure offline JSON vault with integrity verification, automated schema migration,
+ * and pre-restore rollback checkpoints.
  */
 
 import { encryptPayloadAsync, decryptPayloadAsync } from "./storageCrypto";
+import { CURRENT_SCHEMA_VERSION, migrateStoreBundle, saveRollbackCheckpoint } from "./schemaMigration";
 
 export const BACKUP_MAGIC_HEADER = "DUKAAN_VAULT_v1::";
 
@@ -11,9 +13,14 @@ export const BACKUP_MAGIC_HEADER = "DUKAAN_VAULT_v1::";
  * Creates an encrypted backup payload from the current store database
  */
 export const createEncryptedBackup = async (storeBundle, pin) => {
+  if (!pin || pin.length < 4) {
+    throw new Error("Cannot create backup: A valid cashier PIN (at least 4 digits) is required.");
+  }
+
   const meta = {
     app: "DukaanPOS",
-    version: "2.1.0",
+    version: "2.2.0",
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     exportDate: new Date().toISOString(),
     storeName: storeBundle.storeConfig?.name || "Store",
     stats: {
@@ -24,6 +31,7 @@ export const createEncryptedBackup = async (storeBundle, pin) => {
   };
 
   const payload = {
+    _schemaVersion: CURRENT_SCHEMA_VERSION,
     metadata: meta,
     storeConfig: storeBundle.storeConfig,
     products: storeBundle.products,
@@ -38,11 +46,16 @@ export const createEncryptedBackup = async (storeBundle, pin) => {
 };
 
 /**
- * Decrypts and validates an imported backup bundle
+ * Decrypts, validates, and automatically migrates an imported backup bundle.
+ * Creates an emergency pre-restore rollback checkpoint in localStorage.
  */
-export const verifyAndDecryptBackup = async (backupRawText, pin) => {
+export const verifyAndDecryptBackup = async (backupRawText, pin, createCheckpoint = true) => {
   if (!backupRawText || typeof backupRawText !== "string") {
     return { success: false, message: "Invalid backup file: Empty content." };
+  }
+
+  if (!pin || pin.length < 4) {
+    return { success: false, message: "Decryption requires a valid PIN (at least 4 digits)." };
   }
 
   let cipherContent = backupRawText.trim();
@@ -59,17 +72,33 @@ export const verifyAndDecryptBackup = async (backupRawText, pin) => {
   }
 
   // Schema Validation
-  if (!decrypted.metadata || !decrypted.storeConfig || !Array.isArray(decrypted.products)) {
+  if (!decrypted.storeConfig || !Array.isArray(decrypted.products)) {
     return {
       success: false,
       message: "Backup format error: Required store database tables missing.",
     };
   }
 
+  // Save rollback checkpoint of current local storage before applying restore
+  if (createCheckpoint) {
+    saveRollbackCheckpoint("pre_restore");
+  }
+
+  // Run schema migration if from an earlier version
+  const migrated = migrateStoreBundle(decrypted);
+
   return {
     success: true,
-    data: decrypted,
-    metadata: decrypted.metadata,
+    data: migrated,
+    metadata: decrypted.metadata || {
+      schemaVersion: migrated._schemaVersion,
+      exportDate: new Date().toISOString(),
+      stats: {
+        productsCount: migrated.products.length,
+        customersCount: migrated.customers.length,
+        salesCount: migrated.sales.length,
+      },
+    },
   };
 };
 

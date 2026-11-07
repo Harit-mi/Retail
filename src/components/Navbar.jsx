@@ -76,18 +76,18 @@ export const Navbar = ({ onOpenMobileMenu }) => {
 
         {/* Right: Online Cloud Sync, Cashier Lock, Cash Audit, Notifications */}
         <div className="flex items-center space-x-2 flex-shrink-0">
-          {/* Durable Offline-First Outbox Sync Badge */}
+          {/* Cloud Sync Status Badge */}
           <button
             onClick={() => syncToCloud()}
             title={
-              cloudSyncStatus === "local_only"
-                ? `Offline-First Encrypted Ledger. ${pendingOutboxCount} outbox events queued. Click to check sync.`
-                : `Sync Status: ${cloudSyncStatus.toUpperCase()}. Click to trigger sync.`
+              cloudSyncStatus === "offline"
+                ? "Internet Disconnected. Cloud sync paused."
+                : `Connected to Cloud (${cloudSyncStatus.toUpperCase()}). Click to sync.`
             }
             className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border whitespace-nowrap ${
               cloudSyncStatus === "offline"
                 ? "bg-red-50 text-red-700 border-red-200"
-                : pendingOutboxCount > 0
+                : cloudSyncStatus === "syncing"
                 ? "bg-amber-50 text-amber-800 border-amber-300"
                 : "bg-emerald-50 hover:bg-emerald-100 text-[#2F5E3D] border-emerald-200"
             }`}
@@ -98,19 +98,17 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                   ? "bg-red-500"
                   : cloudSyncStatus === "syncing"
                   ? "bg-amber-500 animate-spin"
-                  : pendingOutboxCount > 0
-                  ? "bg-amber-500 animate-pulse"
-                  : "bg-emerald-500"
+                  : "bg-emerald-500 animate-pulse"
               }`}
             ></span>
             <span className="font-mono text-[11px] uppercase tracking-wider font-extrabold">
               {cloudSyncStatus === "syncing"
                 ? "Syncing..."
                 : cloudSyncStatus === "offline"
-                ? "Offline Mode"
+                ? "Offline (No Net)"
                 : pendingOutboxCount > 0
-                ? `Outbox (${pendingOutboxCount})`
-                : "Offline-First"}
+                ? `Cloud Sync (${pendingOutboxCount})`
+                : "Cloud Connected"}
             </span>
           </button>
 

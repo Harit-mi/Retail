@@ -33,6 +33,7 @@ const MainContent = () => {
     isCounterLocked,
     unlockCounter,
     counterPin,
+    decryptionFailedClosed,
     isCashDrawerOpen,
     setIsCashDrawerOpen,
   } = useStore();
@@ -102,15 +103,27 @@ const MainContent = () => {
             </div>
 
             <div className="p-6 space-y-4">
+              {decryptionFailedClosed && (
+                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-[11px] leading-tight">
+                  <strong>Vault Sealed (Fail-Closed):</strong> Enter your configured cashier PIN to decrypt store records. Data write is paused to protect your local records from corruption.
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-xs text-zinc-500 font-mono">
-                <label htmlFor="cashier-pin-input">Enter 4-digit PIN</label>
-                <button
-                  type="button"
-                  onClick={() => setShowDemoPin(!showDemoPin)}
-                  className="text-zinc-800 hover:underline text-[10px] cursor-pointer"
-                >
-                  {showDemoPin ? `Default: ${counterPin}` : "Show Demo PIN"}
-                </button>
+                <label htmlFor="cashier-pin-input">
+                  {!counterPin ? "Set New 4-digit PIN" : "Enter 4-digit PIN"}
+                </label>
+                {counterPin ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDemoPin(!showDemoPin)}
+                    className="text-zinc-800 hover:underline text-[10px] cursor-pointer"
+                  >
+                    {showDemoPin ? `Configured PIN: ${counterPin}` : "Show Current PIN"}
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-amber-700 font-bold">First-Run Setup</span>
+                )}
               </div>
 
               <form onSubmit={handleUnlock} className="space-y-3">

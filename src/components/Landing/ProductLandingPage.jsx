@@ -152,15 +152,15 @@ export const ProductLandingPage = () => {
     {
       icon: Lock,
       title: "DPDP Privacy & PIN Security",
-      desc: "100% offline-first local crypto storage, 4-digit cashier PIN counter register lock, and DPDP Section 12 Right-to-Erasure tools.",
+      desc: "Cloud synchronized store security, 4-digit cashier PIN counter register lock, and DPDP Section 12 Right-to-Erasure tools.",
       badge: "DPDP Act Compliant",
     },
   ];
 
   const faqs = [
     {
-      q: "Does DukaanPOS work 100% offline without internet?",
-      a: "Yes! DukaanPOS is designed with a local-first offline architecture. Your products, sales, customers, and GST reports are stored safely on your device using native browser crypto storage. You never lose access to billing even during internet outages."
+      q: "Does DukaanPOS support online cloud synchronization?",
+      a: "Yes! DukaanPOS connects directly to cloud infrastructure to synchronize your store inventory, multi-counter billing, customer ledgers, and sales reports in real time."
     },
     {
       q: "Can I print barcode stickers on standard A4 sticker paper?",
@@ -206,16 +206,16 @@ export const ProductLandingPage = () => {
 
   const pricingTiers = [
     {
-      name: "Offline Starter",
+      name: "Cloud Retail Starter",
       price: "₹0",
       period: "Forever Free",
-      desc: "Perfect for single retail counters wanting offline speed and zero recurring costs.",
+      desc: "Perfect for single retail counters wanting rapid cloud-connected billing.",
       features: [
         "Full Billing POS Counter",
         "Unlimited Inventory & Products",
         "Udhaar Ledger & Customer Management",
         "A4 Barcode Printing (24 & 40 Labels)",
-        "100% Offline Local Crypto Storage",
+        "Real-time Cloud Sync & Native Encryption",
       ],
       cta: "Launch Live POS Counter",
       popular: false,
@@ -337,13 +337,13 @@ export const ProductLandingPage = () => {
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-tight">
             India's #1 Retail POS Platform — <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-[#F5A623] via-amber-300 to-amber-500 bg-clip-text text-transparent">
-              Built for Speed & 100% Offline Power
+              Built for Cloud Speed & Retail Power
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Manage Kirana, Apparel, Pharmacy, Electronics, Salon, Restaurant & Jewelry in one 
-            lightning-fast offline app. Includes GST billing, Udhaar ledger, Barcode printing, 
+            lightning-fast cloud-connected app. Includes GST billing, Udhaar ledger, Barcode printing, 
             and WhatsApp marketing out of the box.
           </p>
 

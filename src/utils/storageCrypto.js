@@ -1,12 +1,12 @@
 /**
  * DukaanPOS — Production Web Crypto API (AES-GCM 256-bit + PBKDF2 Key Derivation)
- * Real authenticated encryption at rest for local storage payloads and offline JSON backups.
+ * Authenticated encryption at rest that fails closed on missing credentials or crypto errors.
  */
 
-const CIPHER_HEADER = "AES_GCM_v1::";
+export const CIPHER_HEADER = "AES_GCM_v1::";
 
 // Cross-platform Web Crypto API resolver (Node.js Vitest & Browser)
-const getSubtleCrypto = () => {
+export const getSubtleCrypto = () => {
   if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
     return { crypto: window.crypto, subtle: window.crypto.subtle };
   }
@@ -34,12 +34,17 @@ const hexToBuffer = (hexStr) => {
 
 /**
  * Derive AES-GCM 256-bit Key from Cashier PIN using PBKDF2 (100,000 iterations)
+ * Fails closed if PIN is missing or too short.
  */
-const deriveKeyFromPin = async (pinStr, saltUint8, subtle) => {
+export const deriveKeyFromPin = async (pinStr, saltUint8, subtle) => {
+  if (!pinStr || typeof pinStr !== "string" || pinStr.trim().length < 4) {
+    throw new Error("Key derivation failed closed: Valid cashier PIN (at least 4 digits) is required.");
+  }
+
   const enc = new TextEncoder();
   const keyMaterial = await subtle.importKey(
     "raw",
-    enc.encode(pinStr || "1234"),
+    enc.encode(pinStr.trim()),
     { name: "PBKDF2" },
     false,
     ["deriveKey"]
@@ -62,20 +67,25 @@ const deriveKeyFromPin = async (pinStr, saltUint8, subtle) => {
 /**
  * Asynchronously Encrypt Data Payload using native Web Crypto API (AES-GCM 256-bit)
  * Format: AES_GCM_v1::<salt_hex>::<iv_hex>::<ciphertext_hex>
+ * FAILS CLOSED: Never returns plaintext on error.
  */
-export const encryptPayloadAsync = async (dataObj, pinKey = "1234") => {
-  try {
-    const provider = getSubtleCrypto();
-    if (!provider) {
-      return JSON.stringify(dataObj);
-    }
+export const encryptPayloadAsync = async (dataObj, pinKey) => {
+  if (!pinKey || typeof pinKey !== "string" || pinKey.trim().length < 4) {
+    throw new Error("Encryption failed closed: Cashier PIN is required.");
+  }
 
+  const provider = getSubtleCrypto();
+  if (!provider) {
+    throw new Error("Encryption failed closed: Web Crypto API (subtle.crypto) is unavailable.");
+  }
+
+  try {
     const { crypto, subtle } = provider;
     const jsonStr = JSON.stringify(dataObj);
     const enc = new TextEncoder();
     const dataBuffer = enc.encode(jsonStr);
 
-    // Generate 16-byte random salt & 12-byte random IV
+    // Generate 16-byte cryptographically secure random salt & 12-byte random IV
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
 
@@ -93,23 +103,27 @@ export const encryptPayloadAsync = async (dataObj, pinKey = "1234") => {
 
     return `${CIPHER_HEADER}${saltHex}::${ivHex}::${cipherHex}`;
   } catch (err) {
-    console.error("Web Crypto AES-GCM encryption error:", err);
-    return JSON.stringify(dataObj);
+    // Fail closed: Never return plaintext JSON fallback!
+    throw new Error(`Encryption failed closed: ${err.message}`);
   }
 };
 
 /**
  * Asynchronously Decrypt Data Payload using native Web Crypto API (AES-GCM 256-bit)
+ * FAILS CLOSED: Returns fallback on decryption failure, never returns corrupted data.
  */
-export const decryptPayloadAsync = async (cipherStr, pinKey = "1234", fallback = null) => {
-  try {
-    if (!cipherStr || typeof cipherStr !== "string") return fallback;
+export const decryptPayloadAsync = async (cipherStr, pinKey, fallback = null) => {
+  if (!cipherStr || typeof cipherStr !== "string") return fallback;
 
-    // Check for AES-GCM header
-    if (cipherStr.startsWith(CIPHER_HEADER)) {
-      const provider = getSubtleCrypto();
-      if (!provider) return fallback;
+  if (cipherStr.startsWith(CIPHER_HEADER)) {
+    if (!pinKey || typeof pinKey !== "string" || pinKey.trim().length < 4) {
+      return fallback;
+    }
 
+    const provider = getSubtleCrypto();
+    if (!provider) return fallback;
+
+    try {
       const { subtle } = provider;
       const parts = cipherStr.split("::");
       if (parts.length < 4) return fallback;
@@ -133,25 +147,30 @@ export const decryptPayloadAsync = async (cipherStr, pinKey = "1234", fallback =
       const dec = new TextDecoder();
       const jsonStr = dec.decode(decryptedBuffer);
       return JSON.parse(jsonStr);
+    } catch {
+      // Fail closed on invalid PIN or tampered ciphertext
+      return fallback;
     }
+  }
 
-    // Plaintext JSON fallback
+  // Non-encrypted JSON fallback (for pre-migration or legacy development state)
+  try {
     return JSON.parse(cipherStr);
   } catch {
-    // Return fallback on decryption failure (e.g. invalid PIN or corrupted MAC tag)
     return fallback;
   }
 };
 
-// Synchronous wrapper exports for initial React state initialization
-export const encryptDataPayload = (dataObj, _pinKey = "1234") => {
-  return JSON.stringify(dataObj);
+// Synchronous wrapper exports
+export const encryptDataPayload = () => {
+  throw new Error("Synchronous encryption is disabled. Use encryptPayloadAsync to ensure fail-closed AES-GCM security.");
 };
 
-export const decryptDataPayload = (cipherStr, pinKey = "1234", fallback = null) => {
+export const decryptDataPayload = (cipherStr, _pinKey, fallback = null) => {
   try {
     if (!cipherStr || typeof cipherStr !== "string") return fallback;
     if (cipherStr.startsWith(CIPHER_HEADER)) {
+      // Cannot decrypt AES-GCM synchronously; return fallback
       return fallback;
     }
     return JSON.parse(cipherStr);

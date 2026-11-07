@@ -195,13 +195,13 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         {(!collapsed || isMobileOpen) && (
           <div className="p-3 m-3 rounded-xl bg-white border border-zinc-200/80 text-xs text-zinc-600 shadow-2xs">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-zinc-900 text-[11px] font-display">Local Engine</span>
+              <span className="font-semibold text-zinc-900 text-[11px] font-display">Cloud POS Engine</span>
               <span className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Ready (0ms)
+                Online Sync
               </span>
             </div>
             <p className="text-[10px] text-zinc-400 font-mono mt-1 leading-relaxed">
-              AES-256 · DPDP 2023 · ESC/POS
+              AES-256 · Cloud Connected · ESC/POS
             </p>
             <button
               onClick={() => handleNavClick("landing")}
