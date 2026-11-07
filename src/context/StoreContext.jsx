@@ -133,10 +133,13 @@ export const StoreProvider = ({ children }) => {
 
   const recordShiftReconciliation = (actualCash, notes = "") => {
     const openingFloat = currentShift?.openingFloat || 2000;
+    const shiftStart = currentShift?.startTime
+      ? new Date(currentShift.startTime)
+      : new Date(new Date().setHours(0, 0, 0, 0));
+
     const shiftSales = (sales || []).filter((s) => {
       if (s.paymentMode !== "cash") return false;
-      if (!currentShift?.startTime) return true;
-      return new Date(s.date) >= new Date(currentShift.startTime);
+      return new Date(s.date) >= shiftStart;
     });
     const cashSalesTotal = shiftSales.reduce(
       (acc, s) => acc + (s.paidAmount || s.grandTotal || 0),
@@ -287,6 +290,7 @@ export const StoreProvider = ({ children }) => {
     let isCancelled = false;
 
     const decryptAllOnMount = async () => {
+      if (isStorageReadyRef.current) return;
       try {
         const savedConfigRaw = localStorage.getItem("dukaan_store_config");
         const savedProductsRaw = localStorage.getItem("dukaan_products");
@@ -422,12 +426,38 @@ export const StoreProvider = ({ children }) => {
     return { success: false, message: "Incorrect PIN. Please enter your valid cashier PIN." };
   };
 
-  const updateCounterPin = (newPin) => {
-    if (!newPin || newPin.length < 4) return { success: false, message: "PIN must be at least 4 digits." };
-    setCounterPin(newPin);
-    localStorage.setItem("dukaan_counter_pin", newPin);
-    setIsCounterLocked(false);
-    return { success: true, message: "Cashier PIN updated successfully!" };
+  const updateCounterPin = async (newPin) => {
+    if (!newPin || newPin.length < 4) {
+      return { success: false, message: "PIN must be at least 4 digits." };
+    }
+    try {
+      // Re-encrypt all existing state tables atomically with the new PIN
+      const [encConfig, encProducts, encCustomers, encSuppliers, encPO, encSales] = await Promise.all([
+        encryptPayloadAsync({ ...storeConfig, _schemaVersion: CURRENT_SCHEMA_VERSION }, newPin),
+        encryptPayloadAsync(products, newPin),
+        encryptPayloadAsync(customers, newPin),
+        encryptPayloadAsync(suppliers, newPin),
+        encryptPayloadAsync(purchaseOrders, newPin),
+        encryptPayloadAsync(sales, newPin),
+      ]);
+
+      // Atomically commit new ciphertexts and new PIN to localStorage
+      localStorage.setItem("dukaan_store_config", encConfig);
+      localStorage.setItem("dukaan_products", encProducts);
+      localStorage.setItem("dukaan_customers", encCustomers);
+      localStorage.setItem("dukaan_suppliers", encSuppliers);
+      localStorage.setItem("dukaan_purchase_orders", encPO);
+      localStorage.setItem("dukaan_sales", encSales);
+      localStorage.setItem("dukaan_counter_pin", newPin);
+
+      setCounterPin(newPin);
+      setIsCounterLocked(false);
+      setDecryptionFailedClosed(false);
+      return { success: true, message: "Cashier PIN updated and store vault re-encrypted successfully!" };
+    } catch (err) {
+      console.error("Atomic PIN re-encryption error:", err);
+      return { success: false, message: "Failed to re-encrypt records. PIN change aborted to prevent data loss." };
+    }
   };
 
   // Save Native Web Crypto AES-GCM Encrypted Data Payloads to LocalStorage
@@ -627,11 +657,18 @@ export const StoreProvider = ({ children }) => {
 
   // Complete Sale / Checkout using Production Utility Functions
   const completeCheckout = (paymentDetails) => {
+    if (paymentDetails.mode === "udhar" && !cartCustomer) {
+      throw new Error("Customer required for Udhaar (Credit) checkout");
+    }
+
     const invNumber = `INV-${Date.now()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
     const now = new Date().toISOString();
 
     const paid = Number(paymentDetails.paidAmount) || 0;
     const due = Math.max(0, cartGrandTotal - paid);
+    const change = paymentDetails.changeReturned !== undefined
+      ? Number(paymentDetails.changeReturned)
+      : (paymentDetails.mode === "cash" && paid > cartGrandTotal ? paid - cartGrandTotal : 0);
     const pointsEarned = Math.floor(cartGrandTotal / 100);
 
     const newInvoice = {
@@ -648,6 +685,8 @@ export const StoreProvider = ({ children }) => {
       paymentMode: paymentDetails.mode,
       paidAmount: paid,
       dueAmount: due,
+      tenderedAmount: paymentDetails.tenderedAmount !== undefined ? Number(paymentDetails.tenderedAmount) : paid,
+      changeReturned: change,
       pointsEarned: pointsEarned,
       operator: storeConfig.ownerName || "Cashier",
     };

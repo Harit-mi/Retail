@@ -25,15 +25,26 @@ export const DashboardOverview = () => {
     t,
   } = useStore();
 
-  const todaySalesTotal = sales.reduce((acc, s) => acc + s.grandTotal, 0);
-  const totalOrdersCount = sales.length;
+  const todayDateStr = new Date().toDateString();
+  const todaySales = sales.filter((s) => {
+    try {
+      return s.date && new Date(s.date).toDateString() === todayDateStr;
+    } catch {
+      return false;
+    }
+  });
+
+  const todaySalesTotal = todaySales.reduce((acc, s) => acc + (s.grandTotal || 0), 0);
+  const totalOrdersCount = todaySales.length;
   const totalUdharOutstanding = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
   const lowStockProducts = products.filter(
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
   );
 
-  // Compute live tender breakdown across today's sales
-  const tenderBreakdown = sales.reduce(
+  // Compute live tender breakdown across today's sales (or all sales if no sales today)
+  const salesForTender = todaySales.length > 0 ? todaySales : sales;
+  const tenderGrandTotal = salesForTender.reduce((acc, s) => acc + (s.grandTotal || 0), 0);
+  const tenderBreakdown = salesForTender.reduce(
     (acc, s) => {
       const mode = s.paymentMode || "cash";
       acc[mode] = (acc[mode] || 0) + (s.grandTotal || 0);
@@ -42,10 +53,45 @@ export const DashboardOverview = () => {
     { upi: 0, cash: 0, card: 0, udhar: 0 }
   );
 
-  const upiPct = todaySalesTotal > 0 ? Math.round((tenderBreakdown.upi / todaySalesTotal) * 100) : 0;
-  const cashPct = todaySalesTotal > 0 ? Math.round((tenderBreakdown.cash / todaySalesTotal) * 100) : 0;
-  const cardPct = todaySalesTotal > 0 ? Math.round((tenderBreakdown.card / todaySalesTotal) * 100) : 0;
-  const udharPct = todaySalesTotal > 0 ? Math.round((tenderBreakdown.udhar / todaySalesTotal) * 100) : 0;
+  const upiPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.upi / tenderGrandTotal) * 100) : 0;
+  const cashPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.cash / tenderGrandTotal) * 100) : 0;
+  const cardPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.card / tenderGrandTotal) * 100) : 0;
+  const udharPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.udhar / tenderGrandTotal) * 100) : 0;
+
+  // Hourly volume distribution
+  const hourlySlots = [
+    { time: "9 AM", start: 8, end: 10 },
+    { time: "11 AM", start: 10, end: 12 },
+    { time: "1 PM", start: 12, end: 14 },
+    { time: "3 PM", start: 14, end: 16 },
+    { time: "5 PM", start: 16, end: 18 },
+    { time: "7 PM", start: 18, end: 20 },
+    { time: "9 PM", start: 20, end: 24 },
+  ];
+
+  const hasLiveTodaySales = todaySales.length > 0;
+  const hourlyData = hourlySlots.map((slot) => {
+    if (!hasLiveTodaySales) {
+      const defaults = { "9 AM": 1200, "11 AM": 4500, "1 PM": 6800, "3 PM": 3200, "5 PM": 5100, "7 PM": 8200, "9 PM": 2400 };
+      return { time: slot.time, val: defaults[slot.time] || 0 };
+    }
+    const val = todaySales.reduce((acc, s) => {
+      try {
+        const hour = new Date(s.date).getHours();
+        if (hour >= slot.start && hour < slot.end) {
+          return acc + (s.grandTotal || 0);
+        }
+      } catch {}
+      return acc;
+    }, 0);
+    return { time: slot.time, val: Math.round(val) };
+  });
+
+  const maxVal = Math.max(...hourlyData.map((d) => d.val), 1);
+  const hourlyBars = hourlyData.map((d) => ({
+    ...d,
+    height: `${Math.max(8, Math.round((d.val / maxVal) * 100))}%`,
+  }));
 
   const handlePrint = (bill, format) => {
     setPrintableBill(bill);
@@ -171,25 +217,19 @@ export const DashboardOverview = () => {
               <h3 className="font-bold text-sm text-zinc-950 font-display">
                 Sales Velocity & Volume (Today)
               </h3>
-              <p className="text-xs text-zinc-400 font-mono">Hourly counter traffic in ₹</p>
+              <p className="text-xs text-zinc-400 font-mono">
+                {hasLiveTodaySales ? "Live counter traffic in ₹" : "Baseline hourly velocity pattern (No sales today yet)"}
+              </p>
             </div>
 
             <span className="text-xs bg-emerald-50 text-emerald-700 font-medium px-2.5 py-1 rounded-md border border-emerald-200 flex items-center gap-1.5 font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Peak: 11:00 AM – 1:00 PM
+              {hasLiveTodaySales ? "Live Counter" : "Pattern Baseline"}
             </span>
           </div>
 
           <div className="h-44 w-full flex items-end justify-between gap-2 pt-4 px-2">
-            {[
-              { time: "9 AM", val: 1200, height: "25%" },
-              { time: "11 AM", val: 4500, height: "65%" },
-              { time: "1 PM", val: 6800, height: "92%" },
-              { time: "3 PM", val: 3200, height: "48%" },
-              { time: "5 PM", val: 5100, height: "72%" },
-              { time: "7 PM", val: 8200, height: "100%" },
-              { time: "9 PM", val: 2400, height: "35%" },
-            ].map((bar, i) => (
+            {hourlyBars.map((bar, i) => (
               <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
                 <div className="text-[10px] font-mono font-medium text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity mb-1 bg-zinc-100 px-1.5 py-0.5 rounded border border-zinc-200">
                   ₹{bar.val}

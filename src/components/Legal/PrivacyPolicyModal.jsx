@@ -146,9 +146,9 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, initialTab = "privacy" }) 
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 text-sm mb-1">3. Compliance with India DPDP Act 2023</h4>
+                <h4 className="font-bold text-slate-900 text-sm mb-1">3. Alignment with India DPDP Act 2023 Principles</h4>
                 <p>
-                  DukaanPOS is built in strict adherence to the <em>Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023)</em> enacted by the Parliament of India:
+                  DukaanPOS provides privacy controls modeled after the principles of the <em>Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023)</em>. Formal legal compliance requires independent certification by authorized legal counsel:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-2">
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
@@ -319,7 +319,7 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, initialTab = "privacy" }) 
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Compliant with DPDP Act 2023 · Local AES-256</span>
+            <span>DPDP 2023 Principles · Local AES-256 Storage</span>
           </div>
 
           <button

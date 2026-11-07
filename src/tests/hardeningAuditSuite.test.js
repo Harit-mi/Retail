@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { calculateEan13CheckDigit, normalizeToEan13, encodeEan13Modules, getEan13Bars } from "../utils/ean13";
 import { createEncryptedBackup, verifyAndDecryptBackup } from "../utils/backupRestore";
-import { calculateGstSplit, calculateCartTotals } from "../utils/moneyMath";
+import { calculateGstSplit, calculateCartTotals, calculateCashChange } from "../utils/moneyMath";
+import { migrateStoreBundle, saveRollbackCheckpoint, restoreFromRollbackCheckpoint, CURRENT_SCHEMA_VERSION } from "../utils/schemaMigration";
 
 describe("Production-Readiness Hardening & Reliability Suite", () => {
   describe("EAN-13 Barcode Algorithm Compliance", () => {
@@ -112,6 +113,41 @@ describe("Production-Readiness Hardening & Reliability Suite", () => {
       const totals = calculateCartTotals(cart, 25, 0, null, 0);
       const reconstructedSubtotal = Math.round((totals.taxableSubtotal + totals.taxAmount) * 100) / 100;
       expect(reconstructedSubtotal).toBe(totals.subtotal);
+    });
+
+    it("accurately calculates cash change and tendered amounts", () => {
+      expect(calculateCashChange(500, 450)).toBe(50);
+      expect(calculateCashChange(100, 100)).toBe(0);
+      expect(calculateCashChange(50, 100)).toBe(0);
+      expect(calculateCashChange(2000, 1250.50)).toBe(749.50);
+    });
+  });
+
+  describe("Schema Migration & Pre-Restore Rollback Safety", () => {
+    it("migrates unversioned V1 store bundles to current schema version", () => {
+      const v1Bundle = {
+        storeConfig: { name: "Old Dukaan" },
+        products: [{ id: "p1", name: "Atta", retailPrice: 50 }],
+        customers: [{ id: "c1", name: "Suresh" }],
+        suppliers: [],
+        purchaseOrders: [],
+        sales: [{ id: "inv_1", grandTotal: 50 }],
+      };
+
+      const migrated = migrateStoreBundle(v1Bundle);
+      expect(migrated.storeConfig._schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+      expect(migrated.products[0].selling_unit_type).toBe("piece");
+      expect(migrated.products[0].vertical).toBe("kirana");
+      expect(migrated.customers[0].loyaltyPoints).toBe(0);
+      expect(migrated.sales[0].paymentMode).toBe("cash");
+    });
+
+    it("saves and restores from rollback checkpoint safely", () => {
+      const checkpoint = saveRollbackCheckpoint();
+      expect(checkpoint).toBeDefined();
+      expect(checkpoint.timestamp).toBeDefined();
+      const restored = restoreFromRollbackCheckpoint();
+      expect(restored.success).toBe(true);
     });
   });
 });

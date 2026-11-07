@@ -52,9 +52,33 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   )}&am=${cartGrandTotal}&cu=INR&tn=Invoice Payment`;
 
   const handleFinalCheckout = () => {
+    // 1. Guard against Udhaar without an identified customer account
+    if (isUdhar && !cartCustomer) {
+      alert("Udhaar (Credit) requires selecting a registered customer account. Please attach a customer before proceeding.");
+      return;
+    }
+
+    // 2. Validate Cash payment amount
+    if (paymentMode === "cash") {
+      if (cashTendered < cartGrandTotal) {
+        alert(`Cash tendered (₹${cashTendered}) cannot be less than the bill total of ₹${cartGrandTotal}.`);
+        return;
+      }
+    }
+
+    // 3. Confirm UPI verification
+    if (paymentMode === "upi" && !upiVerified) {
+      const confirmProceed = window.confirm(
+        "UPI payment has not been marked as verified via Soundbox/UPI App. Do you want to proceed anyway as manual override?"
+      );
+      if (!confirmProceed) return;
+    }
+
     const details = {
       mode: paymentMode,
       paidAmount: isUdhar ? 0 : cartGrandTotal,
+      cashTendered: paymentMode === "cash" ? cashTendered : undefined,
+      changeReturned: paymentMode === "cash" ? cashChangeReturn : undefined,
       upiVerified: paymentMode === "upi" ? upiVerified : undefined,
       cardAuthCode: paymentMode === "card" ? cardAuthCode : undefined,
     };
@@ -238,11 +262,20 @@ export const PaymentModal = ({ isOpen, onClose }) => {
 
             {/* Mode 4: Udhaar Ledger Notice */}
             {paymentMode === "udhar" && (
-              <div className="bg-amber-50 border-l-4 border-amber-500 rounded p-4 space-y-1 text-xs text-amber-900">
-                <p className="font-bold">Udhaar Bill Credit Entry</p>
-                <p className="text-[11px] text-amber-800">
-                  Bill amount ₹{cartGrandTotal} will be added to{" "}
-                  <strong>{cartCustomer ? cartCustomer.name : "Customer Khata"}</strong>'s balance.
+              <div className={`p-4 rounded border-l-4 space-y-1 text-xs ${
+                cartCustomer ? "bg-amber-50 border-amber-500 text-amber-900" : "bg-red-50 border-red-500 text-red-900"
+              }`}>
+                <p className="font-bold">
+                  {cartCustomer ? "Udhaar Bill Credit Entry" : "⚠️ Customer Required for Udhaar"}
+                </p>
+                <p className="text-[11px]">
+                  {cartCustomer ? (
+                    <>
+                      Bill amount ₹{cartGrandTotal} will be added to <strong>{cartCustomer.name}</strong>'s balance.
+                    </>
+                  ) : (
+                    "Udhaar cannot be booked against an anonymous walk-in customer. Please select or register a customer first."
+                  )}
                 </p>
               </div>
             )}

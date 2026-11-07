@@ -26,10 +26,18 @@ describe("Strix AI Security & Pentest Audit Suite", () => {
     expect(result).toBeNull();
   });
 
-  it("sanitizes CSV formula injection triggers (=, +, -, @) to defend against spreadsheet RCE", () => {
+  it("sanitizes CSV formula injection triggers (=, +, -, @) including leading whitespace to defend against spreadsheet RCE", () => {
     expect(sanitizeCsvCell("=SUM(1+1)")).toBe("'=SUM(1+1)");
     expect(sanitizeCsvCell("+cmd|' /C calc'!A0")).toBe("'+cmd|' /C calc'!A0");
     expect(sanitizeCsvCell("@SUM(A1:A10)")).toBe("'@SUM(A1:A10)");
+    expect(sanitizeCsvCell("  =cmd|' /C calc'!A0")).toBe("'  =cmd|' /C calc'!A0");
+    expect(sanitizeCsvCell("   +cmd")).toBe("'   +cmd");
+    expect(sanitizeCsvCell("\t@HYPERLINK")).toBe("'\t@HYPERLINK");
     expect(sanitizeCsvCell("Regular Kirana Item")).toBe("Regular Kirana Item");
+  });
+
+  it("fails closed when encrypting with empty or missing PIN", async () => {
+    await expect(encryptPayloadAsync(testSecretPayload, "")).rejects.toThrow();
+    await expect(encryptPayloadAsync(testSecretPayload, null)).rejects.toThrow();
   });
 });

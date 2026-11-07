@@ -74,9 +74,9 @@ export const SecurityPrivacyPanel = () => {
     }
   };
 
-  const handleUpdatePin = (e) => {
+  const handleUpdatePin = async (e) => {
     e.preventDefault();
-    const res = updateCounterPin(newPin);
+    const res = await updateCounterPin(newPin);
     setPinMsg(res.message);
     if (res.success) setNewPin("");
     setTimeout(() => setPinMsg(null), 3500);
@@ -86,7 +86,7 @@ export const SecurityPrivacyPanel = () => {
     e.preventDefault();
     if (!grievanceText) return;
     const ticketId = `DPDP-GRV-${Date.now()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
-    setGrievanceSuccess(`Grievance Ticket #${ticketId} submitted to Data Protection Officer (DPO). Mandatory SLA resolution within 7 business days as per Section 13.`);
+    setGrievanceSuccess(`Grievance Ticket #${ticketId} logged to local register audit trail. Provide this ticket reference to your store owner or designated compliance representative for follow-up.`);
     setGrievanceText("");
     setTimeout(() => setGrievanceSuccess(null), 6000);
   };
@@ -291,7 +291,7 @@ export const SecurityPrivacyPanel = () => {
               <span>Configure Cashier Counter Lock PIN</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Current Active PIN: <strong className="font-mono text-[#1E3A5F] text-sm bg-slate-100 px-2 py-0.5 rounded">{counterPin}</strong>
+              PIN Status: <strong className="font-mono text-[#1E3A5F] text-sm bg-slate-100 px-2 py-0.5 rounded">{counterPin ? "Configured (••••)" : "Not Set"}</strong>
             </p>
           </div>
 

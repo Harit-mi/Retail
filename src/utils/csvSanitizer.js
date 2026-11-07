@@ -5,7 +5,8 @@
  */
 export const sanitizeCsvCell = (str = "") => {
   const s = String(str).replace(/"/g, '""');
-  if (/^[=+\-@\t\r]/.test(s)) {
+  const trimmed = s.trimStart();
+  if (/^[=+\-@\t\r]/.test(trimmed)) {
     return `'${s}`;
   }
   return s;

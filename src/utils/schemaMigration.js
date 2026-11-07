@@ -50,6 +50,8 @@ export const migrateStoreBundle = (bundle) => {
         category: p.category || "General",
         barcode: p.barcode || "",
         minStockWarning: Number(p.minStockWarning) || 5,
+        selling_unit_type: p.selling_unit_type || "piece",
+        vertical: p.vertical || "kirana",
         ...p,
       })
     );
@@ -96,32 +98,53 @@ export const migrateStoreBundle = (bundle) => {
       : [];
 
     migrated._schemaVersion = 2;
+    if (migrated.storeConfig) {
+      migrated.storeConfig._schemaVersion = 2;
+    }
   }
 
   return migrated;
+};
+
+let memoryStorage = {};
+const getStorage = () => {
+  if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+  if (typeof localStorage !== "undefined") return localStorage;
+  return {
+    getItem: (key) => (Object.prototype.hasOwnProperty.call(memoryStorage, key) ? memoryStorage[key] : null),
+    setItem: (key, val) => {
+      memoryStorage[key] = String(val);
+    },
+    removeItem: (key) => {
+      delete memoryStorage[key];
+    },
+    clear: () => {
+      memoryStorage = {};
+    },
+  };
 };
 
 /**
  * Creates an emergency pre-restore / pre-migration rollback checkpoint in localStorage
  */
 export const saveRollbackCheckpoint = (label = "checkpoint") => {
-  if (typeof window === "undefined" || !window.localStorage) return null;
+  const storage = getStorage();
 
   try {
     const checkpoint = {
       timestamp: new Date().toISOString(),
       label,
-      storeConfig: localStorage.getItem("dukaan_store_config"),
-      products: localStorage.getItem("dukaan_products"),
-      customers: localStorage.getItem("dukaan_customers"),
-      suppliers: localStorage.getItem("dukaan_suppliers"),
-      purchaseOrders: localStorage.getItem("dukaan_purchase_orders"),
-      sales: localStorage.getItem("dukaan_sales"),
-      currentShift: localStorage.getItem("dukaan_current_shift"),
-      syncOutbox: localStorage.getItem("dukaan_sync_outbox"),
+      storeConfig: storage.getItem("dukaan_store_config"),
+      products: storage.getItem("dukaan_products"),
+      customers: storage.getItem("dukaan_customers"),
+      suppliers: storage.getItem("dukaan_suppliers"),
+      purchaseOrders: storage.getItem("dukaan_purchase_orders"),
+      sales: storage.getItem("dukaan_sales"),
+      currentShift: storage.getItem("dukaan_current_shift"),
+      syncOutbox: storage.getItem("dukaan_sync_outbox"),
     };
 
-    localStorage.setItem("dukaan_recovery_checkpoint", JSON.stringify(checkpoint));
+    storage.setItem("dukaan_recovery_checkpoint", JSON.stringify(checkpoint));
     return checkpoint;
   } catch (err) {
     console.warn("Failed to create recovery checkpoint in localStorage:", err);
@@ -133,12 +156,10 @@ export const saveRollbackCheckpoint = (label = "checkpoint") => {
  * Restores store database from the rollback checkpoint
  */
 export const restoreFromRollbackCheckpoint = () => {
-  if (typeof window === "undefined" || !window.localStorage) {
-    return { success: false, message: "Storage unavailable." };
-  }
+  const storage = getStorage();
 
   try {
-    const raw = localStorage.getItem("dukaan_recovery_checkpoint");
+    const raw = storage.getItem("dukaan_recovery_checkpoint");
     if (!raw) {
       return { success: false, message: "No recovery checkpoint found." };
     }
@@ -166,7 +187,7 @@ export const restoreFromRollbackCheckpoint = () => {
           : `dukaan_${key.replace(/([A-Z])/g, "_$1").toLowerCase()}`;
 
       if (checkpoint[key]) {
-        localStorage.setItem(storageKey, checkpoint[key]);
+        storage.setItem(storageKey, checkpoint[key]);
       }
     }
 

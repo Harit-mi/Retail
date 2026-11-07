@@ -58,10 +58,10 @@ export const WebcamBarcodeScannerModal = ({ isOpen, onClose, onBarcodeDetected }
             </div>
             <div>
               <h3 className="font-extrabold font-display text-white text-sm">
-                Live Camera Barcode Scanner
+                Camera Viewfinder (Simulation Demo)
               </h3>
               <p className="text-[11px] text-slate-400">
-                EAN-13, EAN-8, UPC-A, Code 128 & QR
+                Demo scan simulation · Connect USB/BT scanner for production decoding
               </p>
             </div>
           </div>
@@ -101,7 +101,7 @@ export const WebcamBarcodeScannerModal = ({ isOpen, onClose, onBarcodeDetected }
               className="w-full py-3.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-extrabold font-display rounded-lg text-xs transition flex items-center justify-center gap-2 min-h-[48px]"
             >
               <Zap className="w-4 h-4 text-[#F5A623]" />
-              <span>Simulate Quick Scan Item</span>
+              <span>Simulate Sample Scan (Demo)</span>
             </button>
 
             <button

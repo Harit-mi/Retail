@@ -31,10 +31,13 @@ export const ShiftReconciliationModal = ({ isOpen, onClose }) => {
   const openingFloat = currentShift?.openingFloat || storeConfig?.shiftOpeningFloat || 2000;
 
   // Calculate Cash Sales Total ONLY for the active shift
+  const shiftStart = currentShift?.startTime
+    ? new Date(currentShift.startTime)
+    : new Date(new Date().setHours(0, 0, 0, 0));
+
   const shiftCashSales = sales.filter((s) => {
     if (s.paymentMode !== "cash") return false;
-    if (!currentShift?.startTime) return true;
-    return new Date(s.date) >= new Date(currentShift.startTime);
+    return new Date(s.date) >= shiftStart;
   });
 
   const cashSalesTotal = shiftCashSales.reduce(

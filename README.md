@@ -4,11 +4,11 @@
   ### *The Utilitarian Retail Workstation & Kirana ERP for India*
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-  [![React 18](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+  [![React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
   [![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
   [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-  [![Vitest 100%](https://img.shields.io/badge/Tests-25%2F25%20Passing-2F5E3D?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
-  [![DPDP 2023 Compliant](https://img.shields.io/badge/DPDP_2023-Compliant-C2782A?style=for-the-badge)](https://meity.gov.in)
+  [![Vitest 100%](https://img.shields.io/badge/Tests-Passing-2F5E3D?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
+  [![DPDP 2023 Principles](https://img.shields.io/badge/DPDP_2023-Self--Service%20Principles-C2782A?style=for-the-badge)](https://meity.gov.in)
 
   <p align="center">
     <b>Offline-First Latency</b> • <b>Zero Third-Party Data Leakage</b> • <b>Warm Paper & Deep Ink Aesthetic</b> • <b>AI Demand Forecasting</b>
@@ -124,8 +124,8 @@ dukaan-pos/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/latent-spaces/dukaan-pos.git
-cd dukaan-pos
+git clone https://github.com/Harit-mi/Retail.git
+cd Retail
 
 # 2. Install dependencies
 npm install
@@ -133,7 +133,7 @@ npm install
 # 3. Start local development server (runs on http://localhost:5173/)
 npm run dev
 
-# 4. Execute Vitest unit & integration test suite (25/25 passing)
+# 4. Execute Vitest unit & integration test suite
 npm test
 
 # 5. Build production distribution bundle
@@ -142,15 +142,15 @@ npm run build
 
 ---
 
-## 🛡️ Security & DPDP Act 2023 Audit Matrix
+## 🛡️ Security & Privacy Matrix (Self-Audited Controls; Pending Legal Audit)
 
 | Security Feature | Specification & Enforcement | Status |
 |---|---|---|
-| **Data Privacy (Section 5)** | Phone numbers masked in public views (`+91 98765 *****`) | ✅ Verified |
-| **Right-to-Erasure (Section 12)** | 1-click permanent customer record deletion modal | ✅ Verified |
-| **Formula Injection Shield** | Escapes spreadsheet trigger characters (`=`, `+`, `-`, `@`) during CSV exports | ✅ Verified |
+| **Data Privacy (Section 5 Principles)** | Phone numbers masked in public views (`+91 98765 *****`) | ✅ Verified |
+| **Right-to-Erasure (Section 12 Principles)** | 1-click permanent customer record deletion modal | ✅ Verified |
+| **Formula Injection Shield** | Escapes spreadsheet trigger characters (`=`, `+`, `-`, `@`) with leading whitespace check | ✅ Verified |
 | **Storage Cryptography** | PBKDF2 (100,000 iterations) + AES-GCM 256-bit client-side encryption | ✅ Verified |
-| **Counter Register Lock** | 4-Digit PIN screen lock (`1234` default) with masked input | ✅ Verified |
+| **Counter Register Lock** | Cashier PIN screen lock (user-configured; no default PIN) with masked input | ✅ Verified |
 
 ---
 
