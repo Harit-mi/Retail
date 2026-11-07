@@ -112,7 +112,7 @@ export const encryptPayloadAsync = async (dataObj, pinKey) => {
  * Asynchronously Decrypt Data Payload using native Web Crypto API (AES-GCM 256-bit)
  * FAILS CLOSED: Returns fallback on decryption failure, never returns corrupted data.
  */
-export const decryptPayloadAsync = async (cipherStr, pinKey, fallback = null) => {
+export const decryptPayloadAsync = async (cipherStr, pinKey, fallback = null, allowLegacyPlaintext = false) => {
   if (!cipherStr || typeof cipherStr !== "string") return fallback;
 
   if (cipherStr.startsWith(CIPHER_HEADER)) {
@@ -153,11 +153,80 @@ export const decryptPayloadAsync = async (cipherStr, pinKey, fallback = null) =>
     }
   }
 
-  // Non-encrypted JSON fallback (for pre-migration or legacy development state)
+  // Non-encrypted JSON fallback (ONLY permitted when explicitly requested during legacy migration)
+  if (allowLegacyPlaintext) {
+    try {
+      return JSON.parse(cipherStr);
+    } catch {
+      return fallback;
+    }
+  }
+
+  return fallback;
+};
+
+/**
+ * Generate a Salted PBKDF2 Verifier Hash for Cashier PIN
+ * Format: PBKDF2_PIN_v1::<salt_hex>::<hash_hex>
+ * Never stores the raw PIN in persistent storage.
+ */
+export const hashPinAsync = async (pinStr, saltUint8 = null) => {
+  if (!pinStr || typeof pinStr !== "string" || pinStr.trim().length < 4) {
+    throw new Error("Valid cashier PIN (at least 4 digits) is required for hashing.");
+  }
+  const provider = getSubtleCrypto();
+  if (!provider) throw new Error("Web Crypto API is unavailable.");
+  const { crypto, subtle } = provider;
+
+  const salt = saltUint8 || crypto.getRandomValues(new Uint8Array(16));
+  const enc = new TextEncoder();
+  const keyMaterial = await subtle.importKey(
+    "raw",
+    enc.encode(pinStr.trim()),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const saltHex = bufferToHex(salt);
+  const hashHex = bufferToHex(derivedBits);
+  return {
+    saltHex,
+    hashHex,
+    verifierString: `PBKDF2_PIN_v1::${saltHex}::${hashHex}`,
+  };
+};
+
+/**
+ * Verify an Entered Cashier PIN against a Salted PBKDF2 Verifier Hash
+ */
+export const verifyPinHashAsync = async (enteredPin, verifierString) => {
+  if (!enteredPin || !verifierString || typeof verifierString !== "string") return false;
+  if (!verifierString.startsWith("PBKDF2_PIN_v1::")) return false;
+
+  const parts = verifierString.split("::");
+  if (parts.length !== 3) return false;
+
+  const saltHex = parts[1];
+  const expectedHash = parts[2];
+  const salt = hexToBuffer(saltHex);
+
   try {
-    return JSON.parse(cipherStr);
+    const computed = await hashPinAsync(enteredPin, salt);
+    return computed.hashHex === expectedHash;
   } catch {
-    return fallback;
+    return false;
   }
 };
 

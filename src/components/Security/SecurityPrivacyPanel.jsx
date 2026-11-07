@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
-import { ShieldCheck, Lock, CheckCircle, Trash2, Key, Download, Upload, HardDrive, RefreshCw } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle, Trash2, Key, Download, Upload, RefreshCw } from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 
 export const SecurityPrivacyPanel = () => {

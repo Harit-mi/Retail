@@ -1,6 +1,6 @@
 import React from "react";
 import { useStore } from "../../context/useStore";
-import { Sparkles, TrendingUp, AlertTriangle, ArrowRight, PackageCheck } from "lucide-react";
+import { Sparkles, ArrowRight, PackageCheck } from "lucide-react";
 
 export const AIDemandForecastingCard = () => {
   const { products, sales } = useStore();
@@ -9,25 +9,37 @@ export const AIDemandForecastingCard = () => {
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
   );
 
-  // Calculate historical sales velocity deterministically from actual sales log
+  // Calculate actual sales velocity across a strict rolling 7-day window
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const rollingSevenDaySales = sales.filter((s) => {
+    try {
+      const time = new Date(s.date).getTime();
+      return time >= sevenDaysAgo && time <= now;
+    } catch {
+      return false;
+    }
+  });
+
   const forecastData = lowStockItems.map((p) => {
-    // Total units sold of this product
-    const unitsSold = sales.reduce((acc, s) => {
+    // Units sold strictly within the past 7 days
+    const unitsSold = rollingSevenDaySales.reduce((acc, s) => {
       const match = (s.items || []).find((item) => item.id === p.id || item.name === p.name);
       return acc + (match ? Number(match.qty) || 0 : 0);
     }, 0);
 
-    // Estimate daily velocity (baseline 7-day rolling window or at least 1 unit/day)
-    const dailyVelocity = Math.max(0.5, Math.round((unitsSold / 7) * 10) / 10);
-    const runoutDays = Math.max(1, Math.ceil((p.stock || 0) / dailyVelocity));
-    const reorderTarget = Math.max(10, Math.ceil((p.minStockWarning || 5) * 3 - (p.stock || 0)));
+    const dailyVelocity = Math.round((unitsSold / 7) * 10) / 10;
+    const runoutDays = dailyVelocity > 0 ? Math.ceil((p.stock || 0) / dailyVelocity) : null;
+    const reorderTarget = Math.max(0, Math.ceil((p.minStockWarning || 5) * 2 - (p.stock || 0)));
 
-    let velocityLabel = "Moderate Velocity";
+    let velocityLabel = "No recent sales (7d)";
     if (dailyVelocity >= 4) velocityLabel = "Very High (Peak Demand)";
-    else if (dailyVelocity >= 1.5) velocityLabel = "High (Peak Shift)";
+    else if (dailyVelocity >= 1.5) velocityLabel = "High (Active Demand)";
+    else if (dailyVelocity > 0) velocityLabel = "Moderate (Regular Demand)";
 
     return {
       ...p,
+      dailyVelocity,
       predictedRunoutDays: runoutDays,
       recommendedOrderQty: reorderTarget,
       demandVelocity: velocityLabel,
@@ -43,10 +55,10 @@ export const AIDemandForecastingCard = () => {
           </div>
           <div>
             <h4 className="text-xs font-black font-display text-emerald-950">
-              AI Demand Status: Stock Optimal
+              Inventory Buffer Status: Optimal
             </h4>
             <p className="text-[11px] text-emerald-700 font-mono">
-              All high-velocity Kirana items have sufficient inventory buffers.
+              All Kirana catalog items meet minimum stock warning thresholds.
             </p>
           </div>
         </div>
@@ -66,19 +78,19 @@ export const AIDemandForecastingCard = () => {
           </div>
           <div>
             <h4 className="text-xs font-black font-display tracking-tight text-white flex items-center gap-1.5">
-              <span>AI Inventory Demand Forecast</span>
+              <span>7-Day Sales Velocity & Reorder Heuristic</span>
               <span className="text-[9px] font-mono bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-400/30">
-                Predictive
+                Rule-Based
               </span>
             </h4>
             <p className="text-[10px] text-[#E8E3DA]/80 font-mono">
-              Sales velocity forecasting & automated purchase order suggestions
+              Rolling 7-day sales velocity model & purchase order suggestions
             </p>
           </div>
         </div>
 
         <span className="text-[10px] font-mono text-amber-300 font-bold bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
-          {forecastData.length} Action Needed
+          {forecastData.length} Low Stock
         </span>
       </div>
 
@@ -95,7 +107,11 @@ export const AIDemandForecastingCard = () => {
               <div className="text-[10px] text-amber-300 font-mono flex items-center gap-2 mt-0.5">
                 <span>Stock: {item.stock} {item.unit} left</span>
                 <span>•</span>
-                <span>Runout in ~{item.predictedRunoutDays} day(s)</span>
+                <span>
+                  {item.predictedRunoutDays !== null
+                    ? `Runout in ~${item.predictedRunoutDays} day(s)`
+                    : "No sales in 7d"}
+                </span>
               </div>
             </div>
 

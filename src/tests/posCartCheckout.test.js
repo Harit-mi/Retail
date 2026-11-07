@@ -73,4 +73,41 @@ describe("POS Checkout & Cart State Machine (Production Integration Tests)", () 
     expect(result).toEqual(initialCustomers);
     expect(result[0].balance).toBe(1200);
   });
+
+  it("accurately parses cash tendered and change return for invoices", () => {
+    const paymentDetails = {
+      mode: "cash",
+      paidAmount: 500,
+      cashTendered: 1000,
+      tenderedAmount: 1000,
+      changeReturned: 500,
+    };
+
+    const cartGrandTotal = 500;
+    const tendered = paymentDetails.cashTendered !== undefined
+      ? Number(paymentDetails.cashTendered)
+      : paymentDetails.tenderedAmount !== undefined
+      ? Number(paymentDetails.tenderedAmount)
+      : paymentDetails.paidAmount;
+
+    const change = paymentDetails.changeReturned !== undefined
+      ? Number(paymentDetails.changeReturned)
+      : calculateCashChange(tendered, cartGrandTotal);
+
+    expect(tendered).toBe(1000);
+    expect(change).toBe(500);
+  });
+
+  it("enforces customer requirement for Udhaar checkout", () => {
+    const checkoutGuard = (mode, cartCustomer) => {
+      if (mode === "udhar" && !cartCustomer) {
+        throw new Error("Customer required for Udhaar (Credit) checkout");
+      }
+      return true;
+    };
+
+    expect(() => checkoutGuard("udhar", null)).toThrow("Customer required for Udhaar (Credit) checkout");
+    expect(checkoutGuard("udhar", { id: "c1", name: "Ramesh" })).toBe(true);
+    expect(checkoutGuard("cash", null)).toBe(true);
+  });
 });

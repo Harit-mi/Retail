@@ -122,7 +122,7 @@ export const ProductLandingPage = () => {
     {
       icon: Zap,
       title: "Lightning-Fast Billing Counter",
-      desc: "Process transactions in 0.8 seconds with hardware barcode scanner support, camera barcode scanning, F2 search, F4 customer link, and F8 checkout.",
+      desc: "Process transactions in 0.8 seconds with hardware USB/Bluetooth barcode scanner support, camera viewfinder preview, F2 search, F4 customer link, and F8 checkout.",
       badge: "F2 • F4 • F8 Shortcuts",
     },
     {

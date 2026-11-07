@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { encryptPayloadAsync, decryptPayloadAsync } from "../utils/storageCrypto";
+import {
+  encryptPayloadAsync,
+  decryptPayloadAsync,
+  hashPinAsync,
+  verifyPinHashAsync,
+} from "../utils/storageCrypto";
 import { sanitizeCsvCell } from "../utils/csvSanitizer";
 
 describe("Strix AI Security & Pentest Audit Suite", () => {
@@ -24,6 +29,35 @@ describe("Strix AI Security & Pentest Audit Suite", () => {
 
     const result = await decryptPayloadAsync(encrypted, wrongPin, null);
     expect(result).toBeNull();
+  });
+
+  it("hashes cashier PIN with salted PBKDF2 without exposing plaintext", async () => {
+    const { verifierString, saltHex, hashHex } = await hashPinAsync(correctPin);
+    expect(verifierString.startsWith("PBKDF2_PIN_v1::")).toBe(true);
+    expect(verifierString).not.toContain(correctPin);
+    expect(saltHex.length).toBe(32); // 16 bytes = 32 hex chars
+    expect(hashHex.length).toBe(64); // 32 bytes = 64 hex chars
+  });
+
+  it("verifies entered PIN correctly against PBKDF2 verifier and rejects wrong PIN", async () => {
+    const { verifierString } = await hashPinAsync(correctPin);
+    const valid = await verifyPinHashAsync(correctPin, verifierString);
+    expect(valid).toBe(true);
+
+    const invalid = await verifyPinHashAsync("0000", verifierString);
+    expect(invalid).toBe(false);
+
+    const tampered = await verifyPinHashAsync(correctPin, "PBKDF2_PIN_v1::bad::hash");
+    expect(tampered).toBe(false);
+  });
+
+  it("rejects unencrypted legacy plaintext JSON when allowLegacyPlaintext is false", async () => {
+    const rawPlaintextJson = JSON.stringify({ item: "Sugar", stock: 10 });
+    const result = await decryptPayloadAsync(rawPlaintextJson, correctPin, null, false);
+    expect(result).toBeNull();
+
+    const allowed = await decryptPayloadAsync(rawPlaintextJson, correctPin, null, true);
+    expect(allowed).toEqual({ item: "Sugar", stock: 10 });
   });
 
   it("sanitizes CSV formula injection triggers (=, +, -, @) including leading whitespace to defend against spreadsheet RCE", () => {

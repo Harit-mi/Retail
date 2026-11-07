@@ -78,6 +78,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
       mode: paymentMode,
       paidAmount: isUdhar ? 0 : cartGrandTotal,
       cashTendered: paymentMode === "cash" ? cashTendered : undefined,
+      tenderedAmount: paymentMode === "cash" ? cashTendered : (isUdhar ? 0 : cartGrandTotal),
       changeReturned: paymentMode === "cash" ? cashChangeReturn : undefined,
       upiVerified: paymentMode === "upi" ? upiVerified : undefined,
       cardAuthCode: paymentMode === "card" ? cardAuthCode : undefined,
@@ -202,7 +203,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                     VPA: {storeConfig.upiId || "guptakirana@upi"}
                   </p>
                 </div>
-                <div className="w-full mt-1 pt-2 border-t border-slate-200">
+                <div className="w-full mt-1 pt-2 border-t border-slate-200 space-y-1">
                   <button
                     type="button"
                     onClick={() => setUpiVerified(!upiVerified)}
@@ -213,8 +214,11 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                     }`}
                   >
                     <CheckCircle2 className={`w-4 h-4 ${upiVerified ? "text-emerald-700" : "text-amber-700"}`} />
-                    <span>{upiVerified ? "✓ UPI Payment Confirmed on Terminal/Soundbox" : "Click to Confirm UPI Soundbox/App Receipt"}</span>
+                    <span>{upiVerified ? "✓ Cashier Confirmed Soundbox / App Receipt" : "Click to Confirm Soundbox / App Receipt"}</span>
                   </button>
+                  <p className="text-[10px] text-slate-500 font-mono text-center">
+                    Manual cashier check · Gateway not connected via banking API
+                  </p>
                 </div>
               </div>
             )}
@@ -223,16 +227,19 @@ export const PaymentModal = ({ isOpen, onClose }) => {
             {paymentMode === "card" && (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
                 <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                  <span>Card POS Swiper Terminal</span>
-                  <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-mono">Manual Swiper</span>
+                  <span>Card POS Swiper (Manual Entry)</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-mono">External Machine</span>
                 </div>
                 <input
                   type="text"
-                  placeholder="Optional: Card Last 4 Digits or Auth Ref"
+                  placeholder="Optional: Slip authorization ref or last 4 digits"
                   value={cardAuthCode}
                   onChange={(e) => setCardAuthCode(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
                 />
+                <p className="text-[10px] text-slate-500 font-mono">
+                  Cashier record-keeping only · External machine not connected via API
+                </p>
               </div>
             )}
 

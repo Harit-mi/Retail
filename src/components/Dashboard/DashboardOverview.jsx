@@ -41,17 +41,23 @@ export const DashboardOverview = () => {
     (p) => p.stock !== null && p.stock <= (p.minStockWarning || 5)
   );
 
-  // Compute live tender breakdown across today's sales (or all sales if no sales today)
-  const salesForTender = todaySales.length > 0 ? todaySales : sales;
-  const tenderGrandTotal = salesForTender.reduce((acc, s) => acc + (s.grandTotal || 0), 0);
-  const tenderBreakdown = salesForTender.reduce(
+  // Compute live tender breakdown across today's sales ONLY (no fallback to historical sales)
+  const tenderBreakdown = todaySales.reduce(
     (acc, s) => {
       const mode = s.paymentMode || "cash";
-      acc[mode] = (acc[mode] || 0) + (s.grandTotal || 0);
+      if (mode === "udhar") {
+        acc.udhar = (acc.udhar || 0) + (s.dueAmount !== undefined ? s.dueAmount : s.grandTotal || 0);
+      } else {
+        const received = s.paidAmount !== undefined ? s.paidAmount : s.grandTotal || 0;
+        acc[mode] = (acc[mode] || 0) + received;
+      }
       return acc;
     },
     { upi: 0, cash: 0, card: 0, udhar: 0 }
   );
+
+  const totalReceivedToday = tenderBreakdown.cash + tenderBreakdown.upi + tenderBreakdown.card;
+  const tenderGrandTotal = totalReceivedToday + tenderBreakdown.udhar;
 
   const upiPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.upi / tenderGrandTotal) * 100) : 0;
   const cashPct = tenderGrandTotal > 0 ? Math.round((tenderBreakdown.cash / tenderGrandTotal) * 100) : 0;
@@ -251,9 +257,13 @@ export const DashboardOverview = () => {
               <h3 className="font-bold text-sm text-zinc-950 font-display">
                 Till Tender Split
               </h3>
-              <p className="text-xs text-zinc-400 font-mono">Real-time payment breakdown</p>
+              <p className="text-xs text-zinc-400 font-mono">
+                {todaySales.length > 0 ? "Real-time payment breakdown" : "No transactions recorded today"}
+              </p>
             </div>
-            <span className="text-[10px] font-mono text-zinc-400">Total ₹{todaySalesTotal.toLocaleString("en-IN")}</span>
+            <span className="text-[10px] font-mono text-zinc-400">
+              Total ₹{todaySalesTotal.toLocaleString("en-IN")}
+            </span>
           </div>
 
           {/* Stacked percentage progress bar */}

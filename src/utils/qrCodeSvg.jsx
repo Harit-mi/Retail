@@ -78,7 +78,3 @@ export const OfflineQrCode = ({ value = "", size = 140, fgColor = "#191817", bgC
     </svg>
   );
 };
-
-export const generateOfflineQrSvgString = (value) => {
-  return `<svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg"><rect width="140" height="140" fill="#FFFFFF"/><rect x="10" y="10" width="120" height="120" fill="#191817"/></svg>`;
-};

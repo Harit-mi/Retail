@@ -18,8 +18,15 @@ import {
   decryptDataPayload,
   encryptPayloadAsync,
   decryptPayloadAsync,
+  hashPinAsync,
+  verifyPinHashAsync,
 } from "../utils/storageCrypto";
-import { CURRENT_SCHEMA_VERSION, migrateStoreBundle, restoreFromRollbackCheckpoint } from "../utils/schemaMigration";
+import {
+  CURRENT_SCHEMA_VERSION,
+  migrateStoreBundle,
+  saveRollbackCheckpoint,
+  restoreFromRollbackCheckpoint,
+} from "../utils/schemaMigration";
 import { StoreContext } from "./StoreContextObject";
 
 // Helper: Safe LocalStorage parser with fallback (fails closed if encrypted)
@@ -52,11 +59,15 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_language", langCode);
   };
 
-  // Global POS Counter Register PIN Lock State (NO default "1234" PIN)
-  const [counterPin, setCounterPin] = useState(() => {
-    return localStorage.getItem("dukaan_counter_pin") || "";
+  // Global POS Counter Register PIN Lock State
+  // Raw PIN is held strictly in-memory during active sessions. Never persisted in plaintext.
+  const [counterPin, setCounterPin] = useState("");
+  const [isCounterLocked, setIsCounterLocked] = useState(() => {
+    return Boolean(
+      localStorage.getItem("dukaan_pin_verifier") ||
+      localStorage.getItem("dukaan_counter_pin")
+    );
   });
-  const [isCounterLocked, setIsCounterLocked] = useState(false);
 
   // Store Config & Settings
   const [storeConfig, setStoreConfig] = useState(() =>
@@ -211,6 +222,30 @@ export const StoreProvider = ({ children }) => {
     };
   }, []);
 
+  const persistSyncOutbox = (outboxList) => {
+    if (counterPin && counterPin.length >= 4) {
+      encryptPayloadAsync(outboxList.slice(0, 200), counterPin)
+        .then((enc) => localStorage.setItem("dukaan_sync_outbox", enc))
+        .catch(() => {});
+    } else {
+      // Prevent customer PII leaks: store event headers only if unencrypted
+      const sanitized = outboxList.slice(0, 200).map((e) => ({
+        ...e,
+        payload: {
+          id: e.payload?.id,
+          date: e.payload?.date,
+          grandTotal: e.payload?.grandTotal,
+          paymentMode: e.payload?.paymentMode,
+          subtotal: e.payload?.subtotal,
+          taxAmount: e.payload?.taxAmount,
+        },
+      }));
+      try {
+        localStorage.setItem("dukaan_sync_outbox", JSON.stringify(sanitized));
+      } catch {}
+    }
+  };
+
   const syncToCloud = async () => {
     if (typeof window !== "undefined" && !window.navigator.onLine) {
       setCloudSyncStatus("offline");
@@ -226,7 +261,7 @@ export const StoreProvider = ({ children }) => {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const headers = { "Content-Type": "application/json" };
       if (storeConfig?.cloudApiKey) {
@@ -234,6 +269,28 @@ export const StoreProvider = ({ children }) => {
       }
 
       const pendingEvents = syncOutbox.filter((e) => e.status === "pending_sync");
+      if (pendingEvents.length === 0) {
+        clearTimeout(timeoutId);
+        setCloudSyncStatus("synced");
+        return { success: true, status: "synced", message: "All transactions already synchronized." };
+      }
+
+      // Anonymize outbox transmission to defend customer PII over the wire
+      const payloadEvents = pendingEvents.map((e) => ({
+        eventId: e.eventId,
+        type: e.type,
+        timestamp: e.timestamp,
+        invoiceId: e.invoiceId,
+        payload: {
+          id: e.payload?.id,
+          date: e.payload?.date,
+          grandTotal: e.payload?.grandTotal,
+          paymentMode: e.payload?.paymentMode,
+          subtotal: e.payload?.subtotal,
+          taxAmount: e.payload?.taxAmount,
+          itemCount: e.payload?.items?.length || 0,
+        },
+      }));
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -241,37 +298,54 @@ export const StoreProvider = ({ children }) => {
         body: JSON.stringify({
           storeId: storeConfig?.gstin || "online_store",
           timestamp: new Date().toISOString(),
-          outboxEvents: pendingEvents,
+          outboxEvents: payloadEvents,
         }),
         signal: controller.signal,
-      }).catch(() => null);
+      }).catch((err) => ({
+        ok: false,
+        statusText: err.name === "AbortError" ? "Request timed out" : "Network connection failed",
+      }));
 
       clearTimeout(timeoutId);
 
       if (res && res.ok) {
-        const updated = syncOutbox.map((e) => ({ ...e, status: "synced" }));
+        const resData = await res.json().catch(() => ({}));
+        const acceptedIds = new Set(
+          Array.isArray(resData.acceptedEventIds)
+            ? resData.acceptedEventIds
+            : pendingEvents.map((e) => e.eventId)
+        );
+
+        const updated = syncOutbox.map((e) =>
+          acceptedIds.has(e.eventId) ? { ...e, status: "synced" } : e
+        );
         setSyncOutbox(updated);
-        try {
-          localStorage.setItem("dukaan_sync_outbox", JSON.stringify(updated.slice(0, 200)));
-        } catch {}
+        persistSyncOutbox(updated);
+
         setCloudSyncStatus("synced");
-        setLastSyncedAt(new Date().toLocaleTimeString());
-        return { success: true, status: "synced", message: "Cloud sync complete." };
-      } else {
-        setCloudSyncStatus("online");
         setLastSyncedAt(new Date().toLocaleTimeString());
         return {
           success: true,
-          status: "online",
-          message: "Online mode active. Records queued for cloud sync.",
+          status: "synced",
+          message: `Cloud sync complete. ${acceptedIds.size} transactions acknowledged by server.`,
+        };
+      } else {
+        const errorDetail = res && res.status
+          ? `HTTP ${res.status}: ${res.statusText || "Server error"}`
+          : res?.statusText || "Server unreachable or timed out";
+        setCloudSyncStatus("error");
+        return {
+          success: false,
+          status: "error",
+          message: `Cloud sync failed: ${errorDetail}`,
         };
       }
-    } catch {
-      setCloudSyncStatus("online");
+    } catch (err) {
+      setCloudSyncStatus("error");
       return {
-        success: true,
-        status: "online",
-        message: "Online connected. Records queued for cloud sync.",
+        success: false,
+        status: "error",
+        message: `Cloud sync failed: ${err.message}`,
       };
     }
   };
@@ -331,14 +405,32 @@ export const StoreProvider = ({ children }) => {
 
           if (isCancelled) return;
 
-          // If all table decryptions returned null, PIN is wrong or cipher is corrupted.
-          if (!decConfig && !decProducts && !decCustomers && !decSales) {
-            console.warn("DukaanPOS: Decryption failed closed (wrong PIN or corrupted MAC). Preserving storage without overwrite.");
+          // Fail-closed verification: If ANY table is encrypted with AES_GCM_v1:: and fails decryption,
+          // treat as a critical recovery error and NEVER enable writes or substitute sample fixtures!
+          const corruptedTables = [];
+          if (savedConfigRaw?.startsWith("AES_GCM_v1::") && !decConfig) corruptedTables.push("storeConfig");
+          if (savedProductsRaw?.startsWith("AES_GCM_v1::") && !decProducts) corruptedTables.push("products");
+          if (savedCustomersRaw?.startsWith("AES_GCM_v1::") && !decCustomers) corruptedTables.push("customers");
+          if (savedSalesRaw?.startsWith("AES_GCM_v1::") && !decSales) corruptedTables.push("sales");
+          if (savedSuppliersRaw?.startsWith("AES_GCM_v1::") && !decSuppliers) corruptedTables.push("suppliers");
+          if (savedPORaw?.startsWith("AES_GCM_v1::") && !decPO) corruptedTables.push("purchaseOrders");
+
+          if (corruptedTables.length > 0) {
+            console.warn(`DukaanPOS: Decryption failed closed for tables [${corruptedTables.join(", ")}]. Preserving storage without overwrite.`);
             setIsCounterLocked(true);
             setDecryptionFailedClosed(true);
             isStorageReadyRef.current = false; // NEVER ALLOW OVERWRITE
             setIsStorageLoaded(true);
             return;
+          }
+
+          // Decrypt outbox if encrypted
+          const savedOutboxRaw = localStorage.getItem("dukaan_sync_outbox");
+          if (savedOutboxRaw?.startsWith("AES_GCM_v1::")) {
+            const decOutbox = await decryptPayloadAsync(savedOutboxRaw, counterPin, null);
+            if (decOutbox && Array.isArray(decOutbox)) {
+              setSyncOutbox(decOutbox);
+            }
           }
 
           // Migrate decrypted data bundle to current schema version
@@ -363,16 +455,40 @@ export const StoreProvider = ({ children }) => {
           // Only enable write persistence after successful decryption and state hydration
           isStorageReadyRef.current = true;
         } else {
-          // Fresh install: no encrypted records exist in localStorage
+          // Check for legacy unencrypted JSON tables before treating as a completely fresh install
+          const parseLegacy = (raw) => {
+            if (!raw || raw.startsWith("AES_GCM_v1::")) return null;
+            try { return JSON.parse(raw); } catch { return null; }
+          };
+          const legConfig = parseLegacy(savedConfigRaw);
+          const legProducts = parseLegacy(savedProductsRaw);
+          const legCustomers = parseLegacy(savedCustomersRaw);
+          const legSales = parseLegacy(savedSalesRaw);
+          const legSuppliers = parseLegacy(savedSuppliersRaw);
+          const legPO = parseLegacy(savedPORaw);
+
+          const isLegacyInstalled = Boolean(legConfig || legProducts || legCustomers || legSales);
+
           if (!isCancelled) {
-            const freshBundle = migrateStoreBundle({
-              storeConfig: initialStoreConfig,
-              products: initialProducts,
-              customers: initialCustomers,
-              suppliers: initialSuppliers,
-              purchaseOrders: initialPurchaseOrders,
-              sales: initialSalesHistory,
-            });
+            const bundleToMigrate = isLegacyInstalled
+              ? {
+                  storeConfig: legConfig || initialStoreConfig,
+                  products: legProducts || initialProducts,
+                  customers: legCustomers || initialCustomers,
+                  suppliers: legSuppliers || initialSuppliers,
+                  purchaseOrders: legPO || initialPurchaseOrders,
+                  sales: legSales || initialSalesHistory,
+                }
+              : {
+                  storeConfig: initialStoreConfig,
+                  products: initialProducts,
+                  customers: initialCustomers,
+                  suppliers: initialSuppliers,
+                  purchaseOrders: initialPurchaseOrders,
+                  sales: initialSalesHistory,
+                };
+
+            const freshBundle = migrateStoreBundle(bundleToMigrate);
             setStoreConfig(freshBundle.storeConfig);
             setProducts(freshBundle.products);
             setCustomers(freshBundle.customers);
@@ -407,18 +523,48 @@ export const StoreProvider = ({ children }) => {
     setIsCounterLocked(true);
   };
 
-  const unlockCounter = (enteredPin) => {
+  const unlockCounter = async (enteredPin) => {
     if (!enteredPin || enteredPin.length < 4) {
       return { success: false, message: "Please enter a valid 4-digit PIN." };
     }
-    // If no counterPin was configured yet, configure it now
-    if (!counterPin) {
-      setCounterPin(enteredPin);
-      localStorage.setItem("dukaan_counter_pin", enteredPin);
-      setIsCounterLocked(false);
-      return { success: true, message: "Initial Cashier PIN configured!" };
+
+    const savedVerifier = localStorage.getItem("dukaan_pin_verifier");
+    const legacyPlainPin = localStorage.getItem("dukaan_counter_pin");
+
+    // Case 1: First-run setup: No verifier and no legacy PIN configured yet
+    if (!savedVerifier && !legacyPlainPin && !counterPin) {
+      try {
+        const { verifierString } = await hashPinAsync(enteredPin);
+        localStorage.setItem("dukaan_pin_verifier", verifierString);
+        localStorage.removeItem("dukaan_counter_pin"); // eliminate plaintext
+        setCounterPin(enteredPin);
+        setIsCounterLocked(false);
+        setDecryptionFailedClosed(false);
+        return { success: true, message: "Initial Cashier PIN configured securely!" };
+      } catch (err) {
+        return { success: false, message: `Failed to configure PIN: ${err.message}` };
+      }
     }
-    if (enteredPin === counterPin) {
+
+    // Case 2: Validate against salted PBKDF2 hash or legacy plaintext
+    let isValid = false;
+    if (savedVerifier) {
+      isValid = await verifyPinHashAsync(enteredPin, savedVerifier);
+    } else if (legacyPlainPin) {
+      isValid = enteredPin === legacyPlainPin;
+      if (isValid) {
+        try {
+          const { verifierString } = await hashPinAsync(enteredPin);
+          localStorage.setItem("dukaan_pin_verifier", verifierString);
+          localStorage.removeItem("dukaan_counter_pin");
+        } catch {}
+      }
+    } else if (counterPin) {
+      isValid = enteredPin === counterPin;
+    }
+
+    if (isValid) {
+      setCounterPin(enteredPin);
       setIsCounterLocked(false);
       setDecryptionFailedClosed(false);
       return { success: true };
@@ -430,8 +576,15 @@ export const StoreProvider = ({ children }) => {
     if (!newPin || newPin.length < 4) {
       return { success: false, message: "PIN must be at least 4 digits." };
     }
+
+    // Stage rollback checkpoint before modifying anything in localStorage
+    saveRollbackCheckpoint("pre_pin_change");
+
     try {
-      // Re-encrypt all existing state tables atomically with the new PIN
+      // 1. Generate new PBKDF2 verifier string
+      const { verifierString } = await hashPinAsync(newPin);
+
+      // 2. Re-encrypt all existing state tables with the new PIN
       const [encConfig, encProducts, encCustomers, encSuppliers, encPO, encSales] = await Promise.all([
         encryptPayloadAsync({ ...storeConfig, _schemaVersion: CURRENT_SCHEMA_VERSION }, newPin),
         encryptPayloadAsync(products, newPin),
@@ -441,22 +594,24 @@ export const StoreProvider = ({ children }) => {
         encryptPayloadAsync(sales, newPin),
       ]);
 
-      // Atomically commit new ciphertexts and new PIN to localStorage
+      // 3. Staged commit to localStorage
       localStorage.setItem("dukaan_store_config", encConfig);
       localStorage.setItem("dukaan_products", encProducts);
       localStorage.setItem("dukaan_customers", encCustomers);
       localStorage.setItem("dukaan_suppliers", encSuppliers);
       localStorage.setItem("dukaan_purchase_orders", encPO);
       localStorage.setItem("dukaan_sales", encSales);
-      localStorage.setItem("dukaan_counter_pin", newPin);
+      localStorage.setItem("dukaan_pin_verifier", verifierString);
+      localStorage.removeItem("dukaan_counter_pin"); // eliminate any legacy plaintext PIN
 
       setCounterPin(newPin);
       setIsCounterLocked(false);
       setDecryptionFailedClosed(false);
       return { success: true, message: "Cashier PIN updated and store vault re-encrypted successfully!" };
     } catch (err) {
-      console.error("Atomic PIN re-encryption error:", err);
-      return { success: false, message: "Failed to re-encrypt records. PIN change aborted to prevent data loss." };
+      console.error("Atomic PIN re-encryption error, rolling back:", err);
+      restoreFromRollbackCheckpoint();
+      return { success: false, message: "Failed to re-encrypt records. PIN change rolled back to prevent data loss." };
     }
   };
 
@@ -666,9 +821,14 @@ export const StoreProvider = ({ children }) => {
 
     const paid = Number(paymentDetails.paidAmount) || 0;
     const due = Math.max(0, cartGrandTotal - paid);
+    const tendered = paymentDetails.cashTendered !== undefined
+      ? Number(paymentDetails.cashTendered)
+      : paymentDetails.tenderedAmount !== undefined
+      ? Number(paymentDetails.tenderedAmount)
+      : paid;
     const change = paymentDetails.changeReturned !== undefined
       ? Number(paymentDetails.changeReturned)
-      : (paymentDetails.mode === "cash" && paid > cartGrandTotal ? paid - cartGrandTotal : 0);
+      : (paymentDetails.mode === "cash" && tendered > cartGrandTotal ? tendered - cartGrandTotal : 0);
     const pointsEarned = Math.floor(cartGrandTotal / 100);
 
     const newInvoice = {
@@ -685,13 +845,13 @@ export const StoreProvider = ({ children }) => {
       paymentMode: paymentDetails.mode,
       paidAmount: paid,
       dueAmount: due,
-      tenderedAmount: paymentDetails.tenderedAmount !== undefined ? Number(paymentDetails.tenderedAmount) : paid,
+      tenderedAmount: tendered,
       changeReturned: change,
       pointsEarned: pointsEarned,
       operator: storeConfig.ownerName || "Cashier",
     };
 
-    // Atomic Outbox Event for Offline-First Sync Queue
+    // Atomic Outbox Event for Cloud Sync Queue
     const outboxEvent = {
       eventId: `evt_${crypto.randomUUID()}`,
       type: "SALE_CREATED",
@@ -721,12 +881,10 @@ export const StoreProvider = ({ children }) => {
     // 3. Add to Sales Log
     setSales((prev) => [newInvoice, ...prev]);
 
-    // 4. Record to Durable Local Outbox Queue
+    // 4. Record to Durable Outbox Queue (Encrypted / Anonymized)
     setSyncOutbox((prev) => {
       const updated = [outboxEvent, ...prev];
-      try {
-        localStorage.setItem("dukaan_sync_outbox", JSON.stringify(updated.slice(0, 200)));
-      } catch {}
+      persistSyncOutbox(updated);
       return updated;
     });
 

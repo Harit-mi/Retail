@@ -43,11 +43,10 @@ const MainContent = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState("");
-  const [showDemoPin, setShowDemoPin] = useState(false);
 
-  const handleUnlock = (e) => {
+  const handleUnlock = async (e) => {
     e.preventDefault();
-    const res = unlockCounter(pinInput);
+    const res = await unlockCounter(pinInput);
     if (res.success) {
       setPinInput("");
       setPinError("");
@@ -114,13 +113,7 @@ const MainContent = () => {
                   {!counterPin ? "Set New 4-digit PIN" : "Enter 4-digit PIN"}
                 </label>
                 {counterPin ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowDemoPin(!showDemoPin)}
-                    className="text-zinc-800 hover:underline text-[10px] cursor-pointer"
-                  >
-                    {showDemoPin ? `Configured PIN: ${counterPin}` : "Show Current PIN"}
-                  </button>
+                  <span className="text-[10px] text-zinc-500 font-bold">Encrypted Vault Protected</span>
                 ) : (
                   <span className="text-[10px] text-amber-700 font-bold">First-Run Setup</span>
                 )}
