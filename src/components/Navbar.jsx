@@ -45,7 +45,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           </button>
 
           {/* Kirana Store Title Badge */}
-          <div className="flex items-center space-x-2 bg-amber-50 p-2 px-3 rounded-lg border border-amber-200 shadow-2xs">
+          <div className="hidden sm:flex items-center space-x-2 bg-amber-50 p-2 px-3 rounded-lg border border-amber-200 shadow-2xs">
             <i className="fa-solid fa-shop text-[#F5A623] text-sm" aria-hidden="true"></i>
             <span className="text-slate-900 text-xs font-black font-display tracking-tight whitespace-nowrap">
               {storeConfig.name || "Gupta Kirana Store"}
@@ -55,15 +55,16 @@ export const Navbar = ({ onOpenMobileMenu }) => {
           {/* Mode Switcher Button */}
           <button
             onClick={() => setActiveTab(activeTab === "landing" ? "pos" : "landing")}
-            className="px-3 py-1.5 bg-[#0F1F35] hover:bg-[#1E3A5F] text-white rounded-lg text-xs font-extrabold transition flex items-center space-x-1.5 border border-white/10 shadow-2xs font-display"
+            className="px-2.5 sm:px-3 py-1.5 bg-[#0F1F35] hover:bg-[#1E3A5F] text-white rounded-lg text-xs font-extrabold transition flex items-center space-x-1.5 border border-white/10 shadow-2xs font-display"
           >
             <i className={`fa-solid ${activeTab === "landing" ? "fa-cash-register text-[#F5A623]" : "fa-globe text-blue-400"}`} aria-hidden="true"></i>
-            <span>{activeTab === "landing" ? "⚡ Open POS Counter" : "🌐 Product Website"}</span>
+            <span className="hidden xs:inline">{activeTab === "landing" ? "⚡ POS Counter" : "🌐 Storefront"}</span>
+            <span className="xs:hidden">{activeTab === "landing" ? "POS" : "Site"}</span>
           </button>
         </div>
 
         {/* Center: Global Item/Barcode Search Bar */}
-        <div className="flex-1 max-w-md hidden md:block relative">
+        <div className="flex-1 max-w-xs md:max-w-md hidden lg:block relative">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" aria-hidden="true"></i>
           <input
             type="text"
@@ -75,7 +76,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
         </div>
 
         {/* Right: Online Cloud Sync, Cashier Lock, Cash Audit, Notifications */}
-        <div className="flex items-center space-x-2 flex-shrink-0">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
           {/* Cloud Sync Status Badge */}
           <button
             onClick={() => syncToCloud()}
@@ -84,7 +85,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                 ? "Internet Disconnected. Cloud sync paused."
                 : `Connected to Cloud (${cloudSyncStatus.toUpperCase()}). Click to sync.`
             }
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border whitespace-nowrap ${
+            className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border whitespace-nowrap ${
               cloudSyncStatus === "offline"
                 ? "bg-red-50 text-red-700 border-red-200"
                 : cloudSyncStatus === "syncing"
@@ -101,14 +102,14 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                   : "bg-emerald-500 animate-pulse"
               }`}
             ></span>
-            <span className="font-mono text-[11px] uppercase tracking-wider font-extrabold">
+            <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider font-extrabold">
               {cloudSyncStatus === "syncing"
                 ? "Syncing..."
                 : cloudSyncStatus === "offline"
-                ? "Offline (No Net)"
+                ? "Offline"
                 : pendingOutboxCount > 0
-                ? `Cloud Sync (${pendingOutboxCount})`
-                : "Cloud Connected"}
+                ? `Sync (${pendingOutboxCount})`
+                : "Connected"}
             </span>
           </button>
 
@@ -117,10 +118,10 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             onClick={lockCounter}
             title="Lock POS Counter Register (PIN Required)"
             aria-label="Lock POS Counter Register"
-            className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border border-amber-300 shadow-2xs focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
+            className="hidden sm:flex px-2.5 sm:px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold transition items-center space-x-1.5 border border-amber-300 shadow-2xs focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
           >
             <i className="fa-solid fa-lock text-amber-600" aria-hidden="true"></i>
-            <span className="font-display">Lock Counter</span>
+            <span className="font-display hidden md:inline">Lock Counter</span>
           </button>
 
           {/* Shift Drawer Audit Trigger Button */}
@@ -128,10 +129,10 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             onClick={() => setShowShiftAuditModal(true)}
             title="Day-End Cash Drawer Audit"
             aria-label="Open Cash Drawer Audit Modal"
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 border border-slate-200 focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
+            className="hidden sm:flex px-2.5 sm:px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition items-center space-x-1.5 border border-slate-200 focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
           >
             <i className="fa-solid fa-vault text-[#F5A623]" aria-hidden="true"></i>
-            <span>Cash Audit</span>
+            <span className="hidden md:inline">Cash Audit</span>
           </button>
 
           {/* Notification Bell Badge */}

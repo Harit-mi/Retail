@@ -84,6 +84,8 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
   const [showParkedModal, setShowParkedModal] = useState(false);
   const [cartActionToast, setCartActionToast] = useState(null);
 
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+
   const searchInputRef = useRef(null);
   const lastHardwareScanRef = useRef({ time: 0, barcode: "" });
 
@@ -487,9 +489,16 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
 
       {/* ============================================================ */}
       {/* RIGHT: THE REGISTER CONSOLE — Quiet Monospace Financial Tape */}
+      {/* Responsive: Sidebar on Desktop/Laptop/Tablet, Drawer on Mobile */}
       {/* ============================================================ */}
-      <div className="lg:col-span-5 xl:col-span-4 flex flex-col">
-        <div className="flex-1 flex flex-col bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+      <div className={`fixed inset-0 z-50 lg:static lg:z-auto bg-black/50 lg:bg-transparent transition-opacity ${
+        isMobileCartOpen ? "flex items-end lg:block" : "hidden lg:flex"
+      } lg:col-span-5 xl:col-span-4 flex-col`}>
+        <div 
+          onClick={() => setIsMobileCartOpen(false)} 
+          className="absolute inset-0 lg:hidden"
+        />
+        <div className="relative z-10 w-full max-h-[85vh] lg:max-h-none flex-1 flex flex-col bg-white rounded-t-2xl lg:rounded-xl border border-zinc-200 shadow-xl lg:shadow-sm overflow-hidden">
           {/* Top Console Bar */}
           <div className="px-4 py-3 bg-zinc-50/80 border-b border-zinc-200/80 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -504,6 +513,16 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             </div>
 
             <div className="flex items-center gap-1.5">
+              {/* Close button on mobile cart sheet */}
+              <button
+                type="button"
+                onClick={() => setIsMobileCartOpen(false)}
+                className="lg:hidden p-1 text-zinc-400 hover:text-zinc-700 rounded mr-1 cursor-pointer"
+                aria-label="Close cart sheet"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => setIsCashDrawerOpen(true)}
@@ -769,7 +788,10 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               {/* Primary Checkout Button */}
               <button
                 type="button"
-                onClick={onOpenPaymentModal}
+                onClick={() => {
+                  setIsMobileCartOpen(false);
+                  onOpenPaymentModal();
+                }}
                 className="w-full flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 active:scale-[0.99] text-white font-semibold py-3.5 rounded-lg transition-all cursor-pointer shadow-sm"
               >
                 <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 rounded">
@@ -782,6 +804,46 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
           )}
         </div>
       </div>
+
+      {/* Floating Mobile Cart Bar (Visible on mobile/tablet when cart has items) */}
+      {cart.length > 0 && !isMobileCartOpen && (
+        <div className="lg:hidden fixed bottom-14 inset-x-3 z-30 animate-fade-in">
+          <div className="bg-zinc-950 text-white rounded-xl p-3 shadow-xl border border-zinc-800 flex items-center justify-between">
+            <div 
+              onClick={() => setIsMobileCartOpen(true)}
+              className="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0"
+            >
+              <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center font-mono font-bold text-xs text-amber-400">
+                {cart.length}
+              </div>
+              <div className="truncate">
+                <span className="text-xs text-zinc-400 block font-mono leading-none">Total Due</span>
+                <span className="text-base font-bold font-mono text-white leading-tight">
+                  ₹{cartGrandTotal.toLocaleString("en-IN")}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileCartOpen(true)}
+                className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-medium rounded-lg text-zinc-200 cursor-pointer"
+              >
+                View Bill
+              </button>
+              <button
+                type="button"
+                onClick={onOpenPaymentModal}
+                className="px-3.5 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 text-xs font-black font-display rounded-lg flex items-center gap-1 shadow-xs cursor-pointer"
+              >
+                <span>Pay</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera Live Barcode Scanner Modal */}
       <WebcamBarcodeScannerModal
