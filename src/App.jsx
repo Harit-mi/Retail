@@ -55,6 +55,18 @@ const MainContent = () => {
     }
   };
 
+  const handleResetRegister = () => {
+    if (window.confirm("Reset cashier PIN and restore default register? This will clear locally locked storage.")) {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (err) {
+        console.warn("Storage clear error:", err);
+      }
+      window.location.reload();
+    }
+  };
+
   if (!isStorageLoaded) {
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center justify-center p-5 text-zinc-900 selection:bg-zinc-900 selection:text-white">
@@ -147,6 +159,17 @@ const MainContent = () => {
                   Unlock Register
                 </button>
               </form>
+
+              <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
+                <span className="text-[10px] text-zinc-400 font-mono">Forgot PIN?</span>
+                <button
+                  type="button"
+                  onClick={handleResetRegister}
+                  className="text-[11px] font-semibold text-amber-700 hover:text-amber-800 transition-colors cursor-pointer"
+                >
+                  Reset Register & PIN
+                </button>
+              </div>
             </div>
           </div>
         </div>
