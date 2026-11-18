@@ -17,7 +17,7 @@ export const WebcamBarcodeScannerModal = ({ isOpen, onClose, onBarcodeDetected }
           stream = s;
           if (videoRef.current) {
             videoRef.current.srcObject = s;
-            videoRef.current.play();
+            videoRef.current.play()?.catch(() => {});
           }
         })
         .catch((err) => {

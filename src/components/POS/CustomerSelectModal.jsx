@@ -33,8 +33,8 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
       balance: 0,
       creditLimit: Number(newCustCreditLimit) || 5000,
     };
-    addCustomer(created);
-    setCartCustomer(created);
+    const savedCustomer = addCustomer(created);
+    setCartCustomer(savedCustomer || created);
     setShowAddForm(false);
     onClose();
   };

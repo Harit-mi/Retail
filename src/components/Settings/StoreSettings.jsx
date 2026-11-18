@@ -1,10 +1,21 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/useStore";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
-import { encryptPayloadAsync, decryptPayloadAsync } from "../../utils/storageCrypto";
+import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 
 export const StoreSettings = () => {
-  const { storeConfig, setStoreConfig, resetDemoData, products, sales, customers, suppliers, counterPin } = useStore();
+  const {
+    storeConfig,
+    setStoreConfig,
+    resetDemoData,
+    products,
+    sales,
+    customers,
+    suppliers,
+    purchaseOrders,
+    counterPin,
+    restoreStoreBundle,
+  } = useStore();
   const [formData, setFormData] = useState({ ...storeConfig });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [backupMsg, setBackupMsg] = useState(null);
@@ -20,64 +31,50 @@ export const StoreSettings = () => {
 
   // 1-Click Native Web Crypto API AES-GCM 256-bit Encrypted Backup Export
   const exportStoreBackup = async () => {
-    const backupData = {
-      version: "1.0",
-      exportDate: new Date().toISOString(),
-      storeConfig,
-      products,
-      sales,
-      customers,
-      suppliers,
-    };
+    try {
+      const bundle = {
+        storeConfig,
+        products,
+        sales,
+        customers,
+        suppliers,
+        purchaseOrders,
+      };
 
-    const encryptedContent = await encryptPayloadAsync(backupData, counterPin);
-    const blob = new Blob([encryptedContent], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dukaanpos_backup_${storeConfig.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+      const encryptedBlob = await createEncryptedBackup(bundle, counterPin);
+      downloadBackupFile(encryptedBlob, storeConfig.name || "DukaanPOS");
 
-    setBackupMsg("✓ Native Web Crypto AES-GCM encrypted store backup downloaded successfully!");
-    setTimeout(() => setBackupMsg(null), 4000);
+      setBackupMsg("✓ Store vault backup downloaded successfully!");
+      setTimeout(() => setBackupMsg(null), 4000);
+    } catch (err) {
+      alert(`Export failed: ${err.message}`);
+    }
   };
 
   // 1-Click Restore Data from Encrypted Backup File
   const importStoreBackup = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
-        const parsed = await decryptPayloadAsync(event.target.result, counterPin, null);
-        if (parsed && parsed.products && parsed.customers) {
-          const encProducts = await encryptPayloadAsync(parsed.products, counterPin);
-          const encSales = await encryptPayloadAsync(parsed.sales || [], counterPin);
-          const encCustomers = await encryptPayloadAsync(parsed.customers, counterPin);
-
-          localStorage.setItem("dukaan_products", encProducts);
-          localStorage.setItem("dukaan_sales", encSales);
-          localStorage.setItem("dukaan_customers", encCustomers);
-
-          if (parsed.suppliers) {
-            const encSuppliers = await encryptPayloadAsync(parsed.suppliers, counterPin);
-            localStorage.setItem("dukaan_suppliers", encSuppliers);
+        const text = event.target.result;
+        const res = await verifyAndDecryptBackup(text, counterPin);
+        if (res.success) {
+          if (restoreStoreBundle) {
+            restoreStoreBundle(res.data);
           }
-          if (parsed.storeConfig) {
-            const encConfig = await encryptPayloadAsync(parsed.storeConfig, counterPin);
-            localStorage.setItem("dukaan_store_config", encConfig);
-          }
-          window.location.reload();
+          alert(`Backup restored successfully! (${res.data.products?.length || 0} products, ${res.data.customers?.length || 0} customers recovered).`);
         } else {
-          alert("Invalid backup file structure or incorrect cashier PIN.");
+          alert(`Restore failed: ${res.message}`);
         }
-      } catch {
-        alert("Failed to parse or decrypt Web Crypto backup file.");
+      } catch (err) {
+        alert(`Failed to parse or restore backup: ${err.message}`);
       }
     };
     reader.readAsText(file);
+    if (e.target) e.target.value = "";
   };
 
   return (

@@ -21,6 +21,7 @@ export const SecurityPrivacyPanel = () => {
     updateCounterPin,
     syncOutbox = [],
     syncToCloud,
+    restoreStoreBundle,
   } = useStore();
   const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo', 'backup'
   const [newPin, setNewPin] = useState("");
@@ -131,10 +132,14 @@ export const SecurityPrivacyPanel = () => {
         }
 
         const data = res.data;
-        if (data.storeConfig) setStoreConfig(data.storeConfig);
-        if (data.products) setProducts(data.products);
-        if (data.customers) setCustomers(data.customers);
-        if (data.sales) setSales(data.sales);
+        if (restoreStoreBundle) {
+          restoreStoreBundle(data);
+        } else {
+          if (data.storeConfig) setStoreConfig(data.storeConfig);
+          if (data.products) setProducts(data.products);
+          if (data.customers) setCustomers(data.customers);
+          if (data.sales) setSales(data.sales);
+        }
 
         setBackupStatus({
           type: "success",

@@ -405,6 +405,29 @@ export const initialSalesHistory = [
   },
 ];
 
+export const initialAppointments = [
+  {
+    id: "apt_1",
+    customerName: "Sneha Kapoor",
+    phone: "+91 98765 11223",
+    serviceName: "Bridal Makeup & Hair Styling",
+    staffName: "Priya (Senior Stylist)",
+    date: new Date().toISOString().split("T")[0],
+    time: "14:30",
+    status: "confirmed",
+  },
+  {
+    id: "apt_2",
+    customerName: "Ritu Verma",
+    phone: "+91 98220 33445",
+    serviceName: "Fruit Facial & Pedicure",
+    staffName: "Ananya",
+    date: new Date().toISOString().split("T")[0],
+    time: "16:00",
+    status: "confirmed",
+  },
+];
+
 export const VERTICAL_DEFINITIONS = [
   { id: "all", name: "All Verticals / Multi-Store Hub", icon: "Store", badge: "Universal" },
   { id: "kirana", name: "Kirana & Grocery", icon: "ShoppingBag", badge: "FMCG / Weight" },

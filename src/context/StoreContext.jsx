@@ -7,6 +7,7 @@ import {
   initialSuppliers,
   initialPurchaseOrders,
   initialCoupons,
+  initialAppointments,
 } from "../data/sampleData";
 import { translations } from "../i18n/translations";
 import {
@@ -106,8 +107,15 @@ export const StoreProvider = ({ children }) => {
   // Active Vertical Filter
   const [activeVertical, setActiveVertical] = useState("all");
 
-  // POS Cart & Soft Warnings
+  // Cash Drawer UI Modal State
+  const [isCashDrawerOpen, setIsCashDrawerOpen] = useState(false);
+
+  // Salon & Services Appointments
+  const [appointments, setAppointments] = useState(initialAppointments);
+
+  // POS Cart, Parked Carts & Soft Warnings
   const [cart, setCart] = useState([]);
+  const [parkedCarts, setParkedCarts] = useState([]);
   const [cartCustomer, setCartCustomer] = useState(null);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountRupees, setDiscountRupees] = useState(0);
@@ -855,6 +863,47 @@ export const StoreProvider = ({ children }) => {
     totalTax: cartTotals.taxAmount,
   };
 
+  // Park / Hold Cart Handlers
+  const parkCurrentCart = () => {
+    if (cart.length === 0) {
+      return { success: false, message: "Cart is empty, nothing to park." };
+    }
+    const newParked = {
+      id: `hold_${Date.now()}_${crypto.randomUUID().slice(0, 4)}`,
+      label: cartCustomer ? `${cartCustomer.name}'s Cart` : `Walk-in (${cart.length} items)`,
+      items: [...cart],
+      customer: cartCustomer,
+      discountPercent,
+      discountRupees,
+      activeCoupon,
+      redeemedPoints,
+      grandTotal: cartGrandTotal,
+      parkedAt: new Date().toISOString(),
+    };
+    setParkedCarts((prev) => [newParked, ...prev]);
+    clearCart();
+    return { success: true, message: `Cart on hold (${newParked.label}).` };
+  };
+
+  const resumeParkedCart = (parkedId) => {
+    const target = parkedCarts.find((c) => c.id === parkedId);
+    if (!target) {
+      return { success: false, message: "Held cart not found." };
+    }
+    setCart(target.items || []);
+    setCartCustomer(target.customer || null);
+    setDiscountPercent(target.discountPercent || 0);
+    setDiscountRupees(target.discountRupees || 0);
+    setActiveCoupon(target.activeCoupon || null);
+    setRedeemedPoints(target.redeemedPoints || 0);
+    setParkedCarts((prev) => prev.filter((c) => c.id !== parkedId));
+    return { success: true, message: `Resumed ${target.label}.` };
+  };
+
+  const discardParkedCart = (parkedId) => {
+    setParkedCarts((prev) => prev.filter((c) => c.id !== parkedId));
+  };
+
   // Apply Coupon Helper
   const applyCouponCode = (codeStr) => {
     const code = codeStr.toUpperCase().trim();
@@ -963,10 +1012,11 @@ export const StoreProvider = ({ children }) => {
   const addSupplier = (supData) => {
     const s = {
       ...supData,
-      id: `sup_${crypto.randomUUID()}`,
+      id: supData.id || `sup_${crypto.randomUUID()}`,
       pendingBalance: Number(supData.pendingBalance) || 0,
     };
     setSuppliers((prev) => [s, ...prev]);
+    return s;
   };
 
   const receiveGRNShipment = (poId, supplierId, items) => {
@@ -993,12 +1043,13 @@ export const StoreProvider = ({ children }) => {
   const addProduct = (newProduct) => {
     const p = {
       ...newProduct,
-      id: `p_${crypto.randomUUID()}`,
+      id: newProduct.id || `p_${crypto.randomUUID()}`,
       stock: newProduct.stock === null ? null : Number(newProduct.stock) || 0,
       retailPrice: Number(newProduct.retailPrice) || 0,
       gst: Number(newProduct.gst) || 0,
     };
     setProducts((prev) => [p, ...prev]);
+    return p;
   };
 
   const updateProduct = (id, updatedData) => {
@@ -1014,9 +1065,9 @@ export const StoreProvider = ({ children }) => {
   const addCustomer = (customerData) => {
     const c = {
       ...customerData,
-      id: `c_${crypto.randomUUID()}`,
+      id: customerData.id || `c_${crypto.randomUUID()}`,
       balance: Number(customerData.balance) || 0,
-      loyaltyPoints: 0,
+      loyaltyPoints: Number(customerData.loyaltyPoints) || 0,
       history: customerData.balance > 0 ? [
         {
           id: `h_${crypto.randomUUID()}`,
@@ -1025,9 +1076,34 @@ export const StoreProvider = ({ children }) => {
           amount: Number(customerData.balance),
           note: "Opening Balance",
         }
-      ] : [],
+      ] : (customerData.history || []),
     };
     setCustomers((prev) => [c, ...prev]);
+    return c;
+  };
+
+  // Salon & Spa Appointment Booking
+  const addAppointment = (aptData) => {
+    const newApt = {
+      id: `apt_${Date.now()}_${crypto.randomUUID().slice(0, 4)}`,
+      createdAt: new Date().toISOString(),
+      status: "confirmed",
+      ...aptData,
+    };
+    setAppointments((prev) => [newApt, ...prev]);
+    return newApt;
+  };
+
+  // Safe Store Bundle Restoration with Schema Migration
+  const restoreStoreBundle = (bundle) => {
+    const migrated = migrateStoreBundle(bundle);
+    if (migrated.storeConfig) setStoreConfig(migrated.storeConfig);
+    if (migrated.products) setProducts(migrated.products);
+    if (migrated.customers) setCustomers(migrated.customers);
+    if (migrated.suppliers) setSuppliers(migrated.suppliers);
+    if (migrated.purchaseOrders) setPurchaseOrders(migrated.purchaseOrders);
+    if (migrated.sales) setSales(migrated.sales);
+    return migrated;
   };
 
   const recordCustomerPayment = (customerId, paidAmount, paymentNote = "Udhaar Payment", paymentMode = "cash") => {
@@ -1162,16 +1238,20 @@ export const StoreProvider = ({ children }) => {
         storeConfig,
         setStoreConfig,
         products,
+        setProducts,
         addProduct,
         updateProduct,
         deleteProduct,
         customers,
+        setCustomers,
         addCustomer,
         deleteCustomer,
         recordCustomerPayment,
         suppliers,
+        setSuppliers,
         addSupplier,
         purchaseOrders,
+        setPurchaseOrders,
         receiveGRNShipment,
         coupons,
         activeCoupon,
@@ -1179,11 +1259,17 @@ export const StoreProvider = ({ children }) => {
         redeemedPoints,
         setRedeemedPoints,
         sales,
+        setSales,
         cart,
         addToCart,
         updateCartQty,
         removeFromCart,
         clearCart,
+        parkedCarts,
+        setParkedCarts,
+        parkCurrentCart,
+        resumeParkedCart,
+        discardParkedCart,
         cartCustomer,
         setCartCustomer,
         discountPercent,
@@ -1221,6 +1307,12 @@ export const StoreProvider = ({ children }) => {
         currentShift,
         recordShiftReconciliation,
         restoreFromRollbackCheckpoint,
+        restoreStoreBundle,
+        isCashDrawerOpen,
+        setIsCashDrawerOpen,
+        appointments,
+        setAppointments,
+        addAppointment,
       }}
     >
       {children}
