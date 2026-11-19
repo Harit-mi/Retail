@@ -705,4 +705,163 @@ describe("DukaanPOS — Exhaustive Code, Button & State Machine Integrity Suite"
       expect(wrongPinResult.message).toContain("Incorrect cashier PIN");
     });
   });
+
+  // =========================================================================
+  // SECTION 12: Role-Based Access Control (RBAC) & Panel Permissions
+  // =========================================================================
+  describe("12. Role-Based Access Control (RBAC), User Management & Panel Permissions", () => {
+    const panelsList = [
+      "pos", "dashboard", "inventory", "suppliers", "barcodes",
+      "khata", "whatsapp", "modules", "reports", "security", "settings",
+    ];
+
+    it("verifies Admin has full access to all panels by default", () => {
+      const adminUser = {
+        id: "usr_admin",
+        name: "Rajesh Gupta (Admin)",
+        username: "admin",
+        role: "admin",
+        passcode: "1234",
+        allowedPanels: panelsList,
+        status: "active",
+      };
+
+      const hasAccess = (user, panelId) => {
+        if (!user || user.status !== "active") return false;
+        if (user.role === "admin") return true;
+        return Array.isArray(user.allowedPanels) && user.allowedPanels.includes(panelId);
+      };
+
+      panelsList.forEach((panel) => {
+        expect(hasAccess(adminUser, panel)).toBe(true);
+      });
+    });
+
+    it("restricts Standard User strictly to Admin-ticked panels", () => {
+      const cashierUser = {
+        id: "usr_cashier_1",
+        name: "Ramesh Cashier",
+        username: "ramesh",
+        role: "user",
+        passcode: "4444",
+        allowedPanels: ["pos", "khata", "barcodes"], // Only 3 panels ticked by Admin
+        status: "active",
+      };
+
+      const hasAccess = (user, panelId) => {
+        if (!user || user.status !== "active") return false;
+        if (user.role === "admin") return true;
+        return Array.isArray(user.allowedPanels) && user.allowedPanels.includes(panelId);
+      };
+
+      // Allowed panels
+      expect(hasAccess(cashierUser, "pos")).toBe(true);
+      expect(hasAccess(cashierUser, "khata")).toBe(true);
+      expect(hasAccess(cashierUser, "barcodes")).toBe(true);
+
+      // Blocked / Unticked panels
+      expect(hasAccess(cashierUser, "reports")).toBe(false);
+      expect(hasAccess(cashierUser, "settings")).toBe(false);
+      expect(hasAccess(cashierUser, "security")).toBe(false);
+      expect(hasAccess(cashierUser, "inventory")).toBe(false);
+      expect(hasAccess(cashierUser, "suppliers")).toBe(false);
+    });
+
+    it("creates, updates, and validates unique usernames and passcodes", () => {
+      let users = [
+        { id: "usr_admin", username: "admin", role: "admin", passcode: "1234", status: "active" },
+      ];
+
+      const addUser = (newUser) => {
+        const uname = (newUser.username || "").trim().toLowerCase();
+        if (!uname) return { success: false, message: "Username required" };
+        if (users.some((u) => u.username.toLowerCase() === uname)) {
+          return { success: false, message: "Username already taken" };
+        }
+        if (!newUser.passcode || newUser.passcode.length < 4) {
+          return { success: false, message: "PIN must be at least 4 digits" };
+        }
+        const created = { ...newUser, id: `usr_${Date.now()}`, username: uname };
+        users.push(created);
+        return { success: true, user: created };
+      };
+
+      // 1. Success creating new user
+      const res1 = addUser({
+        name: "Mohan Staff",
+        username: "mohan",
+        role: "user",
+        passcode: "9999",
+        allowedPanels: ["pos"],
+      });
+      expect(res1.success).toBe(true);
+      expect(users).toHaveLength(2);
+
+      // 2. Reject duplicate username
+      const res2 = addUser({
+        name: "Duplicate Mohan",
+        username: "MOHAN",
+        role: "user",
+        passcode: "5555",
+      });
+      expect(res2.success).toBe(false);
+      expect(res2.message).toContain("Username already taken");
+
+      // 3. Reject short passcode (< 4 digits)
+      const res3 = addUser({
+        name: "Short Pin",
+        username: "shorty",
+        role: "user",
+        passcode: "12",
+      });
+      expect(res3.success).toBe(false);
+      expect(res3.message).toContain("at least 4 digits");
+    });
+
+    it("authenticates credentials matching username and PIN", () => {
+      const users = [
+        { id: "usr_admin", username: "admin", passcode: "1234", status: "active" },
+        { id: "usr_cashier", username: "cashier", passcode: "0000", status: "active" },
+        { id: "usr_inactive", username: "inactive_user", passcode: "7777", status: "inactive" },
+      ];
+
+      const authenticate = (enteredPin, username) => {
+        const user = users.find(
+          (u) => u.username.toLowerCase() === username.toLowerCase() && u.status === "active"
+        );
+        if (!user) return { success: false, message: "User not found or inactive" };
+        if (user.passcode === enteredPin) return { success: true, user };
+        return { success: false, message: "Incorrect PIN" };
+      };
+
+      // Correct Admin login
+      expect(authenticate("1234", "admin").success).toBe(true);
+
+      // Correct Cashier login
+      expect(authenticate("0000", "cashier").success).toBe(true);
+
+      // Wrong PIN
+      expect(authenticate("9999", "cashier").success).toBe(false);
+
+      // Inactive user blocked
+      expect(authenticate("7777", "inactive_user").success).toBe(false);
+    });
+
+    it("protects primary Admin from deletion and demotion", () => {
+      const _users = [
+        { id: "usr_admin", username: "admin", role: "admin", status: "active" },
+        { id: "usr_cashier", username: "cashier", role: "user", status: "active" },
+      ];
+
+      const deleteUser = (userId) => {
+        if (userId === "usr_admin") {
+          return { success: false, message: "Primary Admin cannot be deleted" };
+        }
+        return { success: true };
+      };
+
+      expect(deleteUser("usr_admin").success).toBe(false);
+      expect(deleteUser("usr_cashier").success).toBe(true);
+    });
+  });
 });

@@ -1,7 +1,21 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
-import { ShieldCheck, Lock, CheckCircle, Trash2, Key, Download, Upload, RefreshCw } from "lucide-react";
+import {
+  ShieldCheck,
+  Lock,
+  CheckCircle,
+  Trash2,
+  Key,
+  Download,
+  Upload,
+  RefreshCw,
+  Users,
+  UserPlus,
+  Edit2,
+  Power,
+} from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
+import { SYSTEM_PANELS } from "../../data/sampleData";
 
 export const SecurityPrivacyPanel = () => {
   const {
@@ -22,8 +36,13 @@ export const SecurityPrivacyPanel = () => {
     syncOutbox = [],
     syncToCloud,
     restoreStoreBundle,
+    users = [],
+    currentUser,
+    addUser,
+    updateUser,
+    deleteUser,
   } = useStore();
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'pin', 'policy', 'dpo', 'backup'
+  const [activeTab, setActiveTab] = useState("users"); // 'users', 'overview', 'pin', 'policy', 'dpo', 'backup'
   const [newPin, setNewPin] = useState("");
   const [pinMsg, setPinMsg] = useState(null);
   const [selectedCustomerIdToDelete, setSelectedCustomerIdToDelete] = useState("");
@@ -33,6 +52,116 @@ export const SecurityPrivacyPanel = () => {
   const [grievanceSuccess, setGrievanceSuccess] = useState(null);
   const [backupStatus, setBackupStatus] = useState(null);
   const [restorePin, setRestorePin] = useState("");
+
+  // User Management State (RBAC)
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [userForm, setUserForm] = useState({
+    name: "",
+    username: "",
+    passcode: "",
+    role: "user",
+    allowedPanels: ["pos", "khata", "barcodes"],
+  });
+  const [userActionMsg, setUserActionMsg] = useState(null);
+
+  // User Management Handlers (RBAC)
+  const handleOpenAddUser = () => {
+    setEditingUserId(null);
+    setUserForm({
+      name: "",
+      username: "",
+      passcode: "",
+      role: "user",
+      allowedPanels: ["pos", "khata", "barcodes"],
+    });
+    setUserActionMsg(null);
+    setUserModalOpen(true);
+  };
+
+  const handleOpenEditUser = (user) => {
+    setEditingUserId(user.id);
+    setUserForm({
+      name: user.name,
+      username: user.username,
+      passcode: user.passcode,
+      role: user.role,
+      allowedPanels: user.allowedPanels || [],
+    });
+    setUserActionMsg(null);
+    setUserModalOpen(true);
+  };
+
+  const handleTogglePanel = (panelId) => {
+    setUserForm((prev) => {
+      const exists = prev.allowedPanels.includes(panelId);
+      const updated = exists
+        ? prev.allowedPanels.filter((id) => id !== panelId)
+        : [...prev.allowedPanels, panelId];
+      return { ...prev, allowedPanels: updated };
+    });
+  };
+
+  const handleSaveUser = (e) => {
+    e.preventDefault();
+    if (!userForm.username.trim()) {
+      setUserActionMsg({ type: "error", text: "Username is required." });
+      return;
+    }
+    if (!userForm.passcode || userForm.passcode.length < 4) {
+      setUserActionMsg({ type: "error", text: "Passcode / PIN must be at least 4 digits or characters." });
+      return;
+    }
+    if (userForm.role === "user" && userForm.allowedPanels.length === 0) {
+      setUserActionMsg({ type: "error", text: "Please grant access to at least 1 panel." });
+      return;
+    }
+
+    if (editingUserId) {
+      const res = updateUser(editingUserId, userForm);
+      if (res.success) {
+        setUserActionMsg({ type: "success", text: res.message });
+        setTimeout(() => {
+          setUserModalOpen(false);
+          setUserActionMsg(null);
+        }, 1200);
+      } else {
+        setUserActionMsg({ type: "error", text: res.message });
+      }
+    } else {
+      const res = addUser(userForm);
+      if (res.success) {
+        setUserActionMsg({ type: "success", text: res.message });
+        setTimeout(() => {
+          setUserModalOpen(false);
+          setUserActionMsg(null);
+        }, 1200);
+      } else {
+        setUserActionMsg({ type: "error", text: res.message });
+      }
+    }
+  };
+
+  const handleToggleUserStatus = (user) => {
+    if (user.role === "admin" && user.status === "active") {
+      const adminCount = users.filter((u) => u.role === "admin" && u.status === "active").length;
+      if (adminCount <= 1) {
+        alert("Cannot deactivate the sole remaining Administrator.");
+        return;
+      }
+    }
+    const newStatus = user.status === "active" ? "inactive" : "active";
+    updateUser(user.id, { status: newStatus });
+  };
+
+  const handleDeleteUser = (user) => {
+    if (window.confirm(`Are you sure you want to delete user "${user.name}" (@${user.username})?`)) {
+      const res = deleteUser(user.id);
+      if (!res.success) {
+        alert(res.message);
+      }
+    }
+  };
 
   const securityPrincipleItems = [
     {
@@ -183,6 +312,15 @@ export const SecurityPrivacyPanel = () => {
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b-2 border-slate-200 pb-2 overflow-x-auto">
         <button
+          onClick={() => setActiveTab("users")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === "users" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>👥 Staff & Panel Access (RBAC)</span>
+        </button>
+        <button
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
             activeTab === "overview" ? "bg-[#1E3A5F] text-white shadow" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
@@ -240,6 +378,429 @@ export const SecurityPrivacyPanel = () => {
         <div className="bg-emerald-50 border border-emerald-300 text-[#1FAA59] px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in">
           <CheckCircle className="w-4 h-4" />
           <span>{deletionSuccess}</span>
+        </div>
+      )}
+
+      {/* Tab 0: Staff & Panel Access (RBAC) */}
+      {activeTab === "users" && (
+        <div className="space-y-4">
+          {/* Top Info & Action Bar */}
+          <div className="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#1E3A5F]" />
+                <h3 className="font-extrabold text-sm text-slate-900 font-display">
+                  Staff & Role-Based Access Control (RBAC) · कर्मचारी व अधिकार प्रबंधन
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                Admin can create users and grant access to specific store panels by ticking permissions. Standard users can login with their credentials and are strictly gated to their allowed panels.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenAddUser}
+              className="px-4 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow transition cursor-pointer shrink-0"
+            >
+              <UserPlus className="w-4 h-4 text-[#F5A623]" />
+              <span>+ Add New User (नया ऑपरेटर)</span>
+            </button>
+          </div>
+
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Total Users</span>
+              <span className="text-xl font-bold font-mono text-slate-900 mt-0.5 block">{users.length}</span>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Administrators (Full Access)</span>
+              <span className="text-xl font-bold font-mono text-amber-700 mt-0.5 block">
+                {users.filter((u) => u.role === "admin" && u.status === "active").length}
+              </span>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Standard Users (Ticked Panels)</span>
+              <span className="text-xl font-bold font-mono text-blue-700 mt-0.5 block">
+                {users.filter((u) => u.role === "user" && u.status === "active").length}
+              </span>
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="bg-white border-2 border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">
+                Store Operator Accounts ({users.length})
+              </span>
+              <span className="text-[11px] text-slate-500 font-mono">
+                Current Active: <strong className="text-slate-900">{currentUser?.name} (@{currentUser?.username})</strong>
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-mono text-[10px] uppercase">
+                    <th className="py-2.5 px-4">Operator / Name</th>
+                    <th className="py-2.5 px-3">Username</th>
+                    <th className="py-2.5 px-3">Role</th>
+                    <th className="py-2.5 px-4">Ticked Panels Access</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {users.map((user) => {
+                    const isCurrent = currentUser?.id === user.id;
+                    const isAdmin = user.role === "admin";
+                    const isRoot = user.id === "usr_admin";
+
+                    return (
+                      <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-[#0F1F35] text-white flex items-center justify-center font-mono font-bold text-xs shrink-0 shadow-2xs">
+                              {user.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>{user.name}</span>
+                                {isCurrent && (
+                                  <span className="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded font-mono font-bold">
+                                    YOU
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-mono">Passcode: ••••</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 font-mono font-semibold text-slate-700">
+                          @{user.username}
+                        </td>
+
+                        <td className="py-3 px-3">
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
+                            isAdmin
+                              ? "bg-amber-100 text-amber-900 border border-amber-300"
+                              : "bg-blue-50 text-blue-800 border border-blue-200"
+                          }`}>
+                            {isAdmin ? "👑 Admin" : "👤 User"}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          {isAdmin ? (
+                            <span className="text-[11px] font-mono font-semibold text-emerald-700 flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>All 11 Panels (पूर्ण अधिकार)</span>
+                            </span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {(user.allowedPanels || []).map((panelId) => {
+                                const pObj = SYSTEM_PANELS.find((p) => p.id === panelId);
+                                return (
+                                  <span
+                                    key={panelId}
+                                    className="bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-mono px-1.5 py-0.5 rounded"
+                                  >
+                                    {pObj ? pObj.name.split(" ")[0] : panelId}
+                                  </span>
+                                );
+                              })}
+                              <span className="text-[10px] text-slate-400 font-mono self-center">
+                                ({(user.allowedPanels || []).length}/11)
+                              </span>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-3">
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
+                            user.status === "active"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : "bg-slate-100 text-slate-500 border border-slate-200"
+                          }`}>
+                            {user.status}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditUser(user)}
+                              title="Edit user details & tick panel permissions"
+                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#1E3A5F] hover:text-white text-slate-700 transition cursor-pointer border border-slate-200"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleUserStatus(user)}
+                              disabled={isRoot}
+                              title={user.status === "active" ? "Deactivate user" : "Activate user"}
+                              className={`p-1.5 rounded-lg transition border cursor-pointer ${
+                                isRoot
+                                  ? "opacity-30 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200"
+                                  : user.status === "active"
+                                  ? "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                              }`}
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUser(user)}
+                              disabled={isRoot || isCurrent}
+                              title={isRoot ? "Cannot delete root admin" : isCurrent ? "Cannot delete logged-in account" : "Delete user account"}
+                              className={`p-1.5 rounded-lg transition border ${
+                                isRoot || isCurrent
+                                  ? "opacity-30 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200"
+                                  : "bg-red-50 hover:bg-red-100 text-red-600 border-red-200 cursor-pointer"
+                              }`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit User Modal with Tickable Panel Permissions Matrix */}
+      {userModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+        >
+          <div className="bg-white rounded-xl max-w-xl w-full overflow-hidden shadow-2xl border border-slate-200">
+            {/* Modal Header */}
+            <div className="bg-[#0F1F35] text-white px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-[#F5A623]" />
+                <h3 className="font-bold text-sm text-white">
+                  {editingUserId ? "Edit Operator & Panel Permissions · अधिकार बदलें" : "Create New Operator · नया ऑपरेटर जोड़ें"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUserModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded transition cursor-pointer"
+              >
+                ESC
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveUser} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+              {userActionMsg && (
+                <div className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                  userActionMsg.type === "error"
+                    ? "bg-red-50 text-red-800 border border-red-300"
+                    : "bg-emerald-50 text-emerald-800 border border-emerald-300"
+                }`}>
+                  <span>{userActionMsg.text}</span>
+                </div>
+              )}
+
+              {/* Name & Username Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                    Operator Full Name (नाम) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ramesh Kumar"
+                    value={userForm.name}
+                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                    Login Username (यूजरनेम) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ramesh"
+                    value={userForm.username}
+                    onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                  />
+                </div>
+              </div>
+
+              {/* Passcode & Role Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                    Passcode / PIN (पासकोड) *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    maxLength="32"
+                    placeholder="Min 4 digits e.g. 5678"
+                    value={userForm.passcode}
+                    onChange={(e) => setUserForm({ ...userForm, passcode: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                  />
+                  <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
+                    Used to unlock counter and switch user
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                    Role Category (भूमिका) *
+                  </label>
+                  <select
+                    value={userForm.role}
+                    onChange={(e) => {
+                      const newRole = e.target.value;
+                      setUserForm({
+                        ...userForm,
+                        role: newRole,
+                        allowedPanels: newRole === "admin" ? SYSTEM_PANELS.map((p) => p.id) : userForm.allowedPanels,
+                      });
+                    }}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-[#1E3A5F]"
+                  >
+                    <option value="user">👤 User (Operator / पैनल सीमित)</option>
+                    <option value="admin">👑 Admin (मालिक / पूर्ण नियंत्रण)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Panel Access Checklist (Ticking Panels as per Admin's Wish) */}
+              <div className="pt-2 border-t border-slate-200 space-y-2.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider block font-display">
+                      Panel Access Permissions (पैनल अधिकार चुनें)
+                    </label>
+                    <span className="text-[11px] text-slate-500">
+                      {userForm.role === "admin"
+                        ? "Admin accounts have full access to all panels by default."
+                        : "Tick or untick panels to grant or revoke access for this operator:"}
+                    </span>
+                  </div>
+
+                  {userForm.role === "user" && (
+                    <div className="flex flex-wrap gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setUserForm({ ...userForm, allowedPanels: ["pos", "khata", "barcodes"] })}
+                        className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 cursor-pointer"
+                      >
+                        बिलिंग मात्र
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserForm({ ...userForm, allowedPanels: ["inventory", "suppliers", "barcodes"] })}
+                        className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 cursor-pointer"
+                      >
+                        गोदाम मात्र
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserForm({ ...userForm, allowedPanels: SYSTEM_PANELS.map((p) => p.id) })}
+                        className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 cursor-pointer"
+                      >
+                        All Panels
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserForm({ ...userForm, allowedPanels: [] })}
+                        className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-red-600 rounded border border-slate-200 cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ticking Grid for 11 Panels */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-56 overflow-y-auto pr-1">
+                  {SYSTEM_PANELS.map((panel) => {
+                    const isChecked = userForm.role === "admin" || userForm.allowedPanels.includes(panel.id);
+                    const disabled = userForm.role === "admin";
+
+                    return (
+                      <div
+                        key={panel.id}
+                        onClick={() => {
+                          if (!disabled) handleTogglePanel(panel.id);
+                        }}
+                        className={`p-2.5 rounded-lg border text-left transition flex items-start gap-2.5 ${
+                          disabled
+                            ? "bg-slate-50 border-slate-200 opacity-80 cursor-default"
+                            : isChecked
+                            ? "bg-blue-50/70 border-blue-300 ring-1 ring-blue-300 shadow-2xs cursor-pointer"
+                            : "bg-white border-slate-200 hover:border-slate-300 cursor-pointer"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          disabled={disabled}
+                          onChange={() => {}}
+                          className="mt-0.5 w-4 h-4 accent-[#1E3A5F] rounded cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-xs text-slate-900 leading-tight truncate">
+                              {panel.name}
+                            </span>
+                            <span className="text-[9px] bg-slate-100 text-slate-600 px-1 rounded font-mono shrink-0">
+                              {panel.category}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-500 block truncate mt-0.5">
+                            {panel.nameHindi}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUserModalOpen(false)}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white text-xs font-bold rounded-lg transition shadow-xs cursor-pointer"
+                >
+                  {editingUserId ? "Update Permissions (सहेजें)" : "+ Create User (ऑपरेटर जोड़ें)"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

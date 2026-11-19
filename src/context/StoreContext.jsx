@@ -8,6 +8,8 @@ import {
   initialPurchaseOrders,
   initialCoupons,
   initialAppointments,
+  initialUsers,
+  SYSTEM_PANELS,
 } from "../data/sampleData";
 import { translations } from "../i18n/translations";
 import {
@@ -69,6 +71,47 @@ export const StoreProvider = ({ children }) => {
       localStorage.getItem("dukaan_counter_pin")
     );
   });
+
+  // User Access Control & Multi-Operator Management (RBAC)
+  const [users, setUsers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("dukaan_users");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialUsers;
+  });
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedId = localStorage.getItem("dukaan_active_user_id");
+      if (savedId) {
+        const found = users.find((u) => u.id === savedId && u.status === "active");
+        if (found) return found;
+      }
+    } catch {}
+    return users.find((u) => u.role === "admin") || users[0];
+  });
+
+  // Persist users array
+  useEffect(() => {
+    try {
+      localStorage.setItem("dukaan_users", JSON.stringify(users));
+    } catch (e) {
+      console.warn("Failed to persist dukaan_users:", e);
+    }
+  }, [users]);
+
+  // Persist active user session ID
+  useEffect(() => {
+    try {
+      if (currentUser?.id) {
+        localStorage.setItem("dukaan_active_user_id", currentUser.id);
+      }
+    } catch {}
+  }, [currentUser]);
 
   // Store Config & Settings
   const [storeConfig, setStoreConfig] = useState(() =>
@@ -560,13 +603,162 @@ export const StoreProvider = ({ children }) => {
     };
   }, [counterPin]);
 
+  // Role-Based Access Control (RBAC) helpers
+  const hasPanelAccess = (panelId) => {
+    if (!currentUser) return false;
+    if (currentUser.role === "admin") return true;
+    return Array.isArray(currentUser.allowedPanels) && currentUser.allowedPanels.includes(panelId);
+  };
+
+  const addUser = (userData) => {
+    const username = (userData.username || "").trim().toLowerCase();
+    if (!username) {
+      return { success: false, message: "Username is required." };
+    }
+    if (users.some((u) => u.username.toLowerCase() === username)) {
+      return { success: false, message: `Username "${username}" is already taken.` };
+    }
+    if (!userData.passcode || userData.passcode.length < 4) {
+      return { success: false, message: "Passcode / PIN must be at least 4 characters." };
+    }
+
+    const newUser = {
+      id: `usr_${Date.now()}_${crypto.randomUUID().slice(0, 4)}`,
+      name: userData.name?.trim() || username,
+      username,
+      role: userData.role === "admin" ? "admin" : "user",
+      passcode: userData.passcode,
+      allowedPanels: userData.role === "admin"
+        ? SYSTEM_PANELS.map((p) => p.id)
+        : Array.isArray(userData.allowedPanels) && userData.allowedPanels.length > 0
+        ? userData.allowedPanels
+        : ["pos"],
+      status: "active",
+      createdAt: new Date().toISOString(),
+    };
+
+    setUsers((prev) => [...prev, newUser]);
+    return { success: true, message: `User "${newUser.name}" created successfully!`, user: newUser };
+  };
+
+  const updateUser = (userId, updatedFields) => {
+    const existing = users.find((u) => u.id === userId);
+    if (!existing) {
+      return { success: false, message: "User not found." };
+    }
+
+    // Guard: Prevent demoting or deactivating the last active admin
+    if (existing.role === "admin") {
+      const activeAdmins = users.filter((u) => u.role === "admin" && u.status === "active");
+      if (activeAdmins.length <= 1 && (updatedFields.role === "user" || updatedFields.status === "inactive")) {
+        return { success: false, message: "Cannot demote or deactivate the only active Administrator." };
+      }
+    }
+
+    if (updatedFields.username) {
+      const uname = updatedFields.username.trim().toLowerCase();
+      if (users.some((u) => u.id !== userId && u.username.toLowerCase() === uname)) {
+        return { success: false, message: `Username "${uname}" is already taken.` };
+      }
+    }
+
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id === userId) {
+          const updated = {
+            ...u,
+            ...updatedFields,
+            allowedPanels: (updatedFields.role === "admin" || (updatedFields.role === undefined && u.role === "admin"))
+              ? SYSTEM_PANELS.map((p) => p.id)
+              : updatedFields.allowedPanels !== undefined
+              ? updatedFields.allowedPanels
+              : u.allowedPanels,
+          };
+          if (currentUser?.id === userId) {
+            setCurrentUser(updated);
+          }
+          return updated;
+        }
+        return u;
+      })
+    );
+    return { success: true, message: "User updated successfully." };
+  };
+
+  const deleteUser = (userId) => {
+    const target = users.find((u) => u.id === userId);
+    if (!target) return { success: false, message: "User not found." };
+    if (target.id === "usr_admin") {
+      return { success: false, message: "The primary Root Admin account cannot be deleted." };
+    }
+    if (target.role === "admin") {
+      const adminCount = users.filter((u) => u.role === "admin").length;
+      if (adminCount <= 1) {
+        return { success: false, message: "Cannot delete the sole remaining Admin." };
+      }
+    }
+    if (currentUser?.id === userId) {
+      return { success: false, message: "Cannot delete currently logged in user. Switch users first." };
+    }
+
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    return { success: true, message: `User "${target.name}" removed.` };
+  };
+
+  const switchUser = (targetUserId) => {
+    const target = users.find((u) => u.id === targetUserId && u.status === "active");
+    if (!target) return { success: false, message: "User not found or inactive." };
+    setCurrentUser(target);
+    if (target.role !== "admin" && !target.allowedPanels.includes(activeTab)) {
+      setActiveTab(target.allowedPanels[0] || "pos");
+    }
+    return { success: true, message: `Active operator switched to ${target.name}` };
+  };
+
   const lockCounter = () => {
     setIsCounterLocked(true);
   };
 
-  const unlockCounter = async (enteredPin) => {
+  const unlockCounter = async (enteredPin, targetUsername = null) => {
     if (!enteredPin || enteredPin.length < 4) {
       return { success: false, message: "Please enter a valid 4-digit PIN." };
+    }
+
+    // 1. If targetUsername specified, verify specifically against that user
+    if (targetUsername) {
+      const user = users.find(
+        (u) => u.username.toLowerCase() === targetUsername.trim().toLowerCase() && u.status === "active"
+      );
+      if (!user) {
+        return { success: false, message: `User "${targetUsername}" not found or inactive.` };
+      }
+
+      if (user.passcode === enteredPin) {
+        setCurrentUser(user);
+        setCounterPin(user.passcode);
+        setIsCounterLocked(false);
+        setDecryptionFailedClosed(false);
+        if (user.role !== "admin" && !user.allowedPanels.includes(activeTab)) {
+          setActiveTab(user.allowedPanels[0] || "pos");
+        }
+        return { success: true, message: `Welcome, ${user.name}!`, user };
+      }
+      return { success: false, message: "Incorrect PIN for selected user." };
+    }
+
+    // 2. If no targetUsername specified, check if enteredPin matches ANY active user in the system
+    const matchedUser = users.find(
+      (u) => u.passcode === enteredPin && u.status === "active"
+    );
+    if (matchedUser) {
+      setCurrentUser(matchedUser);
+      setCounterPin(enteredPin);
+      setIsCounterLocked(false);
+      setDecryptionFailedClosed(false);
+      if (matchedUser.role !== "admin" && !matchedUser.allowedPanels.includes(activeTab)) {
+        setActiveTab(matchedUser.allowedPanels[0] || "pos");
+      }
+      return { success: true, message: `Welcome, ${matchedUser.name}!`, user: matchedUser };
     }
 
     const savedVerifier = localStorage.getItem("dukaan_pin_verifier");
@@ -579,9 +771,11 @@ export const StoreProvider = ({ children }) => {
         localStorage.setItem("dukaan_pin_verifier", verifierString);
         localStorage.removeItem("dukaan_counter_pin"); // eliminate plaintext
         setCounterPin(enteredPin);
+        const adminUser = users.find((u) => u.role === "admin") || users[0];
+        setCurrentUser(adminUser);
         setIsCounterLocked(false);
         setDecryptionFailedClosed(false);
-        return { success: true, message: "Initial Cashier PIN configured securely!" };
+        return { success: true, message: "Initial Cashier PIN configured securely!", user: adminUser };
       } catch (err) {
         return { success: false, message: `Failed to configure PIN: ${err.message}` };
       }
@@ -606,9 +800,11 @@ export const StoreProvider = ({ children }) => {
 
     if (isValid) {
       setCounterPin(enteredPin);
+      const adminUser = users.find((u) => u.role === "admin") || users[0];
+      setCurrentUser(adminUser);
       setIsCounterLocked(false);
       setDecryptionFailedClosed(false);
-      return { success: true };
+      return { success: true, user: adminUser };
     }
     return { success: false, message: "Incorrect PIN. Please enter your valid cashier PIN." };
   };
@@ -1313,6 +1509,14 @@ export const StoreProvider = ({ children }) => {
         appointments,
         setAppointments,
         addAppointment,
+        users,
+        currentUser,
+        addUser,
+        updateUser,
+        deleteUser,
+        switchUser,
+        hasPanelAccess,
+        SYSTEM_PANELS,
       }}
     >
       {children}

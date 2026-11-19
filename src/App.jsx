@@ -22,20 +22,24 @@ import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { ShiftReconciliationModal } from "./components/CashDrawer/ShiftReconciliationModal";
 import { ThermalReceipt } from "./components/Invoice/ThermalReceipt";
 import { StandardInvoice } from "./components/Invoice/StandardInvoice";
-import { Lock } from "lucide-react";
+import { Lock, ShieldAlert } from "lucide-react";
 
 const MainContent = () => {
   const {
     activeTab,
+    setActiveTab,
     printableBill,
     printFormat,
     isStorageLoaded,
     isCounterLocked,
+    lockCounter,
     unlockCounter,
-    counterPin,
     decryptionFailedClosed,
     isCashDrawerOpen,
     setIsCashDrawerOpen,
+    users,
+    currentUser,
+    hasPanelAccess,
   } = useStore();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -43,10 +47,11 @@ const MainContent = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState("");
+  const [selectedUsername, setSelectedUsername] = useState(() => currentUser?.username || "admin");
 
   const handleUnlock = async (e) => {
     e.preventDefault();
-    const res = await unlockCounter(pinInput);
+    const res = await unlockCounter(pinInput, selectedUsername);
     if (res.success) {
       setPinInput("");
       setPinError("");
@@ -120,15 +125,62 @@ const MainContent = () => {
                 </div>
               )}
 
+              {/* Operator / User Profile Selector */}
+              <div>
+                <label className="text-[11px] font-medium text-zinc-500 mb-1.5 block">
+                  Select User Account · ऑपरेटर चुनें:
+                </label>
+                <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+                  {(users || []).filter((u) => u.status === "active").map((u) => {
+                    const isSelected = selectedUsername === u.username;
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedUsername(u.username);
+                          setPinError("");
+                        }}
+                        className={`w-full p-2 rounded-lg border text-left flex items-center justify-between transition cursor-pointer ${
+                          isSelected
+                            ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs"
+                            : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold font-mono ${
+                            isSelected ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"
+                          }`}>
+                            {u.name.charAt(0)}
+                          </div>
+                          <div className="truncate">
+                            <span className="text-xs font-semibold block truncate leading-tight">{u.name}</span>
+                            <span className={`text-[10px] font-mono leading-none ${isSelected ? "text-zinc-300" : "text-zinc-400"}`}>
+                              @{u.username}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
+                          u.role === "admin"
+                            ? isSelected ? "bg-amber-400 text-zinc-950" : "bg-amber-100 text-amber-900"
+                            : isSelected ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-700"
+                        }`}>
+                          {u.role === "admin" ? "👑 Admin" : "User"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between text-xs text-zinc-500 font-mono">
                 <label htmlFor="cashier-pin-input">
-                  {!counterPin ? "Set New 4-digit PIN" : "Enter 4-digit PIN"}
+                  Enter Passcode / PIN
                 </label>
-                {counterPin ? (
-                  <span className="text-[10px] text-zinc-500 font-bold">Encrypted Vault Protected</span>
-                ) : (
-                  <span className="text-[10px] text-amber-700 font-bold">First-Run Setup</span>
-                )}
+                <span className="text-[10px] text-zinc-500 font-bold">
+                  @{selectedUsername}
+                </span>
               </div>
 
               <form onSubmit={handleUnlock} className="space-y-3">
@@ -156,7 +208,7 @@ const MainContent = () => {
                   type="submit"
                   className="w-full py-3 bg-zinc-950 hover:bg-zinc-800 text-white font-semibold rounded-lg text-xs transition-colors cursor-pointer shadow-sm"
                 >
-                  Unlock Register
+                  Unlock & Login ({selectedUsername})
                 </button>
               </form>
 
@@ -196,23 +248,59 @@ const MainContent = () => {
         {/* Main View Screen */}
         <main className={activeTab === "landing" ? "flex-1 w-full" : "flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto overflow-x-hidden"}>
           {activeTab === "landing" && <ProductLandingPage />}
-          {activeTab === "dashboard" && <DashboardOverview />}
-          {activeTab === "pos" && (
-            <POSBillingScreen
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
-            />
-          )}
 
-          {activeTab === "inventory" && <InventoryList />}
-          {activeTab === "suppliers" && <SupplierPOList />}
-          {activeTab === "barcodes" && <BarcodePrintModal />}
-          {activeTab === "khata" && <CustomerLedger />}
-          {activeTab === "modules" && <VerticalModules />}
-          {activeTab === "whatsapp" && <WhatsAppMarketingHub />}
-          {activeTab === "reports" && <AnalyticsDashboard />}
-          {activeTab === "security" && <SecurityPrivacyPanel />}
-          {activeTab === "settings" && <StoreSettings />}
+          {activeTab !== "landing" && !hasPanelAccess(activeTab) ? (
+            <div className="bg-white border border-red-200 rounded-2xl p-8 max-w-lg mx-auto text-center shadow-xs my-12 space-y-4 animate-fade-in">
+              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-xl">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900">
+                  अनुमति प्रतिबंधित · Access Restricted
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                  You are logged in as <strong>{currentUser?.name}</strong> (@{currentUser?.username} · {currentUser?.role === "admin" ? "Admin" : "Standard User"}).
+                  Admin has not granted you access to the <strong>{activeTab.toUpperCase()}</strong> panel.
+                </p>
+              </div>
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab(currentUser?.allowedPanels?.[0] || "pos")}
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold hover:bg-zinc-800 transition cursor-pointer"
+                >
+                  Go to {currentUser?.allowedPanels?.[0]?.toUpperCase() || "POS"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => lockCounter()}
+                  className="px-4 py-2 bg-zinc-100 text-zinc-700 rounded-lg text-xs font-semibold hover:bg-zinc-200 transition border border-zinc-200 cursor-pointer"
+                >
+                  Switch User / Login as Admin
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeTab === "dashboard" && <DashboardOverview />}
+              {activeTab === "pos" && (
+                <POSBillingScreen
+                  onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+                  onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+                />
+              )}
+
+              {activeTab === "inventory" && <InventoryList />}
+              {activeTab === "suppliers" && <SupplierPOList />}
+              {activeTab === "barcodes" && <BarcodePrintModal />}
+              {activeTab === "khata" && <CustomerLedger />}
+              {activeTab === "modules" && <VerticalModules />}
+              {activeTab === "whatsapp" && <WhatsAppMarketingHub />}
+              {activeTab === "reports" && <AnalyticsDashboard />}
+              {activeTab === "security" && <SecurityPrivacyPanel />}
+              {activeTab === "settings" && <StoreSettings />}
+            </>
+          )}
         </main>
       </div>
 

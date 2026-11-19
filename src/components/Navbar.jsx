@@ -16,6 +16,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
     cloudSyncStatus,
     syncToCloud,
     syncOutbox = [],
+    currentUser,
   } = useStore();
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -113,6 +114,25 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             </span>
           </button>
 
+          {/* Active Operator Profile Badge & Switch User */}
+          <button
+            onClick={lockCounter}
+            title={`Logged in as ${currentUser?.name || "User"} (${currentUser?.role === 'admin' ? 'Admin' : 'Operator'}). Click to Switch / Lock.`}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 transition cursor-pointer"
+          >
+            <span className="w-5 h-5 rounded bg-zinc-900 text-white flex items-center justify-center text-[10px] font-mono font-bold">
+              {currentUser?.name?.charAt(0) || "U"}
+            </span>
+            <span className="hidden lg:inline truncate max-w-[120px]">
+              {currentUser?.name || "Operator"}
+            </span>
+            <span className={`text-[9px] font-mono px-1 py-0.2 rounded font-bold uppercase ${
+              currentUser?.role === "admin" ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-zinc-200 text-zinc-700"
+            }`}>
+              {currentUser?.role === "admin" ? "Admin" : "User"}
+            </span>
+          </button>
+
           {/* POS Register PIN Lock Trigger Button */}
           <button
             onClick={lockCounter}
@@ -121,7 +141,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             className="hidden sm:flex px-2.5 sm:px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold transition items-center space-x-1.5 border border-amber-300 shadow-2xs focus-visible:ring-2 focus-visible:ring-[#1E3A5F] whitespace-nowrap"
           >
             <i className="fa-solid fa-lock text-amber-600" aria-hidden="true"></i>
-            <span className="font-display hidden md:inline">Lock Counter</span>
+            <span className="font-display hidden md:inline">Lock</span>
           </button>
 
           {/* Shift Drawer Audit Trigger Button */}

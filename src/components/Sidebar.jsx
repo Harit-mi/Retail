@@ -20,7 +20,16 @@ import {
 } from "lucide-react";
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
-  const { activeTab, setActiveTab, products, customers, t } = useStore();
+  const {
+    activeTab,
+    setActiveTab,
+    products,
+    customers,
+    t,
+    currentUser,
+    hasPanelAccess,
+    lockCounter,
+  } = useStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const lowStockCount = products.filter(
@@ -137,79 +146,113 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           )}
         </div>
 
-        {/* Navigation Sections */}
+        {/* Navigation Sections — Granularly filtered based on User Panel Permissions */}
         <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-          {navGroups.map((group, gIdx) => (
-            <div key={gIdx} className="space-y-1">
-              {(!collapsed || isMobileOpen) && (
-                <p className="px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400">
-                  {group.title}
-                </p>
-              )}
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    title={collapsed && !isMobileOpen ? item.label : undefined}
-                    className={`w-full flex items-center ${
-                      collapsed && !isMobileOpen ? "justify-center px-2" : "px-3"
-                    } py-2 rounded-lg text-xs font-medium transition-colors relative group cursor-pointer ${
-                      isActive
-                        ? "bg-zinc-950 text-white font-semibold shadow-xs"
-                        : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-950"
-                    }`}
-                  >
-                    <Icon
-                      className={`w-4 h-4 shrink-0 transition-transform ${
-                        isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-800"
-                      }`}
-                    />
+          {navGroups
+            .map((group) => ({
+              ...group,
+              items: group.items.filter((item) => hasPanelAccess(item.id)),
+            }))
+            .filter((group) => group.items.length > 0)
+            .map((group, gIdx) => (
+              <div key={gIdx} className="space-y-1">
+                {(!collapsed || isMobileOpen) && (
+                  <p className="px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400">
+                    {group.title}
+                  </p>
+                )}
 
-                    {(!collapsed || isMobileOpen) && (
-                      <div className="ml-3 flex-1 flex items-center justify-between truncate">
-                        <span className="truncate">{item.label}</span>
-                        {item.badge && (
-                          <span
-                            className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded ${
-                              isActive
-                                ? "bg-white/20 text-white"
-                                : item.badgeColor || "bg-zinc-200/80 text-zinc-600 border border-zinc-300/70"
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      title={collapsed && !isMobileOpen ? item.label : undefined}
+                      className={`w-full flex items-center ${
+                        collapsed && !isMobileOpen ? "justify-center px-2" : "px-3"
+                      } py-2 rounded-lg text-xs font-medium transition-colors relative group cursor-pointer ${
+                        isActive
+                          ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-950"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 shrink-0 transition-transform ${
+                          isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-800"
+                        }`}
+                      />
+
+                      {(!collapsed || isMobileOpen) && (
+                        <div className="ml-3 flex-1 flex items-center justify-between truncate">
+                          <span className="truncate">{item.label}</span>
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded ${
+                                isActive
+                                  ? "bg-white/20 text-white"
+                                  : item.badgeColor || "bg-zinc-200/80 text-zinc-600 border border-zinc-300/70"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
         </nav>
 
-        {/* Sidebar Footer */}
+        {/* Sidebar Footer with Logged In User Profile & Quick Lock */}
         {(!collapsed || isMobileOpen) && (
-          <div className="p-3 m-3 rounded-xl bg-white border border-zinc-200/80 text-xs text-zinc-600 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-zinc-900 text-[11px] font-display">Cloud POS Engine</span>
-              <span className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Online Sync
+          <div className="p-3 m-3 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-600 shadow-2xs space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                  {currentUser?.name?.charAt(0) || "U"}
+                </div>
+                <div className="truncate">
+                  <div className="font-semibold text-zinc-900 text-xs truncate leading-tight">
+                    {currentUser?.name || "Cashier"}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 font-mono truncate leading-none">
+                    @{currentUser?.username || "user"}
+                  </div>
+                </div>
+              </div>
+
+              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                currentUser?.role === "admin"
+                  ? "bg-amber-100 text-amber-900 border border-amber-200"
+                  : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+              }`}>
+                {currentUser?.role === "admin" ? "👑 Admin" : "User"}
               </span>
             </div>
-            <p className="text-[10px] text-zinc-400 font-mono mt-1 leading-relaxed">
-              AES-256 · Cloud Connected · ESC/POS
-            </p>
-            <button
-              onClick={() => handleNavClick("landing")}
-              className="w-full mt-2.5 flex items-center justify-center gap-2 py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-medium transition-colors cursor-pointer border border-zinc-200"
-            >
-              <Globe className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Back to Storefront</span>
-            </button>
+
+            <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-100">
+              <button
+                type="button"
+                onClick={() => lockCounter()}
+                title="Lock Register / Switch Operator"
+                className="flex-1 py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-center"
+              >
+                Switch / Lock
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNavClick("landing")}
+                title="Back to Storefront"
+                className="py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-lg text-[11px] transition-colors cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </aside>
