@@ -163,15 +163,17 @@
   }
 }
 
-/* Print Styles for Thermal Receipts & Standard A4 Invoices */
+/* Print Styles for Thermal Receipts, Standard A4 Invoices & Barcode Sticker Sheets */
 @media print {
   body * {
     visibility: hidden;
   }
-  #printable-section, #printable-section *, #printable-section-a4, #printable-section-a4 * {
+  #printable-section, #printable-section *,
+  #printable-section-a4, #printable-section-a4 *,
+  #printable-barcode-sheet, #printable-barcode-sheet * {
     visibility: visible;
   }
-  #printable-section, #printable-section-a4 {
+  #printable-section, #printable-section-a4, #printable-barcode-sheet {
     position: absolute;
     left: 0;
     top: 0;
