@@ -13,7 +13,9 @@ import {
   Sparkles,
   Volume2,
   Share2,
+  Eye,
 } from "lucide-react";
+import { InvoicePreviewModal } from "../Invoice/InvoicePreviewModal";
 
 // Web Audio API: Authentic Indian UPI Soundbox Two-Tone Confirmation Chime
 const playSoundboxChime = () => {
@@ -73,6 +75,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
     completeCheckout,
     storeConfig,
     setPrintFormat,
+    setPrintableBill,
   } = useStore();
 
   const [paymentMode, setPaymentMode] = useState("upi"); // 'cash', 'upi', 'card', 'udhar'
@@ -81,6 +84,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   const [upiVerified, setUpiVerified] = useState(false);
   const [cardAuthCode, setCardAuthCode] = useState("");
   const [soundboxPlaying, setSoundboxPlaying] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Re-sync cash tendered to CURRENT bill total on modal open
   useEffect(() => {
@@ -167,6 +171,9 @@ export const PaymentModal = ({ isOpen, onClose }) => {
 
   const handlePrintReceipt = (format) => {
     setPrintFormat(format);
+    if (completedBill) {
+      setPrintableBill(completedBill);
+    }
     setTimeout(() => {
       window.print();
     }, 200);
@@ -529,6 +536,15 @@ export const PaymentModal = ({ isOpen, onClose }) => {
               </button>
             </div>
 
+            {/* Bill Preview Button */}
+            <button
+              onClick={() => setIsPreviewOpen(true)}
+              className="w-full py-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-medium rounded-lg text-xs transition border border-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-zinc-600" />
+              <span>रसीद पूर्वावलोकन देखें (Preview Invoice On-Screen)</span>
+            </button>
+
             {/* Next Sale Button */}
             <button
               onClick={handleResetModal}
@@ -539,6 +555,15 @@ export const PaymentModal = ({ isOpen, onClose }) => {
           </div>
         )}
       </div>
+
+      {/* On-screen Bill Preview Modal */}
+      {completedBill && (
+        <InvoicePreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          bill={completedBill}
+        />
+      )}
     </div>
   );
 };

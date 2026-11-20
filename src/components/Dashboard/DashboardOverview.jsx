@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
+import { InvoicePreviewModal } from "../Invoice/InvoicePreviewModal";
 import {
   IndianRupee,
   Receipt,
@@ -12,6 +13,7 @@ import {
   CreditCard,
   QrCode,
   Banknote,
+  Eye,
 } from "lucide-react";
 
 export const DashboardOverview = () => {
@@ -24,6 +26,8 @@ export const DashboardOverview = () => {
     setActiveTab,
     t,
   } = useStore();
+
+  const [previewBill, setPreviewBill] = useState(null);
 
   const todayDateStr = new Date().toDateString();
   const todaySales = sales.filter((s) => {
@@ -422,14 +426,24 @@ export const DashboardOverview = () => {
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handlePrint(s, "thermal")}
-                          title="Print 80mm Thermal Receipt"
-                          className="p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors inline-flex items-center cursor-pointer"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPreviewBill(s)}
+                            title="Preview Invoice (80mm / A4)"
+                            className="p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors inline-flex items-center cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handlePrint(s, "thermal")}
+                            title="Print 80mm Thermal Receipt"
+                            className="p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors inline-flex items-center cursor-pointer"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -483,6 +497,15 @@ export const DashboardOverview = () => {
           </div>
         </div>
       </div>
+
+      {/* Bill Preview & Reprint Modal */}
+      {previewBill && (
+        <InvoicePreviewModal
+          isOpen={Boolean(previewBill)}
+          onClose={() => setPreviewBill(null)}
+          bill={previewBill}
+        />
+      )}
     </div>
   );
 };
