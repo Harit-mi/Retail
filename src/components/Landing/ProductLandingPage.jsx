@@ -27,53 +27,66 @@ export const ProductLandingPage = () => {
   const verticals = [
     {
       id: "kirana",
-      name: "Kirana & Provision Stores",
+      name: "Kirana & Supermarkets",
       icon: "fa-solid fa-[#F5A623] fa-basket-shopping",
       tagline: "Loose grain weighing, fast barcode scan & Udhaar Khata",
       features: [
-        "Weight & loose item pricing (Kg/Gm/Ltr)",
+        "Weight & loose item pricing (Kg/Gm/Ltr/Pack)",
         "Pre-set loose quick keys (100g, 250g, 500g, 1kg)",
-        "Hardware USB/Bluetooth scanner & 80mm thermal receipt",
+        "Hardware USB/Bluetooth scanner & 80mm thermal receipts",
         "Udhaar ledger integration for credit accounts",
       ],
       color: "from-amber-500/20 to-orange-500/20 border-amber-400",
     },
     {
-      id: "supermarket",
-      name: "Retail Supermarkets",
-      icon: "fa-solid fa-cart-shopping",
-      tagline: "Multi-lane high-speed billing & A4 GST tax invoices",
+      id: "apparel",
+      name: "Fashion, Apparel & Footwear",
+      icon: "fa-solid fa-shirt",
+      tagline: "Size × Color matrix, brand labels & hang tags",
       features: [
-        "High-throughput cashier counter mode (< 0.8s scan)",
-        "CBIC Rule 46 compliant A4 GST tax invoices",
-        "Dynamic UPI Soundbox & bank settlement",
-        "Shift opening cash float & drawer reconciliation",
+        "Size & color attributes per garment/shoe model",
+        "A4 sticker sheet generator (24/40/65) for price tags",
+        "Exchange policy footer on 80mm thermal receipts",
+        "Brand and variant search at billing counter",
       ],
-      color: "from-blue-500/20 to-indigo-500/20 border-blue-400",
+      color: "from-indigo-500/20 to-violet-500/20 border-indigo-400",
     },
     {
-      id: "dairy",
-      name: "Dairy & Daily Needs",
-      icon: "fa-solid fa-bottle-water",
-      tagline: "Milk, bread, perishables & daily settlement book",
+      id: "electronics",
+      name: "Electronics, Mobile & Hardware",
+      icon: "fa-solid fa-mobile-screen",
+      tagline: "Serial / IMEI numbers, warranty tracking & HSN taxes",
       features: [
-        "Daily morning/evening milk subscription billing",
-        "Quick cashier banknote change calculator",
-        "Perishable batch & stock alerts",
-        "Instant thermal receipt & cut line",
+        "IMEI and serial number tracking on invoices",
+        "Multi-unit support (Pcs, Box, Roll, Mtr, Pack)",
+        "18% / 28% GST tax invoice calculations",
+        "CBIC Rule 46 compliant A4 invoices with HSN summary",
+      ],
+      color: "from-blue-500/20 to-cyan-500/20 border-blue-400",
+    },
+    {
+      id: "pharmacy",
+      name: "Pharmacy & Wellness",
+      icon: "fa-solid fa-pills",
+      tagline: "Batch numbers, expiry alerts & strip/bottle units",
+      features: [
+        "Batch number and expiry date tracking on sales",
+        "Strip, bottle, and box dispensing units",
+        "Low stock and expiry alert indicators",
+        "Customer contact linking for repeat prescriptions",
       ],
       color: "from-emerald-500/20 to-teal-500/20 border-emerald-400",
     },
     {
-      id: "spices",
-      name: "Spices, Grains & Dry Fruits Mart",
-      icon: "fa-solid fa-seedling",
-      tagline: "Precision weighing, MRP stickers & barcode generator",
+      id: "specialty",
+      name: "Stationery, Gifts & Cosmetics",
+      icon: "fa-solid fa-gift",
+      tagline: "Fast barcode lookup, pack/dozen units & custom items",
       features: [
-        "Precision gram-level pricing and loose packing",
-        "A4 sticker sheet generator (24/40/65 labels)",
-        "Thermal roll stickers (50×25mm) for loose pouches",
-        "HSN-wise GST summary reports",
+        "Instant barcode scan with < 0.8s response time",
+        "Pack, set, bottle, and dozen selling units",
+        "Quick custom items for gift wrapping and packaging",
+        "Real-time profit margin and inventory valuation",
       ],
       color: "from-purple-500/20 to-pink-500/20 border-purple-400",
     },
@@ -220,7 +233,7 @@ export const ProductLandingPage = () => {
       {/* Top Banner Announcement */}
       <div className="bg-gradient-to-r from-amber-500 via-[#F5A623] to-orange-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
         <Sparkles className="w-4 h-4 fill-slate-950" />
-        <span>DukaanPOS 2.0: 100% Offline Kirana & Supermarket POS with Fast Barcode Scanning, GST, Udhaar & DPDP Security!</span>
+        <span>DukaanPOS 2.0: Universal Offline & Cloud POS for Any Retail Business with Barcodes, GST, Udhaar & DPDP Security!</span>
         <button
           onClick={() => setActiveTab("pos")}
           className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black"
@@ -303,9 +316,9 @@ export const ProductLandingPage = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Manage Kirana, Apparel, Pharmacy, Electronics, Salon, Restaurant & Jewelry in one 
-            lightning-fast cloud-connected app. Includes GST billing, Udhaar ledger, Barcode printing, 
-            and WhatsApp marketing out of the box.
+            Run any retail shop — from Kirana & Supermarkets to Fashion & Footwear, Mobile & Electronics, 
+            Hardware, Pharmacy & Stationery — with lightning-fast barcode billing, GST tax invoices, 
+            customer Udhaar Khata, and 100% offline security.
           </p>
 
           {/* Action CTAs */}
@@ -338,8 +351,8 @@ export const ProductLandingPage = () => {
               <div className="text-xs text-slate-400 font-medium">100% Local Offline Tier</div>
             </div>
             <div>
-              <div className="text-2xl font-black font-mono text-blue-400">7 Verticals</div>
-              <div className="text-xs text-slate-400 font-medium">Kirana to Jewelry</div>
+              <div className="text-2xl font-black font-mono text-blue-400">Universal</div>
+              <div className="text-xs text-slate-400 font-medium">For Any Retail Shop</div>
             </div>
             <div>
               <div className="text-2xl font-black font-mono text-amber-300">100% DPDP</div>

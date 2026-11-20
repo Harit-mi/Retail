@@ -92,7 +92,11 @@ export const ThermalReceipt = ({ bill, isPreview = false }) => {
 
         {/* Invoice Classification Banner */}
         <div className="mt-1.5 py-0.5 px-2 inline-block bg-black text-white text-[10px] font-bold uppercase tracking-wider">
-          {isTaxInvoice ? "TAX INVOICE · कर बीजक" : "RETAIL ESTIMATE · कच्चा पर्ची"}
+          {config.taxRegime === "composition"
+            ? "BILL OF SUPPLY · कम्पोज़ीशन बिल"
+            : isTaxInvoice
+            ? "TAX INVOICE · कर बीजक"
+            : "RETAIL INVOICE · खुदरा पर्ची"}
         </div>
       </div>
 
@@ -301,9 +305,15 @@ export const ThermalReceipt = ({ bill, isPreview = false }) => {
         <p className="font-bold text-[10px] tracking-wide">
           *** धन्यवाद! फिर पधारें · THANK YOU! ***
         </p>
-        <p>1. Exchange possible within 7 days with original bill.</p>
-        <p>2. Loose/cut Kirana & perishable items non-returnable.</p>
-        <p>3. Subject to local municipal jurisdiction.</p>
+        {config.receiptFooterNote ? (
+          <p className="font-semibold text-gray-800">{config.receiptFooterNote}</p>
+        ) : (
+          <>
+            <p>1. Exchange possible within 7 days with original bill.</p>
+            <p>2. Discounted / altered items non-returnable.</p>
+            <p>3. Subject to local municipal jurisdiction.</p>
+          </>
+        )}
         <p className="text-[8px] text-gray-500 font-mono pt-1">
           Generated via DukaanPOS Smart Retail Engine
         </p>

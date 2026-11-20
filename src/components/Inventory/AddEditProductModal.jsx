@@ -183,23 +183,23 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
           onSubmit={handleSubmit}
           className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto text-xs overscroll-contain"
         >
-          {/* Vertical Domain Selector */}
+          {/* Retail Category & Type Selector */}
           <div>
             <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
-              Vertical Domain Category:
+              Retail Department / Category Type:
             </label>
             <select
-              value={formData.vertical}
+              value={formData.vertical || "retail"}
               onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
               className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-950 cursor-pointer"
             >
-              <option value="kirana">🛒 Kirana / Grocery (FMCG / Weight)</option>
-              <option value="clothing">👔 Clothing & Apparel (Size × Color Matrix)</option>
-              <option value="pharmacy">💊 Pharmacy (FEFO Batch & Rx Flags)</option>
-              <option value="electronics">📱 Electronics & Mobile (Serial / IMEI)</option>
-              <option value="salon">💇 Salon & Spa Services (Appointment Slot)</option>
-              <option value="restaurant">🍽️ Restaurant & QSR (KOT Kitchen Slot)</option>
-              <option value="jewelry">💎 Jewelry & Bullion (Weight & Purity Math)</option>
+              <option value="retail">🛍️ General Retail Goods & FMCG (Standard SKU)</option>
+              <option value="clothing">👔 Apparel, Garments & Footwear (Size, Color, Brand)</option>
+              <option value="pharmacy">💊 Pharmacy, Chemist & Wellness (Batch No, Expiry)</option>
+              <option value="electronics">📱 Electronics & Mobile (Serial / IMEI, Warranty)</option>
+              <option value="hardware">🔧 Hardware, Electrical & Tools (Model, Gauge, Unit)</option>
+              <option value="stationery">📚 Stationery, Books & Toys (Pack, Brand)</option>
+              <option value="cosmetics">💄 Cosmetics & Beauty Products (Batch, Brand)</option>
             </select>
           </div>
 
@@ -214,14 +214,14 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Fortune Sunflower Oil 1L"
+                placeholder="e.g. Fortune Sunflower Oil 1L / Men Cotton Shirt"
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs text-zinc-900 outline-none transition"
               />
             </div>
 
             <div>
               <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
-                Barcode / EAN (Optional)
+                Barcode / EAN / SKU (Optional)
               </label>
               <input
                 type="text"
@@ -241,11 +241,31 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
               </label>
               <input
                 type="text"
+                list="retail-category-suggestions"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="Grains, Dairy..."
+                placeholder="Apparel, Grains..."
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs text-zinc-900 outline-none transition"
               />
+              <datalist id="retail-category-suggestions">
+                <option value="General Retail" />
+                <option value="Groceries & FMCG" />
+                <option value="Atta & Flours" />
+                <option value="Edible Oils" />
+                <option value="Dairy & Bakery" />
+                <option value="Snacks & Beverages" />
+                <option value="Men Wear" />
+                <option value="Women & Ethnic Wear" />
+                <option value="Footwear" />
+                <option value="Smartphones & Mobiles" />
+                <option value="Mobile Accessories" />
+                <option value="Electricals & Hardware" />
+                <option value="Analgesics & Fever" />
+                <option value="Antibiotics" />
+                <option value="Cosmetics & Skincare" />
+                <option value="Stationery & Books" />
+                <option value="Home & Kitchen" />
+              </datalist>
             </div>
 
             <div>
@@ -257,31 +277,42 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs text-zinc-900 outline-none cursor-pointer"
               >
-                <option value="Pcs">Pcs (Items)</option>
-                <option value="kg">kg (Kilograms)</option>
-                <option value="gm">gm (Grams)</option>
-                <option value="ltr">ltr (Liters)</option>
-                <option value="Pack">Pack</option>
-                <option value="Box">Box</option>
+                <option value="Pcs">Pcs (Pieces / नग)</option>
+                <option value="Pack">Pack (Packet / पैकेट)</option>
+                <option value="Box">Box (Carton / डिब्बा)</option>
+                <option value="Pair">Pair (जोड़ी - Shoes/Gloves)</option>
+                <option value="Set">Set (सेट)</option>
+                <option value="Roll">Roll (रोल - Wires/Fabrics)</option>
+                <option value="Strip">Strip (स्ट्रिप - Medicine)</option>
+                <option value="Bottle">Bottle (बोतल)</option>
+                <option value="Can">Can (कैन)</option>
+                <option value="Dozen">Dozen (दर्जन)</option>
+                <option value="Bundle">Bundle (बंडल)</option>
+                <option value="kg">kg (Kilogram / किलो)</option>
+                <option value="gm">gm (Gram / ग्राम)</option>
+                <option value="ltr">ltr (Liter / लीटर)</option>
+                <option value="ml">ml (Milliliter / मिलीलीटर)</option>
+                <option value="Mtr">Mtr (Meter / मीटर)</option>
+                <option value="SqFt">SqFt (Square Feet)</option>
               </select>
             </div>
 
             <div>
               <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
-                HSN Code
+                HSN / SAC Code
               </label>
               <input
                 type="text"
                 value={formData.hsn}
                 onChange={(e) => setFormData({ ...formData, hsn: e.target.value })}
-                placeholder="e.g. 1006"
+                placeholder="e.g. 6205 or 1006"
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs font-mono text-zinc-900 outline-none transition"
               />
             </div>
           </div>
 
-          {/* Pricing: Retail, Cost, GST */}
-          <div className="grid grid-cols-3 gap-3 p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
+          {/* Pricing: Retail, Cost, Wholesale, GST */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
             <div>
               <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
                 Retail Price (₹) *
@@ -315,6 +346,21 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
 
             <div>
               <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
+                Wholesale (₹)
+              </label>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                value={formData.wholesalePrice || ""}
+                onChange={(e) => setFormData({ ...formData, wholesalePrice: Number(e.target.value) })}
+                placeholder="Optional"
+                className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs font-mono text-zinc-700 outline-none transition"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-zinc-800 block mb-1">
                 GST Slab (%)
               </label>
               <select
@@ -323,10 +369,11 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs font-mono font-semibold text-zinc-900 outline-none cursor-pointer"
               >
                 <option value={0}>0% (Exempt)</option>
-                <option value={5}>5% (Essential)</option>
-                <option value={12}>12% (Standard)</option>
-                <option value={18}>18% (General)</option>
-                <option value={28}>28% (Luxury)</option>
+                <option value={3}>3% (Gold/Precious)</option>
+                <option value={5}>5% (Essential/Apparel)</option>
+                <option value={12}>12% (Standard/Stationery)</option>
+                <option value={18}>18% (General/Electronics)</option>
+                <option value={28}>28% (Luxury/Hardware)</option>
               </select>
             </div>
           </div>
@@ -363,60 +410,84 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
             </div>
           </div>
 
-          {/* Domain Specific Attributes */}
-          {formData.vertical === "clothing" && (
-            <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
-              <span className="text-[10px] font-mono uppercase font-semibold text-zinc-400 tracking-wider block">
-                Apparel Matrix Attributes
-              </span>
-              <div className="grid grid-cols-3 gap-2">
+          {/* Universal Retail Specifications & Tracking */}
+          <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200 space-y-3">
+            <span className="text-[10px] font-mono uppercase font-semibold text-zinc-500 tracking-wider block">
+              Retail Specifications & Tracking (Optional):
+            </span>
+
+            {/* Brand & Specs */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input
+                type="text"
+                placeholder="Brand / Manufacturer (e.g. Nike, Samsung)"
+                value={formData.attributes.brand || ""}
+                onChange={(e) => handleAttrChange("brand", e.target.value)}
+                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+              />
+              <input
+                type="text"
+                placeholder="Size / Dimension (e.g. L, 32, 100ml, A4)"
+                value={formData.attributes.size || ""}
+                onChange={(e) => handleAttrChange("size", e.target.value)}
+                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+              />
+              <input
+                type="text"
+                placeholder="Color / Finish (e.g. Navy, Matte Black)"
+                value={formData.attributes.color || ""}
+                onChange={(e) => handleAttrChange("color", e.target.value)}
+                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+              />
+            </div>
+
+            {/* Batch & Expiry (Food, FMCG, Pharma, Cosmetics) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-zinc-200/60">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Batch No:</span>
                 <input
                   type="text"
-                  placeholder="Size (e.g. M, 32, XL)"
-                  value={formData.attributes.size}
-                  onChange={(e) => handleAttrChange("size", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Color (e.g. Navy, Olive)"
-                  value={formData.attributes.color}
-                  onChange={(e) => handleAttrChange("color", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Brand (e.g. Zara, Ray)"
-                  value={formData.attributes.brand}
-                  onChange={(e) => handleAttrChange("brand", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+                  placeholder="e.g. BATCH-2026A"
+                  value={formData.attributes.batch_no || ""}
+                  onChange={(e) => handleAttrChange("batch_no", e.target.value)}
+                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
                 />
               </div>
-            </div>
-          )}
-
-          {formData.vertical === "pharmacy" && (
-            <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
-              <span className="text-[10px] font-mono uppercase font-semibold text-zinc-400 tracking-wider block">
-                Pharmacy Batch & Schedule
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="Batch No (e.g. B-902)"
-                  value={formData.attributes.batch_no}
-                  onChange={(e) => handleAttrChange("batch_no", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none"
-                />
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Expiry Date:</span>
                 <input
                   type="date"
-                  value={formData.attributes.expiry_date}
+                  value={formData.attributes.expiry_date || ""}
                   onChange={(e) => handleAttrChange("expiry_date", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none"
+                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
                 />
               </div>
             </div>
-          )}
+
+            {/* Serial / IMEI & Warranty (Electronics, Mobile, Appliances, Hardware) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-zinc-200/60">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Serial/IMEI:</span>
+                <input
+                  type="text"
+                  placeholder="e.g. 864201048291048"
+                  value={formData.attributes.imei || formData.attributes.serial_no || ""}
+                  onChange={(e) => handleAttrChange("imei", e.target.value)}
+                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Warranty:</span>
+                <input
+                  type="number"
+                  placeholder="Warranty in months (e.g. 12)"
+                  value={formData.attributes.warranty_months || ""}
+                  onChange={(e) => handleAttrChange("warranty_months", Number(e.target.value))}
+                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
+                />
+              </div>
+            </div>
+          </div>
         </form>
 
         {/* Pinned Action Footer */}

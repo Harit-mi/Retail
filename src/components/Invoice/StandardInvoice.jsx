@@ -492,11 +492,15 @@ export const StandardInvoice = ({ bill, isPreview = false }) => {
         <div className="space-y-1.5 text-zinc-600">
           <div>
             <h5 className="font-bold uppercase text-[9px] text-zinc-800">Terms & Conditions:</h5>
-            <ol className="list-decimal pl-3 space-y-0.5 text-[9px]">
-              <li>Goods once sold can only be exchanged within 7 days against original invoice.</li>
-              <li>Perishable/Dairy/Chilled items are non-returnable once accepted.</li>
-              <li>Disputes, if any, shall be subject to the exclusive jurisdiction of Delhi Courts.</li>
-            </ol>
+            {config.receiptFooterNote ? (
+              <p className="text-[9px] text-zinc-700 font-medium">{config.receiptFooterNote}</p>
+            ) : (
+              <ol className="list-decimal pl-3 space-y-0.5 text-[9px]">
+                <li>Goods once sold can only be exchanged within 7 days against original invoice.</li>
+                <li>Customized, altered, or opened consumable items are non-returnable.</li>
+                <li>Disputes, if any, shall be subject to local court jurisdiction.</li>
+              </ol>
+            )}
           </div>
           <div className="pt-1 border-t border-dashed border-zinc-300 text-[8px] text-zinc-500 italic">
             "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct."
@@ -506,7 +510,7 @@ export const StandardInvoice = ({ bill, isPreview = false }) => {
         {/* Right: Authorized Signatory Block */}
         <div className="text-right space-y-8">
           <div className="text-[10px] text-zinc-800 font-semibold">
-            For <span className="font-bold">{config.name || "Gupta Multi-Vertical Retail Hub"}</span>
+            For <span className="font-bold">{config.name || "Dukaan Universal Retail"}</span>
           </div>
           <div className="inline-block text-center border-t border-zinc-800 pt-1 w-44">
             <p className="font-bold text-zinc-950 text-[10px]">Authorized Signatory</p>

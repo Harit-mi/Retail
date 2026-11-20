@@ -88,10 +88,10 @@ export const StoreSettings = () => {
             </div>
             <div>
               <h2 className="text-lg font-black font-display text-slate-900">
-                Kirana Store Configuration
+                Store Profile & Retail Configuration
               </h2>
               <p className="text-xs text-slate-500 font-mono">
-                Store name, GSTIN number, receipt printer & UPI settings
+                Store type, business details, GSTIN tax, bill footer policy & backup vault
               </p>
             </div>
           </div>
@@ -106,6 +106,32 @@ export const StoreSettings = () => {
 
         {/* Store Profile Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Retail Sector Selector */}
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-lg p-3.5 space-y-2">
+            <label className="text-xs font-bold text-slate-900 block">
+              Retail Store Sector / Business Profile:
+            </label>
+            <select
+              value={formData.businessType || "general"}
+              onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+              className="w-full bg-white border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F] cursor-pointer"
+            >
+              <option value="general">🛍️ General Merchandise & Departmental (किराना व जनरल स्टोर)</option>
+              <option value="supermarket">🛒 Supermarket, Grocery & FMCG (सुपरमार्केट / ग्रॉसरी मार्ट)</option>
+              <option value="apparel">👔 Apparel, Clothing, Fashion & Footwear (कपड़े, परिधान व जूते)</option>
+              <option value="electronics">📱 Electronics, Mobile & Computer Accessories (मोबाइल व इलेक्ट्रॉनिक्स)</option>
+              <option value="pharmacy">💊 Pharmacy, Chemist & Healthcare (दवाइयां व मेडिकल स्टोर)</option>
+              <option value="hardware">🔧 Hardware, Electrical & Sanitaryware (हार्डवेयर, बिजली व सेनेटरी)</option>
+              <option value="stationery">📚 Stationery, Books, Office & Toys (स्टेशनरी, किताबें व खिलौने)</option>
+              <option value="cosmetics">💄 Cosmetics, Perfumes & Personal Care (कॉस्मेटिक्स व ब्यूटी)</option>
+              <option value="home">🍽️ Home & Kitchenware, Utensils & Appliances (बर्तन व घरेलू सामान)</option>
+              <option value="custom">🏪 Other Custom Retail Shop (अन्य रिटेल दुकान)</option>
+            </select>
+            <p className="text-[11px] text-slate-500 font-mono">
+              Adapts unit options, category presets, and receipt formatting for your specific retail store.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
@@ -114,8 +140,22 @@ export const StoreSettings = () => {
               <input
                 type="text"
                 required
-                value={formData.name}
+                value={formData.name || ""}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Gupta Retail Store"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Store Tagline / Subtitle
+              </label>
+              <input
+                type="text"
+                value={formData.tagline || ""}
+                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                placeholder="e.g. Complete Retail Solution • Quality Guaranteed"
                 className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
@@ -128,20 +168,34 @@ export const StoreSettings = () => {
                 type="text"
                 value={formData.gstin || ""}
                 onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                placeholder="27AAAAA0000A1Z5"
+                placeholder="07AAAAA0000A1Z5"
                 className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                UPI Payment VPA ID (For Dynamic QR)
+                GST Tax Regime
+              </label>
+              <select
+                value={formData.taxRegime || "regular"}
+                onChange={(e) => setFormData({ ...formData, taxRegime: e.target.value })}
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F] cursor-pointer"
+              >
+                <option value="regular">Regular GST Registered (Itemized Tax Invoices)</option>
+                <option value="composition">Composition Scheme / Small Retailer (Bill of Supply)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                UPI Payment VPA ID (For Dynamic QR on Bills)
               </label>
               <input
                 type="text"
                 value={formData.upiId || ""}
                 onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
-                placeholder="guptakirana@upi"
+                placeholder="storename@upi"
                 className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
@@ -158,6 +212,32 @@ export const StoreSettings = () => {
                 className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
               />
             </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Bill / Invoice Number Prefix
+              </label>
+              <input
+                type="text"
+                value={formData.invoicePrefix || "INV-"}
+                onChange={(e) => setFormData({ ...formData, invoicePrefix: e.target.value })}
+                placeholder="INV- or BILL-"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Owner / Manager Name
+              </label>
+              <input
+                type="text"
+                value={formData.ownerName || ""}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                placeholder="e.g. Rajesh Gupta"
+                className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F]"
+              />
+            </div>
           </div>
 
           <div>
@@ -170,6 +250,19 @@ export const StoreSettings = () => {
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="Shop No. 4, Main Market, Lajpat Nagar, New Delhi - 110024"
               className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg p-3 text-xs text-slate-900 outline-none focus:border-[#1E3A5F]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1">
+              Receipt Terms & Return Policy Note
+            </label>
+            <input
+              type="text"
+              value={formData.receiptFooterNote || ""}
+              onChange={(e) => setFormData({ ...formData, receiptFooterNote: e.target.value })}
+              placeholder="e.g. Exchange possible within 7 days with original invoice. Thank you for your visit!"
+              className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg px-3 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#1E3A5F]"
             />
           </div>
 

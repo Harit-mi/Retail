@@ -40,11 +40,19 @@ export const InventoryList = () => {
     const matchesVertical =
       activeVertical === "all" || p.vertical === activeVertical;
 
+    const q = search.toLowerCase().trim();
+    const attrs = p.attributes || {};
     const matchesSearch =
-      !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.barcode && p.barcode.includes(search)) ||
-      (p.hsn && p.hsn.includes(search));
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      (p.barcode && p.barcode.toLowerCase().includes(q)) ||
+      (p.hsn && p.hsn.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (attrs.brand && attrs.brand.toLowerCase().includes(q)) ||
+      (attrs.size && attrs.size.toLowerCase().includes(q)) ||
+      (attrs.color && attrs.color.toLowerCase().includes(q)) ||
+      (attrs.imei && attrs.imei.toLowerCase().includes(q)) ||
+      (attrs.batch_no && attrs.batch_no.toLowerCase().includes(q));
 
     const matchesCat =
       categoryFilter === "All" || p.category === categoryFilter;
@@ -231,6 +239,23 @@ export const InventoryList = () => {
                     <tr key={p.id} className="hover:bg-zinc-50/70 transition-colors">
                       <td className="px-4 py-3">
                         <div className="font-semibold text-zinc-950 text-xs">{p.name}</div>
+                        {(p.attributes?.brand || p.attributes?.size || p.attributes?.color || p.attributes?.batch_no || p.attributes?.imei) && (
+                          <div className="flex flex-wrap items-center gap-1 mt-1 text-[9px] font-mono">
+                            {p.attributes.brand && (
+                              <span className="bg-zinc-100 text-zinc-800 font-semibold px-1 py-0.2 rounded border border-zinc-200">
+                                {p.attributes.brand}
+                              </span>
+                            )}
+                            {p.attributes.size && <span className="text-zinc-600">Size: {p.attributes.size}</span>}
+                            {p.attributes.color && <span className="text-zinc-600">Color: {p.attributes.color}</span>}
+                            {p.attributes.batch_no && (
+                              <span className="text-amber-800 bg-amber-50 px-1 rounded">Batch: {p.attributes.batch_no}</span>
+                            )}
+                            {p.attributes.imei && (
+                              <span className="text-sky-800 bg-sky-50 px-1 rounded">IMEI: {p.attributes.imei.slice(-6)}</span>
+                            )}
+                          </div>
+                        )}
                         <div className="text-[10px] font-mono text-zinc-400 mt-0.5">
                           {p.barcode ? `Barcode: ${p.barcode}` : "No Barcode"} {p.hsn ? `· HSN: ${p.hsn}` : ""}
                         </div>

@@ -49,15 +49,57 @@ const playBeepSound = () => {
   }
 };
 
-// Category theme palette for Square-style visual tiles
+// Category theme palette for Square-style visual tiles across any retail vertical
 const getCategoryAccent = (category = "") => {
   const cat = category.toLowerCase();
-  if (cat.includes("oil") || cat.includes("ghee")) return { bg: "bg-amber-500/10", text: "text-amber-800", border: "border-amber-200", dot: "bg-amber-500" };
-  if (cat.includes("grain") || cat.includes("dal") || cat.includes("rice") || cat.includes("atta")) return { bg: "bg-orange-500/10", text: "text-orange-800", border: "border-orange-200", dot: "bg-orange-500" };
-  if (cat.includes("dairy") || cat.includes("milk") || cat.includes("paneer")) return { bg: "bg-blue-500/10", text: "text-blue-800", border: "border-blue-200", dot: "bg-blue-500" };
-  if (cat.includes("tea") || cat.includes("beverage") || cat.includes("coffee")) return { bg: "bg-emerald-500/10", text: "text-emerald-800", border: "border-emerald-200", dot: "bg-emerald-500" };
-  if (cat.includes("snack") || cat.includes("biscuit") || cat.includes("noodle")) return { bg: "bg-rose-500/10", text: "text-rose-800", border: "border-rose-200", dot: "bg-rose-500" };
-  if (cat.includes("care") || cat.includes("soap") || cat.includes("shampoo")) return { bg: "bg-purple-500/10", text: "text-purple-800", border: "border-purple-200", dot: "bg-purple-500" };
+  // Apparel & Fashion
+  if (cat.includes("cloth") || cat.includes("wear") || cat.includes("apparel") || cat.includes("shirt") || cat.includes("pant") || cat.includes("kurti") || cat.includes("garment") || cat.includes("fashion")) {
+    return { bg: "bg-indigo-500/10", text: "text-indigo-800", border: "border-indigo-200", dot: "bg-indigo-500" };
+  }
+  // Footwear
+  if (cat.includes("shoe") || cat.includes("footwear") || cat.includes("sandal") || cat.includes("slipper")) {
+    return { bg: "bg-cyan-500/10", text: "text-cyan-800", border: "border-cyan-200", dot: "bg-cyan-500" };
+  }
+  // Electronics & Mobiles
+  if (cat.includes("phone") || cat.includes("mobile") || cat.includes("electronic") || cat.includes("gadget") || cat.includes("smart") || cat.includes("cable") || cat.includes("charger") || cat.includes("computer")) {
+    return { bg: "bg-sky-500/10", text: "text-sky-800", border: "border-sky-200", dot: "bg-sky-500" };
+  }
+  // Hardware & Electricals
+  if (cat.includes("hardware") || cat.includes("tool") || cat.includes("paint") || cat.includes("electric") || cat.includes("switch") || cat.includes("wire") || cat.includes("sanitary") || cat.includes("pipe")) {
+    return { bg: "bg-amber-500/10", text: "text-amber-800", border: "border-amber-200", dot: "bg-amber-500" };
+  }
+  // Pharmacy, Chemist & Health
+  if (cat.includes("pharma") || cat.includes("medicine") || cat.includes("tablet") || cat.includes("syrup") || cat.includes("fever") || cat.includes("antibiotic") || cat.includes("health") || cat.includes("analgesic")) {
+    return { bg: "bg-emerald-500/10", text: "text-emerald-800", border: "border-emerald-200", dot: "bg-emerald-500" };
+  }
+  // Cosmetics, Beauty & Personal Care
+  if (cat.includes("cosmetic") || cat.includes("beauty") || cat.includes("skincare") || cat.includes("makeup") || cat.includes("cream") || cat.includes("perfume") || cat.includes("shampoo") || cat.includes("soap") || cat.includes("care")) {
+    return { bg: "bg-pink-500/10", text: "text-pink-800", border: "border-pink-200", dot: "bg-pink-500" };
+  }
+  // Stationery & Books
+  if (cat.includes("stationery") || cat.includes("book") || cat.includes("paper") || cat.includes("pen") || cat.includes("toy") || cat.includes("office")) {
+    return { bg: "bg-lime-500/10", text: "text-lime-800", border: "border-lime-200", dot: "bg-lime-500" };
+  }
+  // Grains, Dal, Rice, Atta & Food
+  if (cat.includes("grain") || cat.includes("dal") || cat.includes("rice") || cat.includes("atta") || cat.includes("flour")) {
+    return { bg: "bg-orange-500/10", text: "text-orange-800", border: "border-orange-200", dot: "bg-orange-500" };
+  }
+  // Edible Oils & Ghee
+  if (cat.includes("oil") || cat.includes("ghee")) {
+    return { bg: "bg-yellow-500/10", text: "text-yellow-800", border: "border-yellow-200", dot: "bg-yellow-500" };
+  }
+  // Dairy & Bakery
+  if (cat.includes("dairy") || cat.includes("milk") || cat.includes("butter") || cat.includes("paneer") || cat.includes("bread") || cat.includes("bakery")) {
+    return { bg: "bg-blue-500/10", text: "text-blue-800", border: "border-blue-200", dot: "bg-blue-500" };
+  }
+  // Beverages & Tea
+  if (cat.includes("tea") || cat.includes("beverage") || cat.includes("coffee") || cat.includes("juice") || cat.includes("drink")) {
+    return { bg: "bg-teal-500/10", text: "text-teal-800", border: "border-teal-200", dot: "bg-teal-500" };
+  }
+  // Snacks & Confectionery
+  if (cat.includes("snack") || cat.includes("biscuit") || cat.includes("cookie") || cat.includes("noodle") || cat.includes("namkeen")) {
+    return { bg: "bg-rose-500/10", text: "text-rose-800", border: "border-rose-200", dot: "bg-rose-500" };
+  }
   return { bg: "bg-zinc-500/10", text: "text-zinc-800", border: "border-zinc-200", dot: "bg-zinc-500" };
 };
 
@@ -187,22 +229,29 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     }
   };
 
-  // Multi-Attribute Search Engine
+  // Multi-Attribute Search Engine across Name, Barcode/SKU, HSN, Category, Brand, Size, Specs
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
       selectedCategory === "All" || product.category === selectedCategory;
 
     const q = searchQuery.toLowerCase().trim();
+    const attrs = product.attributes || {};
     const matchesSearch =
       !q ||
       product.name.toLowerCase().includes(q) ||
-      (product.barcode && product.barcode.includes(q)) ||
-      (product.hsn && product.hsn.includes(q));
+      (product.barcode && product.barcode.toLowerCase().includes(q)) ||
+      (product.hsn && product.hsn.toLowerCase().includes(q)) ||
+      (product.category && product.category.toLowerCase().includes(q)) ||
+      (attrs.brand && attrs.brand.toLowerCase().includes(q)) ||
+      (attrs.size && attrs.size.toLowerCase().includes(q)) ||
+      (attrs.color && attrs.color.toLowerCase().includes(q)) ||
+      (attrs.imei && attrs.imei.toLowerCase().includes(q)) ||
+      (attrs.batch_no && attrs.batch_no.toLowerCase().includes(q));
 
     return matchesCategory && matchesSearch;
   });
 
-  const categories = ["All", ...new Set(products.map((p) => p.category))];
+  const categories = ["All", ...new Set(products.map((p) => p.category).filter(Boolean))];
 
   // Barcode Scanner Simulator
   const simulateBarcodeScan = () => {
@@ -233,7 +282,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     return u === "kg" || u === "ltr" || u === "gm" || u === "liter";
   };
 
-  // Quick Custom Loose Item Handler (Square Retail + Indian Kirana)
+  // Quick Custom Retail Item Handler (Square Retail + Universal Indian POS)
   const handleAddCustomItem = (e) => {
     e.preventDefault();
     const priceNum = parseFloat(customItemForm.price);
@@ -242,15 +291,15 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
       return;
     }
 
-    const name = customItemForm.name.trim() || "खुला सामान (Custom Item)";
+    const name = customItemForm.name.trim() || "Custom Retail Item / खुला आइटम";
     const customProduct = {
       id: `custom_${Date.now()}`,
       name: name,
       retailPrice: priceNum,
       unit: customItemForm.unit || "Pcs",
       gst: Number(customItemForm.gst) || 0,
-      stock: null, // Unrestricted stock for loose/custom item
-      category: "Loose / Kirana",
+      stock: null, // Unrestricted stock for custom item
+      category: customItemForm.category || "General Retail",
     };
 
     handleAddItemToCart(customProduct, parseFloat(customItemForm.qty) || 1);
@@ -261,6 +310,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
       unit: "Pcs",
       gst: 0,
       qty: 1,
+      category: "General Retail",
     });
   };
 
@@ -284,7 +334,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                 setUnmatchedBarcode(null);
               }}
               onKeyDown={handleSearchSubmit}
-              placeholder="Search product, barcode, HSN... (F2)"
+              placeholder="Search product, barcode, HSN, brand, specs... (F2)"
               className="w-full bg-white text-zinc-900 text-sm font-medium pl-10 pr-20 py-2.5 rounded-lg border border-zinc-200 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs outline-none transition placeholder-zinc-400"
             />
             {searchQuery && (
@@ -305,11 +355,12 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             {/* Square Retail: Quick Custom Item / खुला सामान Button */}
             <button
               onClick={() => setShowCustomItemModal(true)}
-              title="Add Custom Item or Loose Kirana (खुला सामान / फुटकर)"
+              title="Add Custom Item / Unlisted SKU / Loose Product (खुला सामान / फुटकर)"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300 transition active:scale-[0.98] cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 text-amber-700" />
-              <span className="font-semibold">+ खुला सामान</span>
+              <span className="font-semibold">+ Custom Item</span>
+              <span className="text-[10px] text-amber-700/80 hidden sm:inline">(खुला)</span>
             </button>
 
             {/* Square Retail View Switcher: Grid vs List */}
@@ -495,6 +546,37 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                         {product.name}
                       </h4>
 
+                      {/* Retail Specs Badge (Brand, Size, Color, Batch, IMEI) */}
+                      {(product.attributes?.brand || product.attributes?.size || product.attributes?.color || product.attributes?.batch_no || product.attributes?.imei) && (
+                        <div className="flex flex-wrap items-center gap-1 mb-1.5 text-[9px] font-mono">
+                          {product.attributes.brand && (
+                            <span className="bg-zinc-100 text-zinc-800 font-semibold px-1.5 py-0.5 rounded border border-zinc-200">
+                              {product.attributes.brand}
+                            </span>
+                          )}
+                          {product.attributes.size && (
+                            <span className="bg-zinc-50 text-zinc-700 px-1.5 py-0.5 rounded border border-zinc-200">
+                              Size: {product.attributes.size}
+                            </span>
+                          )}
+                          {product.attributes.color && (
+                            <span className="bg-zinc-50 text-zinc-700 px-1.5 py-0.5 rounded border border-zinc-200">
+                              {product.attributes.color}
+                            </span>
+                          )}
+                          {product.attributes.batch_no && (
+                            <span className="bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded">
+                              Batch: {product.attributes.batch_no}
+                            </span>
+                          )}
+                          {product.attributes.imei && (
+                            <span className="bg-sky-50 text-sky-800 border border-sky-200 px-1.5 py-0.5 rounded">
+                              IMEI: {product.attributes.imei.slice(-6)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {/* Stock Health */}
                       <div className="flex items-center gap-1.5 text-[10px] font-mono mb-2 text-zinc-400">
                         {isOutOfStock ? (
@@ -631,6 +713,27 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                           <div className="font-semibold text-zinc-900 leading-snug">
                             {product.name}
                           </div>
+                          {(product.attributes?.brand || product.attributes?.size || product.attributes?.color || product.attributes?.batch_no || product.attributes?.imei) && (
+                            <div className="flex flex-wrap items-center gap-1 mt-0.5 text-[9px] font-mono">
+                              {product.attributes.brand && (
+                                <span className="bg-zinc-100 text-zinc-800 font-semibold px-1 py-0.2 rounded border border-zinc-200">
+                                  {product.attributes.brand}
+                                </span>
+                              )}
+                              {product.attributes.size && (
+                                <span className="text-zinc-600">Size: {product.attributes.size}</span>
+                              )}
+                              {product.attributes.color && (
+                                <span className="text-zinc-600">Color: {product.attributes.color}</span>
+                              )}
+                              {product.attributes.batch_no && (
+                                <span className="text-amber-800 bg-amber-50 px-1 rounded">Batch: {product.attributes.batch_no}</span>
+                              )}
+                              {product.attributes.imei && (
+                                <span className="text-sky-800 bg-sky-50 px-1 rounded">IMEI: {product.attributes.imei.slice(-6)}</span>
+                              )}
+                            </div>
+                          )}
                           <div className="text-[10px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
                             <span className="font-mono text-zinc-500">{product.category}</span>
                             <span>·</span>
@@ -1056,7 +1159,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
       )}
 
       {/* ============================================================ */}
-      {/* QUICK CUSTOM ITEM / खुला सामान (फुटकर) MODAL                 */}
+      {/* QUICK CUSTOM ITEM / UNLISTED RETAIL SKU MODAL                */}
       {/* ============================================================ */}
       {showCustomItemModal && (
         <div
@@ -1069,7 +1172,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-600" />
                 <h3 className="font-semibold text-sm text-zinc-900">
-                  खुला सामान / Quick Custom Item (फुटकर)
+                  Quick Custom Item / Unlisted SKU (खुला आइटम / फुटकर)
                 </h3>
               </div>
               <button
@@ -1081,17 +1184,19 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             </div>
 
             <form onSubmit={handleAddCustomItem} className="p-5 space-y-4">
-              {/* Common Kirana Quick Presets */}
+              {/* Universal Retail Quick Presets */}
               <div>
                 <label className="text-[11px] font-medium text-zinc-500 mb-1.5 block">
-                  Quick Kirana Presets (तुरंत चयन करें):
+                  Quick Retail Presets (तुरंत चयन करें):
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { label: "धनिया (Coriander) ₹10", name: "धनिया / Coriander", price: "10", unit: "Pcs" },
-                    { label: "खुला दूध (Loose Milk) ₹30", name: "खुला दूध / Loose Milk", price: "30", unit: "Ltr" },
-                    { label: "दही पाउच (Curd) ₹25", name: "दही पाउच / Curd Pouch", price: "25", unit: "Pcs" },
-                    { label: "पैकिंग चार्ज ₹20", name: "पैकिंग / Delivery Charge", price: "20", unit: "Pcs" },
+                    { label: "🛍️ Carry Bag ₹10", name: "Carry Bag / Shopping Bag", price: "10", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
+                    { label: "🎁 Gift Packing ₹25", name: "Gift Wrapping & Packing", price: "25", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
+                    { label: "✂️ Alteration Fee ₹50", name: "Garment Alteration / Service", price: "50", unit: "Pcs", category: "Services & Alterations", gst: 18 },
+                    { label: "📦 Delivery ₹40", name: "Home Delivery Charge", price: "40", unit: "Pcs", category: "Services", gst: 0 },
+                    { label: "🏷️ Unlisted SKU ₹100", name: "Unlisted Merchandise Item", price: "100", unit: "Pcs", category: "General Retail", gst: 5 },
+                    { label: "🌾 Loose Item ₹50", name: "Loose Item (खुला सामान)", price: "50", unit: "kg", category: "Loose Produce", gst: 0 },
                   ].map((preset) => (
                     <button
                       key={preset.label}
@@ -1100,7 +1205,8 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                         name: preset.name,
                         price: preset.price,
                         unit: preset.unit,
-                        gst: 0,
+                        category: preset.category,
+                        gst: preset.gst,
                         qty: 1,
                       })}
                       className="px-2 py-1 text-[11px] bg-zinc-100 hover:bg-zinc-200 rounded border border-zinc-200 text-zinc-700 transition cursor-pointer"
@@ -1114,14 +1220,28 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               {/* Item Name */}
               <div>
                 <label className="text-xs font-medium text-zinc-700 block mb-1">
-                  Item Description / नाम
+                  Item Description / नाम *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. खुला बेसन / Loose Besan, Repair service"
+                  placeholder="e.g. Alteration charge, loose grain, spare cable"
                   value={customItemForm.name}
                   onChange={(e) => setCustomItemForm({ ...customItemForm, name: e.target.value })}
+                  className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="text-xs font-medium text-zinc-700 block mb-1">
+                  Category / श्रेणी
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. General Retail, Apparel, Packaging"
+                  value={customItemForm.category || "General Retail"}
+                  onChange={(e) => setCustomItemForm({ ...customItemForm, category: e.target.value })}
                   className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900"
                 />
               </div>
@@ -1130,12 +1250,12 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-zinc-700 block mb-1">
-                    Price (₹) प्रति इकाई
+                    Price (₹) प्रति इकाई *
                   </label>
                   <input
                     type="number"
                     required
-                    min="1"
+                    min="0.01"
                     step="any"
                     placeholder="e.g. 50"
                     value={customItemForm.price}
@@ -1171,11 +1291,18 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                     onChange={(e) => setCustomItemForm({ ...customItemForm, unit: e.target.value })}
                     className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900"
                   >
-                    <option value="Pcs">Pcs (नग)</option>
+                    <option value="Pcs">Pcs (नग / Items)</option>
+                    <option value="Pack">Pack (पैकेट)</option>
+                    <option value="Box">Box (डिब्बा)</option>
+                    <option value="Pair">Pair (जोड़ी)</option>
+                    <option value="Set">Set (सेट)</option>
+                    <option value="Roll">Roll (रोल)</option>
+                    <option value="Strip">Strip (स्ट्रिप)</option>
+                    <option value="Bottle">Bottle (बोतल)</option>
                     <option value="kg">kg (किलो)</option>
                     <option value="gm">gm (ग्राम)</option>
                     <option value="Ltr">Ltr (लीटर)</option>
-                    <option value="packet">Packet (पैकेट)</option>
+                    <option value="Mtr">Mtr (मीटर)</option>
                   </select>
                 </div>
 
@@ -1188,10 +1315,12 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                     onChange={(e) => setCustomItemForm({ ...customItemForm, gst: e.target.value })}
                     className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900"
                   >
-                    <option value="0">0% (Nil)</option>
-                    <option value="5">5% (Grocery / Food)</option>
-                    <option value="12">12%</option>
-                    <option value="18">18% (Standard)</option>
+                    <option value="0">0% (Nil / Exempt)</option>
+                    <option value="3">3% (Precious / Bullion)</option>
+                    <option value="5">5% (Grocery / Apparel)</option>
+                    <option value="12">12% (Standard)</option>
+                    <option value="18">18% (General / Electronics)</option>
+                    <option value="28">28% (Luxury / Auto)</option>
                   </select>
                 </div>
               </div>
