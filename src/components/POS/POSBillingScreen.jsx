@@ -15,7 +15,6 @@ import {
   Package,
   Receipt,
   Tag,
-  Gift,
   AlertTriangle,
   PauseCircle,
   PlayCircle,
@@ -72,8 +71,6 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     clearCart,
     cartCustomer,
     applyCouponCode,
-    redeemedPoints,
-    setRedeemedPoints,
     cartSubtotal,
     cartTaxDetails,
     cartGrandTotal,
@@ -821,11 +818,11 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                   {cartCustomer ? (
                     cartCustomer.balance > 0 ? (
                       <span className="text-amber-700 font-semibold">
-                        ⚠️ पुराना उधार: ₹{cartCustomer.balance.toLocaleString("en-IN")} · ★ {cartCustomer.loyaltyPoints || 0} pts
+                        ⚠️ पुराना उधार: ₹{cartCustomer.balance.toLocaleString("en-IN")}
                       </span>
                     ) : (
                       <span className="text-emerald-700 font-medium">
-                        ✓ उधार शून्य · ★ {cartCustomer.loyaltyPoints || 0} pts
+                        ✓ उधार शून्य (Nil Due)
                       </span>
                     )
                   ) : (
@@ -963,21 +960,6 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                 <p className="text-[10px] font-mono text-zinc-700 bg-zinc-100 p-1 rounded border border-zinc-200">
                   {couponMsg}
                 </p>
-              )}
-
-              {cartCustomer && (cartCustomer.loyaltyPoints || 0) > 0 && (
-                <label className="flex items-center justify-between bg-amber-50/80 border border-amber-200 p-1.5 rounded-lg text-xs text-amber-900 cursor-pointer">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Gift className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Redeem {cartCustomer.loyaltyPoints} pts (₹{cartCustomer.loyaltyPoints})</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={redeemedPoints > 0}
-                    onChange={(e) => setRedeemedPoints(e.target.checked ? cartCustomer.loyaltyPoints : 0)}
-                    className="w-4 h-4 accent-zinc-900 cursor-pointer"
-                  />
-                </label>
               )}
 
               {/* Financial Subtotals & Indian Round-off indicator */}

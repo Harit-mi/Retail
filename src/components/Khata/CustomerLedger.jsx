@@ -4,7 +4,6 @@ import {
   BookOpen,
   Search,
   MessageSquare,
-  Sparkles,
   Eye,
   EyeOff,
   CheckCircle2,
@@ -30,11 +29,9 @@ export const CustomerLedger = () => {
   const [lastPaymentConfirmation, setLastPaymentConfirmation] = useState(null);
   const [reminderToast, setReminderToast] = useState(null);
   const [showFullPhone, setShowFullPhone] = useState(false);
-  const [viewTab, setViewTab] = useState("khata"); // 'khata' or 'loyalty'
 
   const totalOutstanding = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
   const pendingCustomersCount = customers.filter((c) => c.balance > 0).length;
-  const totalLoyaltyPoints = customers.reduce((acc, c) => acc + (c.loyaltyPoints || 0), 0);
 
   const filteredCustomers = customers.filter(
     (c) =>
@@ -95,50 +92,28 @@ export const CustomerLedger = () => {
           </div>
           <div>
             <h2 className="text-base font-bold font-display text-zinc-950 tracking-tight">
-              Customer Khata & Udhaar Ledger
+              Customer Khata & Udhaar Ledger · उधार बहीखाता
             </h2>
             <p className="text-xs text-zinc-400 font-mono">
-              Credit accounts, payment reconciliation & loyalty rewards
+              Credit ledger tracking, settlements & repayment receipts for Kirana & Supermarket customers
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <div className="bg-zinc-50 border border-zinc-200/80 px-3.5 py-2 rounded-lg text-right flex-1 md:flex-none">
-            <p className="text-[10px] text-zinc-500 font-mono uppercase font-semibold">Total Udhaar Due</p>
+          <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-lg text-right flex-1 md:flex-none">
+            <p className="text-[10px] text-zinc-500 font-mono uppercase font-semibold">Total Pending Udhaar</p>
             <p className="text-base font-bold font-mono text-red-600 tabular-nums">
               ₹{totalOutstanding.toLocaleString("en-IN")}
             </p>
           </div>
-          <div className="bg-zinc-50 border border-zinc-200/80 px-3.5 py-2 rounded-lg text-right flex-1 md:flex-none">
-            <p className="text-[10px] text-zinc-500 font-mono uppercase font-semibold">Total Loyalty Points</p>
-            <p className="text-base font-bold font-mono text-zinc-950 tabular-nums">{totalLoyaltyPoints}</p>
+          <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-lg text-right flex-1 md:flex-none">
+            <p className="text-[10px] text-zinc-500 font-mono uppercase font-semibold">Accounts with Dues</p>
+            <p className="text-base font-bold font-mono text-zinc-950 tabular-nums">
+              {pendingCustomersCount} / {customers.length}
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* Module Switcher Tabs */}
-      <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-lg border border-zinc-200/80 w-fit">
-        <button
-          onClick={() => setViewTab("khata")}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-            viewTab === "khata"
-              ? "bg-white text-zinc-950 shadow-2xs"
-              : "text-zinc-600 hover:text-zinc-900"
-          }`}
-        >
-          Udhaar Credit Ledger ({pendingCustomersCount} Dues)
-        </button>
-        <button
-          onClick={() => setViewTab("loyalty")}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-            viewTab === "loyalty"
-              ? "bg-white text-zinc-950 shadow-2xs"
-              : "text-zinc-600 hover:text-zinc-900"
-          }`}
-        >
-          Loyalty Program ({totalLoyaltyPoints} Pts)
-        </button>
       </div>
 
       {/* Payment Confirmation Toast */}
@@ -169,9 +144,8 @@ export const CustomerLedger = () => {
         </div>
       )}
 
-      {/* Tab 1: Udhaar Khata View */}
-      {viewTab === "khata" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      {/* Udhaar Khata View */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Left Customer List Rail */}
           <div className="lg:col-span-4 bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
@@ -400,82 +374,6 @@ export const CustomerLedger = () => {
             </div>
           )}
         </div>
-      )}
-
-      {/* Tab 2: Customer Loyalty Program View */}
-      {viewTab === "loyalty" && (
-        <div className="space-y-5">
-          {/* Rules Banner */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans">
-            <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-2xs space-y-1">
-              <div className="flex items-center gap-1.5 text-zinc-950 font-bold font-display text-sm">
-                <Sparkles className="w-4 h-4 text-zinc-700" />
-                <span>Earn Rate</span>
-              </div>
-              <p className="text-zinc-600">1 Loyalty Point per ₹100 spent at billing checkout.</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-2xs space-y-1">
-              <div className="flex items-center gap-1.5 text-zinc-950 font-bold font-display text-sm">
-                <Sparkles className="w-4 h-4 text-zinc-700" />
-                <span>Redemption Rate</span>
-              </div>
-              <p className="text-zinc-600">1 Point = ₹1 Instant Discount on next store bill.</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-2xs space-y-1">
-              <div className="flex items-center gap-1.5 text-zinc-950 font-bold font-display text-sm">
-                <Sparkles className="w-4 h-4 text-zinc-700" />
-                <span>Checkout Redemption</span>
-              </div>
-              <p className="text-zinc-600">Select customer at checkout ➔ Check Redeem Points ➔ Auto-discount.</p>
-            </div>
-          </div>
-
-          {/* Customer Loyalty Ranks Directory Table */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-2xs space-y-3">
-            <h3 className="font-bold text-sm text-zinc-950 font-display">Loyalty Members Directory</h3>
-            <div className="border border-zinc-200 rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 text-zinc-500 font-mono text-[10px] uppercase border-b border-zinc-200">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Customer Name</th>
-                    <th className="px-4 py-3 font-semibold">Phone</th>
-                    <th className="px-4 py-3 text-center font-semibold">Reward Tier</th>
-                    <th className="px-4 py-3 text-right font-semibold">Points Balance</th>
-                    <th className="px-4 py-3 text-right font-semibold">Discount Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 font-sans">
-                  {customers.map((c) => {
-                    const pts = c.loyaltyPoints || 0;
-                    const tier = pts >= 200 ? "Gold VIP" : pts >= 100 ? "Silver Member" : "Bronze Member";
-                    const tierClass = pts >= 200
-                      ? "bg-amber-50 text-amber-900 border-amber-200"
-                      : pts >= 100
-                      ? "bg-zinc-100 text-zinc-800 border-zinc-200"
-                      : "bg-zinc-50 text-zinc-600 border-zinc-200";
-
-                    return (
-                      <tr key={c.id} className="hover:bg-zinc-50/70 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-zinc-950">{c.name}</td>
-                        <td className="px-4 py-3 text-zinc-500 font-mono">{showFullPhone ? c.phone : maskPhoneNumber(c.phone)}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border ${tierClass}`}>
-                            {tier}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right font-bold font-mono text-zinc-950">{pts} Pts</td>
-                        <td className="px-4 py-3 text-right font-bold font-mono text-emerald-700">₹{pts} Off</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
   );
 };

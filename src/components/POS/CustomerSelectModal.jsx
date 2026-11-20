@@ -54,7 +54,7 @@ export const CustomerSelectModal = ({ isOpen, onClose }) => {
               Select Customer for Bill
             </h3>
             <p className="text-[11px] text-zinc-500 font-mono">
-              Link account for loyalty points & Udhaar
+              Link customer account for Udhaar Khata & billing
             </p>
           </div>
           <button

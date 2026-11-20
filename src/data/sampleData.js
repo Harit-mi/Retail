@@ -37,23 +37,9 @@ export const SYSTEM_PANELS = [
   {
     id: "khata",
     name: "Customer Udhaar Khata Ledger",
-    nameHindi: "उधार बहीखाता व वफ़ादारी",
-    description: "Customer credit balances, payment collection, loyalty rewards",
+    nameHindi: "उधार बहीखाता (Khata)",
+    description: "Customer credit balances, Khata repayment tracking",
     category: "Khata",
-  },
-  {
-    id: "whatsapp",
-    name: "WhatsApp Marketing Hub",
-    nameHindi: "व्हाट्सएप मार्केटिंग",
-    description: "Festive broadcast campaigns, customer engagement messages",
-    category: "Growth",
-  },
-  {
-    id: "modules",
-    name: "Specialty Retail Verticals",
-    nameHindi: "विशिष्ट वर्टिकल (सैलून/रेस्टोरेंट)",
-    description: "Restaurant KOT, Salon Appointments, Jewelry, Pharmacy",
-    category: "Growth",
   },
   {
     id: "reports",

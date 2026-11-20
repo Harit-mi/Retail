@@ -9,14 +9,12 @@ import { POSBillingScreen } from "./components/POS/POSBillingScreen";
 import { InventoryList } from "./components/Inventory/InventoryList";
 import { BarcodePrintModal } from "./components/Barcode/BarcodePrintModal";
 import { CustomerLedger } from "./components/Khata/CustomerLedger";
-import { WhatsAppMarketingHub } from "./components/Marketing/WhatsAppMarketingHub";
 import { AnalyticsDashboard } from "./components/Reports/AnalyticsDashboard";
 import { SecurityPrivacyPanel } from "./components/Security/SecurityPrivacyPanel";
 import { StoreSettings } from "./components/Settings/StoreSettings";
 import { ProductLandingPage } from "./components/Landing/ProductLandingPage";
 import { DashboardOverview } from "./components/Dashboard/DashboardOverview";
 import { SupplierPOList } from "./components/Suppliers/SupplierPOList";
-import { VerticalModules } from "./components/Modules/VerticalModules";
 import { PaymentModal } from "./components/POS/PaymentModal";
 import { CustomerSelectModal } from "./components/POS/CustomerSelectModal";
 import { ShiftReconciliationModal } from "./components/CashDrawer/ShiftReconciliationModal";
@@ -294,8 +292,6 @@ const MainContent = () => {
               {activeTab === "suppliers" && <SupplierPOList />}
               {activeTab === "barcodes" && <BarcodePrintModal />}
               {activeTab === "khata" && <CustomerLedger />}
-              {activeTab === "modules" && <VerticalModules />}
-              {activeTab === "whatsapp" && <WhatsAppMarketingHub />}
               {activeTab === "reports" && <AnalyticsDashboard />}
               {activeTab === "security" && <SecurityPrivacyPanel />}
               {activeTab === "settings" && <StoreSettings />}

@@ -233,7 +233,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                 Tender Checkout · भुगतान काउंटर
               </h3>
               <p className="text-[11px] text-zinc-400 font-mono">
-                {cartCustomer ? `${cartCustomer.name} (★ ${cartCustomer.loyaltyPoints || 0} pts)` : "फुटकर ग्राहक (Walk-in)"}
+                {cartCustomer ? `${cartCustomer.name} (${cartCustomer.phone || "खाता ग्राहक"})` : "फुटकर ग्राहक (Walk-in)"}
               </p>
             </div>
           </div>

@@ -7,8 +7,6 @@ import {
   Truck,
   Barcode,
   BookOpen,
-  MessageSquare,
-  Layers,
   FileSpreadsheet,
   ShieldCheck,
   Sliders,
@@ -61,17 +59,15 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       ],
     },
     {
-      title: "Customers & Growth",
+      title: "Customers & Khata",
       items: [
         {
           id: "khata",
-          label: "Udhaar & Loyalty",
+          label: "Udhaar Khata",
           icon: BookOpen,
           badge: udharCount > 0 ? `${udharCount} due` : null,
           badgeColor: "bg-red-100 text-red-900 border border-red-200",
         },
-        { id: "whatsapp", label: "WhatsApp Marketing", icon: MessageSquare, badge: null },
-        { id: "modules", label: "Specialty Verticals", icon: Layers, badge: "Multi" },
       ],
     },
     {

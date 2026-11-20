@@ -118,11 +118,6 @@ export const ThermalReceipt = ({ bill, isPreview = false }) => {
             <span className="font-mono">{bill.customerPhone}</span>
           )}
         </div>
-        {bill.pointsEarned > 0 && (
-          <div className="text-[9px] text-gray-600">
-            ★ Loyalty Points Earned: +{bill.pointsEarned} pts
-          </div>
-        )}
       </div>
 
       {/* ============================================================ */}
