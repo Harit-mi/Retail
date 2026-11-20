@@ -26,7 +26,7 @@ export const PaymentMixPulseBar = () => {
   const udharPct = Math.max(0, 100 - (cashPct + upiPct + cardPct));
 
   return (
-    <div className="bg-[#FAFAF9]/90 backdrop-blur-md border-b border-zinc-200/80 px-3 sm:px-4 py-2 sticky top-16 z-20 transition-colors">
+    <div className="bg-[#F8FAFC]/90 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-4 py-2 sticky top-16 z-20 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 text-xs">
         {/* Title Badge & Total */}
         <div className="flex items-center justify-between sm:justify-start space-x-2 shrink-0">
