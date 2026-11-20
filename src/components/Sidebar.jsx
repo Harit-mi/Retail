@@ -17,7 +17,6 @@ import {
   X,
   Store,
   Globe,
-  Lock,
 } from "lucide-react";
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
@@ -41,10 +40,10 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
 
   const navGroups = [
     {
-      title: "Counter & Sales",
+      title: "Billing & Counter",
       items: [
         { id: "pos", label: "Billing Register", icon: ShoppingBag, badge: "F8" },
-        { id: "dashboard", label: "Analytics & Till", icon: LayoutDashboard, badge: null },
+        { id: "dashboard", label: "Till Overview", icon: LayoutDashboard, badge: null },
       ],
     },
     {
@@ -55,21 +54,21 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           label: "Products & Stock",
           icon: Boxes,
           badge: lowStockCount > 0 ? `${lowStockCount} low` : null,
-          badgeColor: "bg-amber-400/20 text-amber-300 border border-amber-400/30",
+          badgeColor: "bg-amber-100 text-amber-900 border border-amber-200",
         },
         { id: "suppliers", label: "Suppliers & POs", icon: Truck, badge: null },
-        { id: "barcodes", label: "Barcode Printing", icon: Barcode, badge: "New" },
+        { id: "barcodes", label: "Barcode Printing", icon: Barcode, badge: null },
       ],
     },
     {
-      title: "Customers & Khata",
+      title: "Customers & Growth",
       items: [
         {
           id: "khata",
           label: "Udhaar & Loyalty",
           icon: BookOpen,
           badge: udharCount > 0 ? `${udharCount} due` : null,
-          badgeColor: "bg-rose-500/20 text-rose-300 border border-rose-500/30",
+          badgeColor: "bg-red-100 text-red-900 border border-red-200",
         },
         { id: "whatsapp", label: "WhatsApp Marketing", icon: MessageSquare, badge: null },
         { id: "modules", label: "Specialty Verticals", icon: Layers, badge: "Multi" },
@@ -96,31 +95,30 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="md:hidden fixed inset-0 z-40 bg-zinc-950/70 backdrop-blur-xs animate-fade-in"
+          className="md:hidden fixed inset-0 z-40 bg-zinc-950/60 backdrop-blur-xs animate-fade-in"
         />
       )}
 
-      {/* Main Responsive Sidebar Drawer — Ronas IT Deep Slate Theme */}
+      {/* Main Responsive Sidebar Drawer */}
       <aside
-        className={`bg-[#0F172A] text-slate-200 min-h-screen flex flex-col transition-all duration-200 border-r border-slate-800/80 shadow-xl z-50 select-none ${
+        className={`bg-[#FAFAF9] text-zinc-900 min-h-screen flex flex-col transition-all duration-200 border-r border-zinc-200/80 shadow-xs z-50 select-none ${
           isMobileOpen
-            ? "fixed inset-y-0 left-0 w-64 translate-x-0"
+            ? "fixed inset-y-0 left-0 w-64 translate-x-0 bg-white"
             : "hidden md:flex " + (collapsed ? "w-[72px]" : "w-64")
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 bg-[#0B1329]">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white shrink-0 shadow-md shadow-indigo-900/30">
+        <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200/80 bg-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white shrink-0 shadow-2xs">
               <Store className="w-4 h-4" />
             </div>
             {(!collapsed || isMobileOpen) && (
               <div className="leading-tight">
-                <span className="font-extrabold text-sm font-display text-white tracking-tight flex items-center gap-1">
-                  <span>DUKAAN</span>
-                  <span className="text-indigo-400 font-mono text-xs">POS</span>
+                <span className="font-bold text-sm font-display text-zinc-950 tracking-tight block">
+                  DUKAAN<span className="text-zinc-400 font-normal">POS</span>
                 </span>
-                <span className="text-[9px] text-slate-400 font-mono tracking-widest uppercase font-semibold block">
+                <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase font-semibold block">
                   Retail Edition
                 </span>
               </div>
@@ -131,7 +129,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           <button
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition hidden md:flex items-center justify-center cursor-pointer"
+            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition hidden md:flex items-center justify-center cursor-pointer"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
@@ -141,15 +139,15 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
             <button
               onClick={onCloseMobile}
               aria-label="Close mobile navigation"
-              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           )}
         </div>
 
-        {/* Navigation Sections */}
-        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto custom-scrollbar">
+        {/* Navigation Sections — Granularly filtered based on User Panel Permissions */}
+        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
           {navGroups
             .map((group) => ({
               ...group,
@@ -159,7 +157,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
             .map((group, gIdx) => (
               <div key={gIdx} className="space-y-1">
                 {(!collapsed || isMobileOpen) && (
-                  <p className="px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-500">
+                  <p className="px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-400">
                     {group.title}
                   </p>
                 )}
@@ -174,15 +172,15 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                       title={collapsed && !isMobileOpen ? item.label : undefined}
                       className={`w-full flex items-center ${
                         collapsed && !isMobileOpen ? "justify-center px-2" : "px-3"
-                      } py-2.5 rounded-xl text-xs font-medium transition-all relative group cursor-pointer ${
+                      } py-2 rounded-lg text-xs font-medium transition-colors relative group cursor-pointer ${
                         isActive
-                          ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold shadow-md shadow-indigo-950/40"
-                          : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                          ? "bg-zinc-900 text-white font-semibold shadow-xs"
+                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-950"
                       }`}
                     >
                       <Icon
                         className={`w-4 h-4 shrink-0 transition-transform ${
-                          isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
+                          isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-800"
                         }`}
                       />
 
@@ -194,7 +192,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                               className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded ${
                                 isActive
                                   ? "bg-white/20 text-white"
-                                  : item.badgeColor || "bg-slate-800 text-slate-400 border border-slate-700"
+                                  : item.badgeColor || "bg-zinc-200/80 text-zinc-600 border border-zinc-300/70"
                               }`}
                             >
                               {item.badge}
@@ -211,18 +209,17 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
 
         {/* Sidebar Footer with Logged In User Profile & Quick Lock */}
         {(!collapsed || isMobileOpen) && (
-          <div className="p-3 m-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 shadow-md space-y-2.5">
+          <div className="p-3 m-3 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-600 shadow-2xs space-y-2.5">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-mono font-bold text-xs shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-mono font-bold text-xs shrink-0">
                   {currentUser?.name?.charAt(0) || "U"}
                 </div>
                 <div className="truncate">
-                  <div className="font-semibold text-white text-xs truncate leading-tight flex items-center gap-1.5">
-                    <span>{currentUser?.name || "Cashier"}</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <div className="font-semibold text-zinc-900 text-xs truncate leading-tight">
+                    {currentUser?.name || "Cashier"}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono truncate leading-none mt-0.5">
+                  <div className="text-[10px] text-zinc-400 font-mono truncate leading-none">
                     @{currentUser?.username || "user"}
                   </div>
                 </div>
@@ -230,29 +227,28 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
 
               <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
                 currentUser?.role === "admin"
-                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
-                  : "bg-slate-800 text-slate-400 border border-slate-700"
+                  ? "bg-amber-100 text-amber-900 border border-amber-200"
+                  : "bg-zinc-100 text-zinc-700 border border-zinc-200"
               }`}>
-                {currentUser?.role === "admin" ? "Admin" : "User"}
+                {currentUser?.role === "admin" ? "👑 Admin" : "User"}
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-800">
+            <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-100">
               <button
                 type="button"
                 onClick={() => lockCounter()}
                 title="Lock Register / Switch Operator"
-                className="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
+                className="flex-1 py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-center"
               >
-                <Lock className="w-3 h-3 text-amber-400" />
-                <span>Switch / Lock</span>
+                Switch / Lock
               </button>
 
               <button
                 type="button"
                 onClick={() => handleNavClick("landing")}
                 title="Back to Storefront"
-                className="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg text-[11px] transition-colors cursor-pointer"
+                className="py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-lg text-[11px] transition-colors cursor-pointer"
               >
                 <Globe className="w-3.5 h-3.5" />
               </button>
