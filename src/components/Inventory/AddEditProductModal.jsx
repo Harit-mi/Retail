@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useStore } from "../../context/useStore";
 import { X, Package } from "lucide-react";
+import { getBusinessProfile } from "../../config/businessProfiles";
 
 export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
-  const { addProduct, updateProduct, activeVertical } = useStore();
+  const { addProduct, updateProduct, activeVertical, storeConfig } = useStore();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,7 +18,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
     costPrice: "",
     stock: 10,
     unit: "Pcs",
-    vertical: activeVertical === "all" ? "supermarket" : activeVertical,
+    vertical: activeVertical === "all" ? (storeConfig?.businessType || "supermarket") : activeVertical,
     minStockWarning: 5,
     attributes: {
       size: "",
@@ -30,14 +31,23 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
       imei: "",
       serial_no: "",
       warranty_months: 12,
-      duration_mins: 30,
-      purity: "22K (916)",
-      gross_weight: "",
-      net_weight: "",
-      making_charge_type: "flat",
-      making_charge_value: "",
+      model: "",
     },
   });
+
+  const activeSector = formData.vertical || storeConfig?.businessType || "supermarket";
+  const sectorProfile = getBusinessProfile(activeSector);
+  const allowedUnits = sectorProfile?.allowedUnits || ["Pcs", "Box", "Set", "Pack"];
+
+  const handleVerticalChange = (newVertical) => {
+    const prof = getBusinessProfile(newVertical);
+    const validUnits = prof?.allowedUnits || ["Pcs", "Box", "Set", "Pack"];
+    setFormData((prev) => ({
+      ...prev,
+      vertical: newVertical,
+      unit: validUnits.includes(prev.unit) ? prev.unit : (prof.defaultUnit || validUnits[0] || "Pcs"),
+    }));
+  };
 
   useEffect(() => {
     if (productToEdit) {
@@ -190,17 +200,16 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
             </label>
             <select
               value={formData.vertical || "supermarket"}
-              onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
+              onChange={(e) => handleVerticalChange(e.target.value)}
               className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-950 cursor-pointer"
             >
               <option value="supermarket">🛒 Supermarket, Grocery & FMCG (Fast Barcode & Weighing)</option>
-              <option value="retail">🛍️ General Retail Goods & FMCG (Standard SKU)</option>
+              <option value="electronics">📱 Electronics & Mobile (Serial / IMEI, Warranty)</option>
               <option value="clothing">👔 Apparel, Garments & Footwear (Size, Color, Brand)</option>
               <option value="pharmacy">💊 Pharmacy, Chemist & Wellness (Batch No, Expiry)</option>
-              <option value="electronics">📱 Electronics & Mobile (Serial / IMEI, Warranty)</option>
               <option value="hardware">🔧 Hardware, Electrical & Tools (Model, Gauge, Unit)</option>
               <option value="stationery">📚 Stationery, Books & Toys (Pack, Brand)</option>
-              <option value="cosmetics">💄 Cosmetics & Beauty Products (Batch, Brand)</option>
+              <option value="retail">🛍️ General Retail Goods & FMCG (Standard SKU)</option>
             </select>
           </div>
 
@@ -278,23 +287,11 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 className="w-full bg-white border border-zinc-200 focus:border-zinc-950 rounded-lg px-3 py-2 text-xs text-zinc-900 outline-none cursor-pointer"
               >
-                <option value="Pcs">Pcs (Pieces / नग)</option>
-                <option value="Pack">Pack (Packet / पैकेट)</option>
-                <option value="Box">Box (Carton / डिब्बा)</option>
-                <option value="Pair">Pair (जोड़ी - Shoes/Gloves)</option>
-                <option value="Set">Set (सेट)</option>
-                <option value="Roll">Roll (रोल - Wires/Fabrics)</option>
-                <option value="Strip">Strip (स्ट्रिप - Medicine)</option>
-                <option value="Bottle">Bottle (बोतल)</option>
-                <option value="Can">Can (कैन)</option>
-                <option value="Dozen">Dozen (दर्जन)</option>
-                <option value="Bundle">Bundle (बंडल)</option>
-                <option value="kg">kg (Kilogram / किलो)</option>
-                <option value="gm">gm (Gram / ग्राम)</option>
-                <option value="ltr">ltr (Liter / लीटर)</option>
-                <option value="ml">ml (Milliliter / मिलीलीटर)</option>
-                <option value="Mtr">Mtr (Meter / मीटर)</option>
-                <option value="SqFt">SqFt (Square Feet)</option>
+                {allowedUnits.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -411,83 +408,150 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
             </div>
           </div>
 
-          {/* Universal Retail Specifications & Tracking */}
+          {/* Sector-Specific Specifications & Tracking */}
           <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200 space-y-3">
-            <span className="text-[10px] font-mono uppercase font-semibold text-zinc-500 tracking-wider block">
-              Retail Specifications & Tracking (Optional):
-            </span>
-
-            {/* Brand & Specs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input
-                type="text"
-                placeholder="Brand / Manufacturer (e.g. Nike, Samsung)"
-                value={formData.attributes.brand || ""}
-                onChange={(e) => handleAttrChange("brand", e.target.value)}
-                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
-              />
-              <input
-                type="text"
-                placeholder="Size / Dimension (e.g. L, 32, 100ml, A4)"
-                value={formData.attributes.size || ""}
-                onChange={(e) => handleAttrChange("size", e.target.value)}
-                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
-              />
-              <input
-                type="text"
-                placeholder="Color / Finish (e.g. Navy, Matte Black)"
-                value={formData.attributes.color || ""}
-                onChange={(e) => handleAttrChange("color", e.target.value)}
-                className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
-              />
+            <div className="flex items-center justify-between border-b border-zinc-200/70 pb-2">
+              <span className="text-[10px] font-mono uppercase font-bold text-zinc-700 tracking-wider">
+                {sectorProfile.name} Specifications:
+              </span>
+              <span className="text-[10px] font-mono text-zinc-500">
+                {sectorProfile.shortName} Mode
+              </span>
             </div>
 
-            {/* Batch & Expiry (Food, FMCG, Pharma, Cosmetics) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-zinc-200/60">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Batch No:</span>
-                <input
-                  type="text"
-                  placeholder="e.g. BATCH-2026A"
-                  value={formData.attributes.batch_no || ""}
-                  onChange={(e) => handleAttrChange("batch_no", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Expiry Date:</span>
-                <input
-                  type="date"
-                  value={formData.attributes.expiry_date || ""}
-                  onChange={(e) => handleAttrChange("expiry_date", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
-                />
-              </div>
-            </div>
+            {/* 1. Electronics Sector Fields (IMEI, Serial, Warranty, Model, Brand) */}
+            {sectorProfile.id === "electronics" ? (
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 font-semibold w-20 shrink-0">IMEI No:</span>
+                    <input
+                      type="text"
+                      placeholder="15-digit IMEI number"
+                      value={formData.attributes.imei || ""}
+                      onChange={(e) => handleAttrChange("imei", e.target.value)}
+                      className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1 focus:border-zinc-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 font-semibold w-20 shrink-0">Serial No:</span>
+                    <input
+                      type="text"
+                      placeholder="Device Serial / S/N"
+                      value={formData.attributes.serial_no || ""}
+                      onChange={(e) => handleAttrChange("serial_no", e.target.value)}
+                      className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1 focus:border-zinc-900"
+                    />
+                  </div>
+                </div>
 
-            {/* Serial / IMEI & Warranty (Electronics, Mobile, Appliances, Hardware) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-zinc-200/60">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Serial/IMEI:</span>
-                <input
-                  type="text"
-                  placeholder="e.g. 864201048291048"
-                  value={formData.attributes.imei || formData.attributes.serial_no || ""}
-                  onChange={(e) => handleAttrChange("imei", e.target.value)}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Brand (e.g. Apple, Samsung, boAt)"
+                    value={formData.attributes.brand || ""}
+                    onChange={(e) => handleAttrChange("brand", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none focus:border-zinc-900"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Model No (e.g. SM-M346B)"
+                    value={formData.attributes.model || ""}
+                    onChange={(e) => handleAttrChange("model", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none focus:border-zinc-900"
+                  />
+                  <div className="flex items-center gap-1.5 bg-white border border-zinc-200 rounded-lg px-2 py-1">
+                    <span className="text-[10px] font-mono text-zinc-500 whitespace-nowrap">Warranty:</span>
+                    <input
+                      type="number"
+                      placeholder="12"
+                      value={formData.attributes.warranty_months || ""}
+                      onChange={(e) => handleAttrChange("warranty_months", Number(e.target.value))}
+                      className="w-12 text-xs font-mono text-zinc-900 outline-none text-center"
+                    />
+                    <span className="text-[10px] font-mono text-zinc-500">Months</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-400 w-16 shrink-0">Warranty:</span>
-                <input
-                  type="number"
-                  placeholder="Warranty in months (e.g. 12)"
-                  value={formData.attributes.warranty_months || ""}
-                  onChange={(e) => handleAttrChange("warranty_months", Number(e.target.value))}
-                  className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
-                />
+            ) : sectorProfile.id === "apparel" ? (
+              /* 2. Fashion & Apparel Fields */
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Brand (e.g. Allen Solly, Zara)"
+                    value={formData.attributes.brand || ""}
+                    onChange={(e) => handleAttrChange("brand", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Size (e.g. S, M, L, XL, XXL, 32, 42)"
+                    value={formData.attributes.size || ""}
+                    onChange={(e) => handleAttrChange("size", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Color (e.g. Navy Blue, Olive, Maroon)"
+                    value={formData.attributes.color || ""}
+                    onChange={(e) => handleAttrChange("color", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+                  />
+                </div>
               </div>
-            </div>
+            ) : sectorProfile.id === "pharmacy" ? (
+              /* 3. Pharmacy Fields */
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 font-semibold w-20 shrink-0">Batch No:</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. BATCH-2026A"
+                      value={formData.attributes.batch_no || ""}
+                      onChange={(e) => handleAttrChange("batch_no", e.target.value)}
+                      className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 font-semibold w-20 shrink-0">Expiry Date:</span>
+                    <input
+                      type="date"
+                      value={formData.attributes.expiry_date || ""}
+                      onChange={(e) => handleAttrChange("expiry_date", e.target.value)}
+                      className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* 4. Supermarket & General Fields */
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Brand / Manufacturer"
+                    value={formData.attributes.brand || ""}
+                    onChange={(e) => handleAttrChange("brand", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Batch No (Optional)"
+                    value={formData.attributes.batch_no || ""}
+                    onChange={(e) => handleAttrChange("batch_no", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none"
+                  />
+                  <input
+                    type="date"
+                    value={formData.attributes.expiry_date || ""}
+                    onChange={(e) => handleAttrChange("expiry_date", e.target.value)}
+                    className="bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-zinc-900 outline-none"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </form>
 

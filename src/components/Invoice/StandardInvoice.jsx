@@ -45,8 +45,14 @@ export const StandardInvoice = ({ bill, isPreview = false }) => {
       name: item.name,
       hsn: item.hsn || "1904",
       unit: item.unit || "Pcs",
-      batch: item.batch,
-      expiry: item.expiry,
+      batch: item.batch || item.attributes?.batch_no,
+      expiry: item.expiry || item.attributes?.expiry_date,
+      imei: item.attributes?.imei,
+      serial_no: item.attributes?.serial_no,
+      warranty_months: item.attributes?.warranty_months,
+      size: item.attributes?.size,
+      color: item.attributes?.color,
+      brand: item.attributes?.brand,
       qty,
       mrp,
       price,
@@ -258,10 +264,15 @@ export const StandardInvoice = ({ bill, isPreview = false }) => {
                 </td>
                 <td className="p-1.5 border-r border-zinc-200">
                   <div className="font-semibold text-zinc-900">{it.name}</div>
-                  {(it.batch || it.expiry) && (
-                    <div className="text-[8px] text-zinc-500 font-mono">
-                      {it.batch ? `Batch: ${it.batch} ` : ""}
-                      {it.expiry ? `Exp: ${it.expiry}` : ""}
+                  {(it.imei || it.serial_no || it.warranty_months || it.size || it.color || it.batch || it.expiry) && (
+                    <div className="text-[8px] text-zinc-600 font-mono mt-0.5 space-x-1.5">
+                      {it.imei && <span className="bg-blue-50 text-blue-900 px-1 py-0.2 rounded font-bold">IMEI: {it.imei}</span>}
+                      {it.serial_no && <span className="bg-zinc-100 text-zinc-700 px-1 py-0.2 rounded">S/N: {it.serial_no}</span>}
+                      {it.warranty_months && <span className="bg-emerald-50 text-emerald-800 px-1 py-0.2 rounded font-bold">🛡️ {it.warranty_months}M Warranty</span>}
+                      {it.size && <span className="bg-purple-50 text-purple-700 px-1 py-0.2 rounded">Size: {it.size}</span>}
+                      {it.color && <span className="bg-zinc-100 px-1 py-0.2 rounded">Color: {it.color}</span>}
+                      {it.batch && <span>Batch: {it.batch}</span>}
+                      {it.expiry && <span>Exp: {it.expiry}</span>}
                     </div>
                   )}
                 </td>

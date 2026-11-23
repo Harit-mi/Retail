@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useStore } from "../../context/useStore";
 import { useBarcodeScanner } from "../../hooks/useBarcodeScanner";
 import { WebcamBarcodeScannerModal } from "./WebcamBarcodeScannerModal";
@@ -127,6 +127,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     setIsCashDrawerOpen,
     printFormat,
     setPrintFormat,
+    businessProfile,
     t,
   } = useStore();
 
@@ -152,6 +153,15 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     gst: 0,
     qty: 1,
   });
+
+  useEffect(() => {
+    if (businessProfile?.defaultUnit) {
+      setCustomItemForm((prev) => ({
+        ...prev,
+        unit: businessProfile.defaultUnit,
+      }));
+    }
+  }, [businessProfile?.id, businessProfile?.defaultUnit]);
 
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
 
@@ -235,6 +245,14 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
 
   // Multi-Attribute Search Engine across Name, Barcode/SKU, HSN, Category, Brand, Size, Specs
   const filteredProducts = products.filter((product) => {
+    // Sector-specific filtering: If a specific sector is active (not general), only show relevant verticals
+    if (businessProfile?.id && businessProfile.id !== "general" && product.vertical) {
+      const vert = product.vertical.toLowerCase();
+      if (!businessProfile.relevantVerticals.includes(vert)) {
+        return false;
+      }
+    }
+
     const matchesCategory =
       selectedCategory === "All" || product.category === selectedCategory;
 
@@ -250,19 +268,31 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
       (attrs.size && attrs.size.toLowerCase().includes(q)) ||
       (attrs.color && attrs.color.toLowerCase().includes(q)) ||
       (attrs.imei && attrs.imei.toLowerCase().includes(q)) ||
+      (attrs.serial_no && attrs.serial_no.toLowerCase().includes(q)) ||
+      (attrs.model && attrs.model.toLowerCase().includes(q)) ||
       (attrs.batch_no && attrs.batch_no.toLowerCase().includes(q));
 
     return matchesCategory && matchesSearch;
   });
 
-  const categories = ["All", ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const categories = useMemo(
+    () => ["All", ...new Set(filteredProducts.map((p) => p.category).filter(Boolean))],
+    [filteredProducts]
+  );
+
+  // Auto-reset category filter if active category does not exist in current sector
+  useEffect(() => {
+    if (selectedCategory !== "All" && !categories.includes(selectedCategory)) {
+      setSelectedCategory("All");
+    }
+  }, [categories, selectedCategory]);
 
   // Barcode Scanner Simulator
   const simulateBarcodeScan = () => {
     setIsScanning(true);
-    if (products.length === 0) return;
+    if (filteredProducts.length === 0) return;
 
-    const randomItem = products[Math.floor(Math.random() * products.length)];
+    const randomItem = filteredProducts[Math.floor(Math.random() * filteredProducts.length)];
 
     setTimeout(() => {
       handleAddItemToCart(randomItem, 1);
@@ -281,6 +311,10 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
   };
 
   const isLooseWeightUnit = (unit) => {
+    // If current business profile does not support weighing scale / kgs, NEVER treat as loose weight
+    if (!businessProfile?.hasWeighingScale || !businessProfile?.showKgs) {
+      return false;
+    }
     if (!unit) return false;
     const u = unit.toLowerCase();
     return u === "kg" || u === "ltr" || u === "gm" || u === "liter";
@@ -603,8 +637,8 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                       </div>
                     </div>
 
-                    {/* Loose Weight Chips (तौल / खुली सामग्री: 100g, 250g 'पाव', 500g, 1kg) */}
-                    {isLoose && (
+                    {/* Loose Weight Chips (तौल / खुली सामग्री: only shown for Supermarket / Grocery businesses with scales) */}
+                    {isLoose && businessProfile?.showKgs && (
                       <div
                         onClick={(e) => e.stopPropagation()}
                         className="flex flex-wrap items-center gap-1 mb-2 pt-1.5 border-t border-zinc-100 text-[10px] font-mono"
@@ -628,6 +662,60 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                             +{chip.label}
                           </button>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Electronics Specific Attributes (IMEI, Serial, Warranty) */}
+                    {businessProfile?.id === "electronics" && (product.attributes?.imei || product.attributes?.serial_no || product.attributes?.warranty_months) && (
+                      <div className="flex flex-wrap items-center gap-1 mb-2 pt-1.5 border-t border-zinc-100 text-[10px] font-mono">
+                        {product.attributes.imei && (
+                          <span className="bg-blue-50 text-blue-800 border border-blue-200/70 px-1.5 py-0.5 rounded font-bold truncate max-w-full">
+                            IMEI: {product.attributes.imei}
+                          </span>
+                        )}
+                        {product.attributes.serial_no && (
+                          <span className="bg-zinc-100 text-zinc-700 border border-zinc-200 px-1.5 py-0.5 rounded">
+                            S/N: {product.attributes.serial_no}
+                          </span>
+                        )}
+                        {product.attributes.warranty_months && (
+                          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">
+                            🛡️ {product.attributes.warranty_months}M Warranty
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Fashion & Apparel Specific Attributes (Size, Color, Brand) */}
+                    {businessProfile?.id === "apparel" && (product.attributes?.size || product.attributes?.color || product.attributes?.brand) && (
+                      <div className="flex flex-wrap items-center gap-1 mb-2 pt-1.5 border-t border-zinc-100 text-[10px] font-mono">
+                        {product.attributes.brand && <span className="font-bold text-zinc-900">{product.attributes.brand}</span>}
+                        {product.attributes.size && (
+                          <span className="bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded font-bold">
+                            Size: {product.attributes.size}
+                          </span>
+                        )}
+                        {product.attributes.color && (
+                          <span className="bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded border border-zinc-200">
+                            {product.attributes.color}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Pharmacy Specific Attributes (Batch, Expiry, Rx) */}
+                    {businessProfile?.id === "pharmacy" && (product.attributes?.batch_no || product.attributes?.expiry_date || product.attributes?.drug_schedule) && (
+                      <div className="flex flex-wrap items-center gap-1 mb-2 pt-1.5 border-t border-zinc-100 text-[10px] font-mono">
+                        {product.attributes.batch_no && (
+                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">
+                            Batch: {product.attributes.batch_no}
+                          </span>
+                        )}
+                        {product.attributes.expiry_date && (
+                          <span className="bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded">
+                            Exp: {product.attributes.expiry_date}
+                          </span>
+                        )}
                       </div>
                     )}
 
@@ -771,7 +859,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const step = isLoose ? 0.25 : 1;
+                                  const step = (isLoose && businessProfile?.showKgs) ? 0.25 : 1;
                                   updateCartQty(product.id, Math.max(0, Math.round((cartItem.qty - step) * 1000) / 1000));
                                 }}
                                 className="hover:bg-zinc-800 rounded min-w-[20px] h-5 flex items-center justify-center cursor-pointer"
@@ -784,7 +872,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const step = isLoose ? 0.25 : 1;
+                                  const step = (isLoose && businessProfile?.showKgs) ? 0.25 : 1;
                                   updateCartQty(product.id, Math.round((cartItem.qty + step) * 1000) / 1000);
                                 }}
                                 className="hover:bg-zinc-800 rounded min-w-[20px] h-5 flex items-center justify-center cursor-pointer"
@@ -984,10 +1072,40 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono mt-0.5">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-zinc-500 font-mono mt-0.5">
                         <span>₹{item.price}</span>
                         <span>×</span>
                         <span>{item.qty} {item.unit || "unit"}</span>
+                        {item.attributes?.imei && (
+                          <span className="bg-blue-50 text-blue-700 px-1 py-0.2 rounded border border-blue-200 font-bold">
+                            IMEI: {item.attributes.imei}
+                          </span>
+                        )}
+                        {item.attributes?.serial_no && (
+                          <span className="bg-zinc-100 text-zinc-700 px-1 py-0.2 rounded border border-zinc-200">
+                            SN: {item.attributes.serial_no}
+                          </span>
+                        )}
+                        {item.attributes?.warranty_months && (
+                          <span className="bg-emerald-50 text-emerald-700 px-1 py-0.2 rounded border border-emerald-200 font-bold">
+                            🛡️ {item.attributes.warranty_months}M
+                          </span>
+                        )}
+                        {item.attributes?.size && (
+                          <span className="bg-purple-50 text-purple-700 px-1 py-0.2 rounded border border-purple-200 font-bold">
+                            Size: {item.attributes.size}
+                          </span>
+                        )}
+                        {item.attributes?.color && (
+                          <span className="bg-zinc-100 text-zinc-600 px-1 py-0.2 rounded">
+                            {item.attributes.color}
+                          </span>
+                        )}
+                        {item.attributes?.batch_no && (
+                          <span className="bg-emerald-50 text-emerald-800 px-1 py-0.2 rounded">
+                            Batch: {item.attributes.batch_no}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -996,7 +1114,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                       <button
                         type="button"
                         onClick={() => {
-                          const step = isLoose ? 0.25 : 1;
+                          const step = (isLoose && businessProfile?.showKgs) ? 0.25 : 1;
                           updateCartQty(item.id, Math.max(0, Math.round((item.qty - step) * 1000) / 1000));
                         }}
                         className="text-zinc-600 hover:text-zinc-900 rounded transition min-w-[22px] h-5 flex items-center justify-center cursor-pointer"
@@ -1005,8 +1123,8 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                       </button>
                       <input
                         type="number"
-                        step="any"
-                        min="0.001"
+                        step={businessProfile?.showKgs ? "any" : "1"}
+                        min={businessProfile?.showKgs ? "0.001" : "1"}
                         value={item.qty}
                         onChange={(e) => updateCartQty(item.id, parseFloat(e.target.value) || 0)}
                         className="w-10 text-center text-xs font-mono font-bold bg-transparent text-zinc-900 outline-none"
@@ -1014,7 +1132,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                       <button
                         type="button"
                         onClick={() => {
-                          const step = isLoose ? 0.25 : 1;
+                          const step = (isLoose && businessProfile?.showKgs) ? 0.25 : 1;
                           updateCartQty(item.id, Math.round((item.qty + step) * 1000) / 1000);
                         }}
                         className="text-zinc-600 hover:text-zinc-900 rounded transition min-w-[22px] h-5 flex items-center justify-center cursor-pointer"
@@ -1222,20 +1340,13 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             </div>
 
             <form onSubmit={handleAddCustomItem} className="p-5 space-y-4">
-              {/* Supermarket & Retail Quick Presets */}
+              {/* Business Profile Specific Quick Presets */}
               <div>
                 <label className="text-[11px] font-medium text-zinc-500 mb-1.5 block">
-                  Quick Retail Presets (तुरंत चयन करें):
+                  Quick Presets for {businessProfile?.shortName || "Retail"} (तुरंत चयन करें):
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: "🛍️ Eco Carry Bag (M) ₹10", name: "Eco Shopping Bag (Medium)", price: "10", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
-                    { label: "🛍️ Shopping Tote (L) ₹25", name: "Non-Woven Tote Bag (Large)", price: "25", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
-                    { label: "🎁 Gift Wrap & Box ₹30", name: "Gift Wrapping & Presentation Box", price: "30", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
-                    { label: "📦 Express Delivery ₹50", name: "Doorstep Express Delivery", price: "50", unit: "Pcs", category: "Services", gst: 0 },
-                    { label: "🏷️ Unlisted Retail SKU ₹100", name: "Unlisted Retail Item", price: "100", unit: "Pcs", category: "General Retail", gst: 5 },
-                    { label: "⚖️ Fresh Produce ₹60", name: "Fresh Produce / Seasonal Item", price: "60", unit: "kg", category: "Fresh Produce", gst: 0 },
-                  ].map((preset) => (
+                  {(businessProfile?.quickPresets || []).map((preset) => (
                     <button
                       key={preset.label}
                       type="button"
@@ -1329,18 +1440,11 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                     onChange={(e) => setCustomItemForm({ ...customItemForm, unit: e.target.value })}
                     className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900"
                   >
-                    <option value="Pcs">Pcs (नग / Items)</option>
-                    <option value="Pack">Pack (पैकेट)</option>
-                    <option value="Box">Box (डिब्बा)</option>
-                    <option value="Pair">Pair (जोड़ी)</option>
-                    <option value="Set">Set (सेट)</option>
-                    <option value="Roll">Roll (रोल)</option>
-                    <option value="Strip">Strip (स्ट्रिप)</option>
-                    <option value="Bottle">Bottle (बोतल)</option>
-                    <option value="kg">kg (किलो)</option>
-                    <option value="gm">gm (ग्राम)</option>
-                    <option value="Ltr">Ltr (लीटर)</option>
-                    <option value="Mtr">Mtr (मीटर)</option>
+                    {(businessProfile?.allowedUnits || ["Pcs", "Box", "Set", "Pack"]).map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

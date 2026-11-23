@@ -183,6 +183,32 @@ export const InventoryList = () => {
           </div>
         </div>
 
+        {/* Sector Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+          <span className="text-[10px] font-mono text-zinc-400 uppercase font-semibold mr-1 shrink-0">Sector:</span>
+          {[
+            { id: "all", label: "All Sectors" },
+            { id: "supermarket", label: "🛒 Supermarket" },
+            { id: "electronics", label: "📱 Electronics" },
+            { id: "clothing", label: "👔 Apparel" },
+            { id: "pharmacy", label: "💊 Pharmacy" },
+            { id: "hardware", label: "🔧 Hardware" },
+            { id: "stationery", label: "📚 Stationery" },
+          ].map((sec) => (
+            <button
+              key={sec.id}
+              onClick={() => setActiveVertical(sec.id)}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+                activeVertical === sec.id
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+            >
+              {sec.label}
+            </button>
+          ))}
+        </div>
+
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-zinc-100">
           {categories.map((cat) => {
@@ -252,7 +278,19 @@ export const InventoryList = () => {
                               <span className="text-amber-800 bg-amber-50 px-1 rounded">Batch: {p.attributes.batch_no}</span>
                             )}
                             {p.attributes.imei && (
-                              <span className="text-sky-800 bg-sky-50 px-1 rounded">IMEI: {p.attributes.imei.slice(-6)}</span>
+                              <span className="text-blue-800 bg-blue-50 px-1 py-0.2 rounded border border-blue-200 font-bold">
+                                IMEI: {p.attributes.imei}
+                              </span>
+                            )}
+                            {p.attributes.serial_no && (
+                              <span className="text-zinc-700 bg-zinc-100 px-1 py-0.2 rounded border border-zinc-200">
+                                SN: {p.attributes.serial_no}
+                              </span>
+                            )}
+                            {p.attributes.warranty_months && (
+                              <span className="text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold">
+                                🛡️ {p.attributes.warranty_months}M
+                              </span>
                             )}
                           </div>
                         )}

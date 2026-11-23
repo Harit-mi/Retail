@@ -156,6 +156,16 @@ export const ThermalReceipt = ({ bill, isPreview = false }) => {
                     ₹{item.total?.toLocaleString("en-IN")}
                   </span>
                 </div>
+                {(item.attributes?.imei || item.attributes?.serial_no || item.attributes?.warranty_months || item.attributes?.size || item.attributes?.color || item.attributes?.batch_no) && (
+                  <div className="text-[9px] text-gray-700 pl-3 font-mono font-semibold">
+                    {item.attributes?.imei ? `IMEI: ${item.attributes.imei} ` : ""}
+                    {item.attributes?.serial_no ? `S/N: ${item.attributes.serial_no} ` : ""}
+                    {item.attributes?.warranty_months ? `[${item.attributes.warranty_months}M Warranty] ` : ""}
+                    {item.attributes?.size ? `Size: ${item.attributes.size} ` : ""}
+                    {item.attributes?.color ? `Color: ${item.attributes.color} ` : ""}
+                    {item.attributes?.batch_no ? `Batch: ${item.attributes.batch_no} ` : ""}
+                  </div>
+                )}
                 {(item.hsn || item.gst !== undefined) && (
                   <div className="text-[9px] text-gray-600 pl-3">
                     {item.hsn ? `HSN: ${item.hsn} ` : ""}

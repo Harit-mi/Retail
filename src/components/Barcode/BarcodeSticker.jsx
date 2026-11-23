@@ -146,14 +146,31 @@ export const BarcodeSticker = ({
 
       {/* 4. Footer: MRP, Batch & Packed Date */}
       <div className="w-full flex items-baseline justify-between px-1 pt-0.5 border-t border-dotted border-zinc-300 mt-auto">
-        {/* Meta Info (Packed Date / Batch) */}
-        <div className="text-left text-[7px] font-mono text-zinc-500 leading-tight">
-          {options.showDate && (
+        {/* Meta Info: Electronics (IMEI/Warranty), Apparel (Size/Color), FMCG/Pharma (Batch/Date) */}
+        <div className="text-left text-[7px] font-mono text-zinc-600 leading-tight">
+          {item.attributes?.imei ? (
+            <div className="font-bold text-blue-900 truncate max-w-[120px]">
+              IMEI: {item.attributes.imei}
+            </div>
+          ) : item.attributes?.serial_no ? (
+            <div className="font-bold text-zinc-800">
+              SN: {item.attributes.serial_no}
+            </div>
+          ) : options.showBatch ? (
+            <div>B.No: {item.attributes?.batch_no || options.batchNo || "B-26"}</div>
+          ) : null}
+
+          {item.attributes?.warranty_months ? (
+            <div className="text-emerald-700 font-bold">
+              {item.attributes.warranty_months}M Warranty
+            </div>
+          ) : item.attributes?.size ? (
+            <div className="font-bold">
+              Size: {item.attributes.size} {item.attributes.color ? `· ${item.attributes.color}` : ""}
+            </div>
+          ) : options.showDate ? (
             <div>Pkd: {options.packedDate || "Nov 2026"}</div>
-          )}
-          {options.showBatch && (
-            <div>B.No: {options.batchNo || "B-26"}</div>
-          )}
+          ) : null}
         </div>
 
         {/* High-Contrast Price Display */}

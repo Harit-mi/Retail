@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useStore } from "../../context/useStore";
 import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
+import { getBusinessProfile } from "../../config/businessProfiles";
 
 export const StoreSettings = () => {
   const {
@@ -112,20 +113,25 @@ export const StoreSettings = () => {
               Retail Store Sector / Business Profile:
             </label>
             <select
-              value={formData.businessType || "general"}
-              onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+              value={formData.businessType || "supermarket"}
+              onChange={(e) => {
+                const newType = e.target.value;
+                const prof = getBusinessProfile(newType);
+                setFormData((prev) => ({
+                  ...prev,
+                  businessType: newType,
+                  receiptFooterNote: prof.invoiceTerms || prev.receiptFooterNote,
+                }));
+              }}
               className="w-full bg-white border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F] cursor-pointer"
             >
-              <option value="general">🛍️ General Merchandise & Departmental (किराना व जनरल स्टोर)</option>
               <option value="supermarket">🛒 Supermarket, Grocery & FMCG (सुपरमार्केट / ग्रॉसरी मार्ट)</option>
-              <option value="apparel">👔 Apparel, Clothing, Fashion & Footwear (कपड़े, परिधान व जूते)</option>
               <option value="electronics">📱 Electronics, Mobile & Computer Accessories (मोबाइल व इलेक्ट्रॉनिक्स)</option>
+              <option value="apparel">👔 Apparel, Clothing, Fashion & Footwear (कपड़े, परिधान व जूते)</option>
               <option value="pharmacy">💊 Pharmacy, Chemist & Healthcare (दवाइयां व मेडिकल स्टोर)</option>
               <option value="hardware">🔧 Hardware, Electrical & Sanitaryware (हार्डवेयर, बिजली व सेनेटरी)</option>
               <option value="stationery">📚 Stationery, Books, Office & Toys (स्टेशनरी, किताबें व खिलौने)</option>
-              <option value="cosmetics">💄 Cosmetics, Perfumes & Personal Care (कॉस्मेटिक्स व ब्यूटी)</option>
-              <option value="home">🍽️ Home & Kitchenware, Utensils & Appliances (बर्तन व घरेलू सामान)</option>
-              <option value="custom">🏪 Other Custom Retail Shop (अन्य रिटेल दुकान)</option>
+              <option value="general">🛍️ Universal Retail Merchandise (डिपार्टमेंटल व जनरल स्टोर)</option>
             </select>
             <p className="text-[11px] text-slate-500 font-mono">
               Adapts unit options, category presets, and receipt formatting for your specific retail store.

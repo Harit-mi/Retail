@@ -31,6 +31,7 @@ import {
   restoreFromRollbackCheckpoint,
 } from "../utils/schemaMigration";
 import { StoreContext } from "./StoreContextObject";
+import { getBusinessProfile } from "../config/businessProfiles";
 
 // Helper: Safe LocalStorage parser with fallback (fails closed if encrypted)
 const getSafeStorage = (key, fallback, pin) => {
@@ -117,6 +118,25 @@ export const StoreProvider = ({ children }) => {
   const [storeConfig, setStoreConfig] = useState(() =>
     getSafeStorage("dukaan_store_config", initialStoreConfig, counterPin)
   );
+
+  const businessProfile = getBusinessProfile(storeConfig?.businessType);
+
+  const switchBusinessType = (newType) => {
+    const profile = getBusinessProfile(newType);
+    setStoreConfig((prev) => {
+      const isDefault =
+        !prev.name ||
+        prev.name.includes("Gupta") ||
+        prev.name.includes("DukaanPOS");
+      return {
+        ...prev,
+        businessType: profile.id,
+        name: isDefault ? profile.defaultStoreName : prev.name,
+        tagline: isDefault ? profile.defaultTagline : prev.tagline,
+        receiptFooterNote: profile.invoiceTerms,
+      };
+    });
+  };
 
   // Products
   const [products, setProducts] = useState(() =>
@@ -1433,6 +1453,8 @@ export const StoreProvider = ({ children }) => {
         t,
         storeConfig,
         setStoreConfig,
+        businessProfile,
+        switchBusinessType,
         products,
         setProducts,
         addProduct,
