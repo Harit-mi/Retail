@@ -1,69 +1,32 @@
-const CACHE_NAME = "dukaanpos-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/favicon.svg",
-  "/manifest.webmanifest"
-];
+const CACHE_NAME = "dukaanpos-v2";
 
-// Install: Cache essential app shell
+// Install: Skip waiting immediately
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
-// Activate: Clean old caches
+// Activate: Clean all old caches and claim clients
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
+      return Promise.all(keys.map((key) => caches.delete(key)));
     })
   );
   self.clients.claim();
 });
 
-// Fetch: Network first with Cache fallback for HTML/JS/CSS assets
+// Fetch: Pass through all localhost / dev requests straight to the network
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch update in background for next time
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
-            }
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
+  const url = new URL(event.request.url);
+  // Never intercept local development or Vite HMR requests
+  if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.port === "5173") {
+    return;
+  }
 
-      return fetch(event.request)
-        .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== "basic") {
-            return networkResponse;
-          }
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return networkResponse;
-        })
-        .catch(() => {
-          if (event.request.mode === "navigate") {
-            return caches.match("/index.html");
-          }
-        });
-    })
+  // Production fallback
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
