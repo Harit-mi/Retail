@@ -8,7 +8,7 @@ export const ThermalReceipt = ({ bill, isPreview = false }) => {
 
   const config = storeConfig || {};
   const isTaxInvoice = Boolean(config.gstin);
-  const upiId = config.upiId || "guptakirana@upi";
+  const upiId = config.upiId || "guptamart@upi";
   const upiPayUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
     config.name || "DukaanPOS"
   )}&am=${bill.grandTotal}&cu=INR&tn=Bill%20${encodeURIComponent(bill.id)}`;

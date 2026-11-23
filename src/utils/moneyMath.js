@@ -64,7 +64,7 @@ export const calculateCartTotals = (
 
   /*
    * NOTE (Intentional Design Choice):
-   * Discount stacking in Kirana retail billing is CUMULATIVE by design.
+   * Discount stacking in supermarket & retail billing is CUMULATIVE by design.
    * Direct manual discount + promo coupon + loyalty points redemption.
    */
   let calculatedDiscount = 0;

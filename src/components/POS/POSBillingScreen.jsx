@@ -26,6 +26,8 @@ import {
   LayoutGrid,
   List,
   Sparkles,
+  Printer,
+  FileText,
 } from "lucide-react";
 
 // Web Audio API Crisp Cash Register Beep Synthesizer
@@ -123,6 +125,8 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
     resumeParkedCart,
     discardParkedCart,
     setIsCashDrawerOpen,
+    printFormat,
+    setPrintFormat,
     t,
   } = useStore();
 
@@ -606,12 +610,13 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                         className="flex flex-wrap items-center gap-1 mb-2 pt-1.5 border-t border-zinc-100 text-[10px] font-mono"
                       >
                         <Scale className="w-3 h-3 text-zinc-400 shrink-0 mr-0.5" />
-                        <span className="text-zinc-400 text-[9px] mr-0.5">तौल:</span>
+                        <span className="text-zinc-400 text-[9px] mr-0.5">Scale:</span>
                         {[
                           { label: "100g", qty: 0.1 },
-                          { label: "पाव (250g)", qty: 0.25 },
-                          { label: "आधा किलो (500g)", qty: 0.5 },
+                          { label: "250g", qty: 0.25 },
+                          { label: "500g", qty: 0.5 },
                           { label: "1kg", qty: 1.0 },
+                          { label: "2kg", qty: 2.0 },
                         ].map((chip) => (
                           <button
                             key={chip.label}
@@ -1087,7 +1092,7 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
               <div className="rounded-lg p-3 bg-zinc-950 text-white shadow-xs flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-mono font-medium tracking-wider text-zinc-400 block">
-                    कुल देय राशि (TOTAL DUE)
+                    TOTAL DUE · कुल देय राशि
                   </span>
                   <span className="text-[10px] text-zinc-400 font-mono">
                     {cart.length} line items (GST incl.)
@@ -1095,6 +1100,39 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
                 </div>
                 <div className="text-3xl font-bold font-mono text-white tracking-tight tabular-nums">
                   ₹{cartGrandTotal.toLocaleString("en-IN")}
+                </div>
+              </div>
+
+              {/* Invoice Format Selector (3" Thermal Slip vs A4 GST Tax Invoice) */}
+              <div className="flex items-center justify-between bg-zinc-100 p-1.5 rounded-lg border border-zinc-200 text-xs">
+                <span className="text-[11px] font-semibold text-zinc-600 pl-1">Print Bill:</span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPrintFormat("thermal")}
+                    title="80mm Thermal Receipt roll format"
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                      printFormat === "thermal"
+                        ? "bg-zinc-950 text-white shadow-xs font-bold"
+                        : "text-zinc-600 hover:text-zinc-950 bg-white border border-zinc-200"
+                    }`}
+                  >
+                    <Printer className="w-3.5 h-3.5 text-amber-400" />
+                    <span>3" Thermal (80mm)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrintFormat("standard")}
+                    title="Full-page A4 CBIC Rule 46 GST Tax Invoice format"
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                      printFormat === "standard"
+                        ? "bg-zinc-950 text-white shadow-xs font-bold"
+                        : "text-zinc-600 hover:text-zinc-950 bg-white border border-zinc-200"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-400" />
+                    <span>A4 GST Invoice</span>
+                  </button>
                 </div>
               </div>
 
@@ -1184,19 +1222,19 @@ export const POSBillingScreen = ({ onOpenPaymentModal, onOpenCustomerModal }) =>
             </div>
 
             <form onSubmit={handleAddCustomItem} className="p-5 space-y-4">
-              {/* Universal Retail Quick Presets */}
+              {/* Supermarket & Retail Quick Presets */}
               <div>
                 <label className="text-[11px] font-medium text-zinc-500 mb-1.5 block">
                   Quick Retail Presets (तुरंत चयन करें):
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { label: "🛍️ Carry Bag ₹10", name: "Carry Bag / Shopping Bag", price: "10", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
-                    { label: "🎁 Gift Packing ₹25", name: "Gift Wrapping & Packing", price: "25", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
-                    { label: "✂️ Alteration Fee ₹50", name: "Garment Alteration / Service", price: "50", unit: "Pcs", category: "Services & Alterations", gst: 18 },
-                    { label: "📦 Delivery ₹40", name: "Home Delivery Charge", price: "40", unit: "Pcs", category: "Services", gst: 0 },
-                    { label: "🏷️ Unlisted SKU ₹100", name: "Unlisted Merchandise Item", price: "100", unit: "Pcs", category: "General Retail", gst: 5 },
-                    { label: "🌾 Loose Item ₹50", name: "Loose Item (खुला सामान)", price: "50", unit: "kg", category: "Loose Produce", gst: 0 },
+                    { label: "🛍️ Eco Carry Bag (M) ₹10", name: "Eco Shopping Bag (Medium)", price: "10", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
+                    { label: "🛍️ Shopping Tote (L) ₹25", name: "Non-Woven Tote Bag (Large)", price: "25", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
+                    { label: "🎁 Gift Wrap & Box ₹30", name: "Gift Wrapping & Presentation Box", price: "30", unit: "Pcs", category: "Packaging & Bags", gst: 18 },
+                    { label: "📦 Express Delivery ₹50", name: "Doorstep Express Delivery", price: "50", unit: "Pcs", category: "Services", gst: 0 },
+                    { label: "🏷️ Unlisted Retail SKU ₹100", name: "Unlisted Retail Item", price: "100", unit: "Pcs", category: "General Retail", gst: 5 },
+                    { label: "⚖️ Fresh Produce ₹60", name: "Fresh Produce / Seasonal Item", price: "60", unit: "kg", category: "Fresh Produce", gst: 0 },
                   ].map((preset) => (
                     <button
                       key={preset.label}

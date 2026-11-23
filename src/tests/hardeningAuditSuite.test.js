@@ -137,7 +137,7 @@ describe("Production-Readiness Hardening & Reliability Suite", () => {
       const migrated = migrateStoreBundle(v1Bundle);
       expect(migrated.storeConfig._schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
       expect(migrated.products[0].selling_unit_type).toBe("piece");
-      expect(migrated.products[0].vertical).toBe("kirana");
+      expect(migrated.products[0].vertical).toBe("supermarket");
       expect(migrated.customers[0].loyaltyPoints).toBe(0);
       expect(migrated.sales[0].paymentMode).toBe("cash");
     });

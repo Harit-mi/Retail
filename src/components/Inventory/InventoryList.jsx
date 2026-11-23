@@ -78,7 +78,7 @@ export const InventoryList = () => {
   };
 
   const handleDelete = (id, name) => {
-    if (window.confirm(`Are you sure you want to delete "${name}" from Kirana inventory?`)) {
+    if (window.confirm(`Are you sure you want to delete "${name}" from store inventory?`)) {
       deleteProduct(id);
     }
   };

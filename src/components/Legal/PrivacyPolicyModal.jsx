@@ -36,7 +36,7 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, initialTab = "privacy" }) 
 
   if (!isOpen) return null;
 
-  const storeName = storeConfig?.name || "Gupta Kirana Store";
+  const storeName = storeConfig?.name || "Gupta Supermarket & Retail Mart";
   const storeCity = storeConfig?.city || "New Delhi";
   const storeGst = storeConfig?.gstin || "07AAAAA0000A1Z5";
 
@@ -201,7 +201,7 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, initialTab = "privacy" }) 
               <div>
                 <h4 className="font-bold text-slate-900 text-sm mb-1">1. Software License & Availability</h4>
                 <p>
-                  DukaanPOS provides a local-first Progressive Web Application (PWA) designed for kirana stores, supermarkets, apparel merchants, and retail businesses. The application is designed to function 100% offline without continuous internet access.
+                  DukaanPOS provides a local-first Progressive Web Application (PWA) designed for supermarkets, departmental stores, apparel merchants, and modern retail businesses. The application is designed to function 100% offline without continuous internet access.
                 </p>
               </div>
 

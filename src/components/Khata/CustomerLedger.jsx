@@ -95,7 +95,7 @@ export const CustomerLedger = () => {
               Customer Khata & Udhaar Ledger · उधार बहीखाता
             </h2>
             <p className="text-xs text-zinc-400 font-mono">
-              Credit ledger tracking, settlements & repayment receipts for Kirana & Supermarket customers
+              Credit ledger tracking, settlements & repayment receipts for Supermarket & Retail customers
             </p>
           </div>
         </div>

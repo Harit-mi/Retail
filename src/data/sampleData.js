@@ -98,16 +98,17 @@ export const initialUsers = [
 ];
 
 export const initialStoreConfig = {
-  name: "Gupta Universal Retail Store",
-  businessType: "general", // general, supermarket, apparel, electronics, pharmacy, hardware, stationery, cosmetics, home, custom
-  tagline: "Universal Retail POS • Fast Billing • GST • Udhaar",
+  name: "Gupta Supermarket & Retail Mart",
+  businessType: "supermarket", // supermarket, general, apparel, electronics, pharmacy, hardware, stationery, cosmetics, home, custom
+  tagline: "Modern Supermarket & Retail POS • Fast Barcode Checkout • A4 & 3\" Bills",
   phone: "+91 98765 43210",
   address: "Shop 12-14, Main Bazaar, Sector 14, Delhi - 110085",
   gstin: "07AAAAA0000A1Z5",
-  upiId: "guptastore@upi",
+  upiId: "guptamart@upi",
   ownerName: "Rajesh Gupta",
   invoicePrefix: "INV-",
-  receiptFooterNote: "Exchange within 7 days with original invoice. Thank you for your visit!",
+  defaultPrintFormat: "thermal",
+  receiptFooterNote: "Exchange possible within 7 days with original invoice. Thank you for shopping with us!",
   taxRegime: "regular",
   shiftOpeningFloat: 2000, // ₹2,000 opening cash float
 };
@@ -165,7 +166,7 @@ export const initialCoupons = [
 ];
 
 export const initialProducts = [
-  // 1. Kirana / Grocery Items
+  // 1. Supermarket Grocery & FMCG Items
   {
     id: "p1",
     name: "Fortune Sunlite Sunflower Oil 1L",
@@ -179,7 +180,7 @@ export const initialProducts = [
     stock: 45,
     unit: "Ltr",
     selling_unit_type: "weight",
-    vertical: "kirana",
+    vertical: "supermarket",
     attributes: {
       batch_no: "BATCH-O24",
       expiry_date: "2027-04-30",
@@ -199,7 +200,7 @@ export const initialProducts = [
     stock: 18,
     unit: "Pack",
     selling_unit_type: "piece",
-    vertical: "kirana",
+    vertical: "supermarket",
     attributes: {
       batch_no: "AT-9912",
       expiry_date: "2026-11-15",
@@ -219,7 +220,7 @@ export const initialProducts = [
     stock: 8,
     unit: "Pack",
     selling_unit_type: "piece",
-    vertical: "kirana",
+    vertical: "supermarket",
     attributes: {
       batch_no: "DAIRY-088",
       expiry_date: "2026-09-01",
@@ -418,7 +419,7 @@ export const initialCustomers = [
     creditLimit: 5000,
     loyaltyPoints: 120, // 1 point per ₹100
     history: [
-      { id: "h1", date: "2026-07-28", type: "debit", amount: 450, note: "Bill #1002 - Kirana items" },
+      { id: "h1", date: "2026-07-28", type: "debit", amount: 450, note: "Bill #1002 - Supermarket groceries" },
     ],
   },
   {
@@ -521,7 +522,7 @@ export const initialAppointments = [
 
 export const VERTICAL_DEFINITIONS = [
   { id: "all", name: "All Verticals / Multi-Store Hub", icon: "Store", badge: "Universal" },
-  { id: "kirana", name: "Kirana & Grocery", icon: "ShoppingBag", badge: "FMCG / Weight" },
+  { id: "supermarket", name: "Supermarkets & FMCG Marts", icon: "ShoppingBag", badge: "FMCG / Weight & Barcode" },
   { id: "clothing", name: "Clothing, Apparel & Footwear", icon: "Shirt", badge: "Size x Color Matrix" },
   { id: "pharmacy", name: "Pharmacy & Medical Store", icon: "Pill", badge: "Batch & Expiry & Rx" },
   { id: "electronics", name: "Electronics & Mobile Shop", icon: "Smartphone", badge: "IMEI & Warranty & EMI" },

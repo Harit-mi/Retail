@@ -17,7 +17,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
     costPrice: "",
     stock: 10,
     unit: "Pcs",
-    vertical: activeVertical === "all" ? "kirana" : activeVertical,
+    vertical: activeVertical === "all" ? "supermarket" : activeVertical,
     minStockWarning: 5,
     attributes: {
       size: "",
@@ -52,7 +52,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
         costPrice: productToEdit.costPrice || "",
         stock: productToEdit.stock || 0,
         unit: productToEdit.unit || "Pcs",
-        vertical: productToEdit.vertical || (activeVertical === "all" ? "kirana" : activeVertical),
+        vertical: productToEdit.vertical || (activeVertical === "all" ? "supermarket" : activeVertical),
         minStockWarning: productToEdit.minStockWarning || 5,
         attributes: {
           size: "",
@@ -86,7 +86,7 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
         costPrice: "",
         stock: 10,
         unit: "Pcs",
-        vertical: activeVertical === "all" ? "kirana" : activeVertical,
+        vertical: activeVertical === "all" ? "supermarket" : activeVertical,
         minStockWarning: 5,
         attributes: {
           size: "",
@@ -189,10 +189,11 @@ export const AddEditProductModal = ({ isOpen, onClose, productToEdit }) => {
               Retail Department / Category Type:
             </label>
             <select
-              value={formData.vertical || "retail"}
+              value={formData.vertical || "supermarket"}
               onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
               className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-950 cursor-pointer"
             >
+              <option value="supermarket">🛒 Supermarket, Grocery & FMCG (Fast Barcode & Weighing)</option>
               <option value="retail">🛍️ General Retail Goods & FMCG (Standard SKU)</option>
               <option value="clothing">👔 Apparel, Garments & Footwear (Size, Color, Brand)</option>
               <option value="pharmacy">💊 Pharmacy, Chemist & Wellness (Batch No, Expiry)</option>

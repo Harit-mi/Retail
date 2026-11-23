@@ -103,7 +103,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
   const isUdhar = paymentMode === "udhar";
 
   const upiUri = `upi://pay?pa=${encodeURIComponent(
-    storeConfig.upiId || "guptakirana@upi"
+    storeConfig.upiId || "guptamart@upi"
   )}&pn=${encodeURIComponent(
     storeConfig.name
   )}&am=${cartGrandTotal}&cu=INR&tn=Invoice Payment`;
@@ -314,7 +314,7 @@ export const PaymentModal = ({ isOpen, onClose }) => {
                     Scan with PhonePe, Google Pay, Paytm, BHIM UPI
                   </p>
                   <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
-                    VPA: {storeConfig.upiId || "guptakirana@upi"}
+                    VPA: {storeConfig.upiId || "guptamart@upi"}
                   </p>
                 </div>
 

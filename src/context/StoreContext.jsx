@@ -414,7 +414,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   // App Navigation & UI States
-  const [activeTab, setActiveTab] = useState("pos"); // Default Kirana Counter POS Billing
+  const [activeTab, setActiveTab] = useState("pos"); // Default Supermarket & Retail POS Billing
   const [printableBill, setPrintableBill] = useState(null);
   const [printFormat, setPrintFormat] = useState("thermal");
 
@@ -998,7 +998,7 @@ export const StoreProvider = ({ children }) => {
             stock: product.stock,
             minStockWarning: product.minStockWarning || 5,
             selling_unit_type: product.selling_unit_type || "piece",
-            vertical: product.vertical || "kirana",
+            vertical: product.vertical || "supermarket",
             attributes: { ...(product.attributes || {}), ...customAttributes },
             qty: qty,
             total: product.retailPrice * qty,

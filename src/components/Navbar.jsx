@@ -45,11 +45,11 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             <i className="fa-solid fa-bars text-lg text-[#1E3A5F]" aria-hidden="true"></i>
           </button>
 
-          {/* Kirana Store Title Badge */}
+          {/* Supermarket & Retail Store Title Badge */}
           <div className="hidden sm:flex items-center space-x-2 bg-amber-50 p-2 px-3 rounded-lg border border-amber-200 shadow-2xs">
-            <i className="fa-solid fa-shop text-[#F5A623] text-sm" aria-hidden="true"></i>
+            <i className="fa-solid fa-cart-shopping text-[#F5A623] text-sm" aria-hidden="true"></i>
             <span className="text-slate-900 text-xs font-black font-display tracking-tight whitespace-nowrap">
-              {storeConfig.name || "Gupta Kirana Store"}
+              {storeConfig.name || "Gupta Supermarket & Retail Mart"}
             </span>
           </div>
 
@@ -193,7 +193,7 @@ export const Navbar = ({ onOpenMobileMenu }) => {
                       <div>
                         <p className="font-bold text-[11px]">Low Stock Alert</p>
                         <p className="text-[10px] text-amber-700 font-mono">
-                          {lowStockCount} Kirana items below minimum warning threshold.
+                          {lowStockCount} inventory items below minimum warning threshold.
                         </p>
                       </div>
                     </div>

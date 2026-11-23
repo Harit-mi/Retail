@@ -22,13 +22,13 @@ export const migrateStoreBundle = (bundle) => {
     // Migration: V1 -> V2
     // 1. Ensure Store Config has required single-store & outbox fields
     migrated.storeConfig = {
-      name: "Gupta Kirana Store",
-      tagline: "Your Daily Grocery & Essentials",
+      name: "Gupta Supermarket & Retail Mart",
+      tagline: "Modern Supermarket & Retail POS • Fast Barcode Checkout",
       phone: "+91 98765 43210",
       address: "Main Market, Sector 4, New Delhi",
       gstin: "07AAAAA0000A1Z5",
       fssai: "10020011000123",
-      upiId: "guptakirana@upi",
+      upiId: "guptamart@upi",
       ownerName: "Ramesh Gupta",
       cashierPinHash: "",
       shiftOpeningFloat: 2000,
@@ -51,7 +51,7 @@ export const migrateStoreBundle = (bundle) => {
         barcode: p.barcode || "",
         minStockWarning: Number(p.minStockWarning) || 5,
         selling_unit_type: p.selling_unit_type || "piece",
-        vertical: p.vertical || "kirana",
+        vertical: p.vertical || "supermarket",
         ...p,
       })
     );

@@ -13,7 +13,7 @@ export const WhatsAppMarketingHub = () => {
     {
       id: "festival",
       title: "Diwali & Festival Offer",
-      text: `Namaste {NAME} ji! Special festival discounts on Kirana items at ${storeConfig.name}. Visit today or order via WhatsApp!`,
+      text: `Namaste {NAME} ji! Special festival discounts across all retail categories at ${storeConfig.name}. Visit today or order via WhatsApp!`,
     },
     {
       id: "udhar_reminder",

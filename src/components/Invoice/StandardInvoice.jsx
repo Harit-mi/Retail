@@ -108,9 +108,9 @@ export const StandardInvoice = ({ bill, isPreview = false }) => {
   const amountInWords = numberToIndianWords(grandTotal);
 
   // Bank & UPI configuration
-  const upiId = config.upiId || "guptakirana@upi";
+  const upiId = config.upiId || "guptamart@upi";
   const upiPayUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
-    config.name || "DukaanPOS"
+    config.name || "DukaanPOS Supermarket"
   )}&am=${grandTotal}&cu=INR&tn=Invoice%20${encodeURIComponent(bill.id)}`;
 
   return (

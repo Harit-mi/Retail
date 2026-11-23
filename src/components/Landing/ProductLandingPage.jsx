@@ -20,21 +20,21 @@ import {
 
 export const ProductLandingPage = () => {
   const { setActiveTab, currentLanguage, changeLanguage } = useStore();
-  const [activeVertical, setActiveVertical] = useState("kirana");
+  const [activeVertical, setActiveVertical] = useState("supermarket");
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [openFaqIdx, setOpenFaqIdx] = useState(null);
 
   const verticals = [
     {
-      id: "kirana",
-      name: "Kirana & Supermarkets",
+      id: "supermarket",
+      name: "Supermarkets & FMCG Marts",
       icon: "fa-solid fa-[#F5A623] fa-basket-shopping",
-      tagline: "Loose grain weighing, fast barcode scan & Udhaar Khata",
+      tagline: "High-speed barcode till, weighing scale presets & dual A4 / 3\" bills",
       features: [
-        "Weight & loose item pricing (Kg/Gm/Ltr/Pack)",
-        "Pre-set loose quick keys (100g, 250g, 500g, 1kg)",
-        "Hardware USB/Bluetooth scanner & 80mm thermal receipts",
-        "Udhaar ledger integration for credit accounts",
+        "Instant EAN-13 / UPC barcode scanning (< 0.8s checkout)",
+        "3\" (80mm) Thermal receipt or full A4 GST tax invoice toggle",
+        "Weighing scale metric presets (100g, 250g, 500g, 1kg, 2kg)",
+        "Real-time inventory reorder alerts & gross margin tracking",
       ],
       color: "from-amber-500/20 to-orange-500/20 border-amber-400",
     },
@@ -157,10 +157,10 @@ export const ProductLandingPage = () => {
   const testimonials = [
     {
       name: "Rajesh Gupta",
-      store: "Gupta Kirana Store, Sector 14, Delhi",
-      quote: "DukaanPOS changed my shop completely. Billing speed increased 3x, and my customers love getting WhatsApp Udhaar payment reminders!",
+      store: "Gupta Supermarket & Retail Mart, Delhi",
+      quote: "DukaanPOS changed our checkout counter completely. Billing queues reduced by 60%, and 1-click toggling between 3-inch thermal receipts and A4 tax invoices is effortless!",
       rating: 5,
-      vertical: "Kirana",
+      vertical: "Supermarket",
     },
     {
       name: "Sunil Verma",
@@ -183,11 +183,11 @@ export const ProductLandingPage = () => {
       name: "Cloud Retail Starter",
       price: "₹0",
       period: "Forever Free",
-      desc: "Perfect for single retail counters wanting rapid cloud-connected billing.",
+      desc: "Perfect for single retail counters wanting rapid cloud-connected billing and inventory.",
       features: [
-        "Full Billing POS Counter",
+        "Full Barcode Billing POS Counter",
         "Unlimited Inventory & Products",
-        "Udhaar Ledger & Customer Management",
+        "Dual 3\" Thermal & A4 Invoice Toggle",
         "A4 Barcode Printing (24 & 40 Labels)",
         "Real-time Cloud Sync & Native Encryption",
       ],
@@ -198,14 +198,14 @@ export const ProductLandingPage = () => {
       name: "Pro Retailer & Supermarket",
       price: "₹499",
       period: "per month",
-      desc: "Designed for busy Kirana shops and supermarkets wanting fast barcode scanning and Udhaar management.",
+      desc: "Designed for high-traffic supermarkets and retail stores wanting barcode checkout, inventory reordering, and sticker printing.",
       features: [
         "Everything in Starter Plan",
-        "Unlimited Kirana & Supermarket Items",
+        "Unlimited Supermarket & Retail SKUs",
         "A4 Sticker Sheet (24/40/65) & Thermal Roll Generator",
         "GSTR-1 CSV Exports & Tax Reports",
         "Cashier 4-Digit Register PIN Lock",
-        "Customer Udhaar Khata Bahi-Khata",
+        "Customer Ledger & Credit Accounts",
       ],
       cta: "Try Pro Demo App",
       popular: true,
@@ -214,7 +214,7 @@ export const ProductLandingPage = () => {
       name: "Multi-Store Supermarket Chain",
       price: "₹1,499",
       period: "per month",
-      desc: "For multi-counter supermarkets needing centralized stock sync and multi-user RBAC.",
+      desc: "For multi-counter supermarkets and enterprise retail chains needing centralized stock sync and multi-user RBAC.",
       features: [
         "Everything in Pro Plan",
         "Unlimited Multi-Counter Registers",
@@ -233,7 +233,7 @@ export const ProductLandingPage = () => {
       {/* Top Banner Announcement */}
       <div className="bg-gradient-to-r from-amber-500 via-[#F5A623] to-orange-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
         <Sparkles className="w-4 h-4 fill-slate-950" />
-        <span>DukaanPOS 2.0: Universal Offline & Cloud POS for Any Retail Business with Barcodes, GST, Udhaar & DPDP Security!</span>
+        <span>DukaanPOS 2.0: Cloud-Connected & Modern POS for Supermarkets and Retail Businesses with Dual A4/3" Billing, Barcodes & Inventory!</span>
         <button
           onClick={() => setActiveTab("pos")}
           className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black"
@@ -305,20 +305,20 @@ export const ProductLandingPage = () => {
         <div className="text-center space-y-6 max-w-4xl mx-auto relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-1.5 rounded-full text-xs font-bold text-amber-300">
             <span className="w-2 h-2 rounded-full bg-[#1FAA59] animate-pulse"></span>
-            <span>🇮🇳 Built Specifically for Indian Retail Shopkeepers</span>
+            <span>🇮🇳 Built for Modern Supermarkets, Department Stores & Retail Businesses</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-tight">
-            India's #1 Retail POS Platform — <br className="hidden sm:inline" />
+            India's #1 Supermarket & Retail POS — <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-[#F5A623] via-amber-300 to-amber-500 bg-clip-text text-transparent">
-              Built for Cloud Speed & Retail Power
+              Built for Speed, Dual Invoicing & Inventory Control
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Run any retail shop — from Kirana & Supermarkets to Fashion & Footwear, Mobile & Electronics, 
-            Hardware, Pharmacy & Stationery — with lightning-fast barcode billing, GST tax invoices, 
-            customer Udhaar Khata, and 100% offline security.
+            Run any modern retail business — from Supermarkets & FMCG Marts to Fashion & Footwear, Mobile & Electronics, 
+            Hardware, Pharmacy & Cosmetics — with lightning-fast barcode checkout, dual 3-inch thermal & A4 GST invoices, 
+            comprehensive inventory reorder controls, and EAN-13 barcode sticker generation.
           </p>
 
           {/* Action CTAs */}

@@ -58,7 +58,7 @@ export const AIDemandForecastingCard = () => {
               Inventory Buffer Status: Optimal
             </h4>
             <p className="text-[11px] text-emerald-700 font-mono">
-              All Kirana catalog items meet minimum stock warning thresholds.
+              All supermarket and retail catalog items meet minimum stock warning thresholds.
             </p>
           </div>
         </div>
