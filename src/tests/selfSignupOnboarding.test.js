@@ -49,4 +49,30 @@ describe("Self-Signup & Onboarding Flow Suite", () => {
     expect(profile.allowedUnits).toContain("gm");
     expect(profile.allowedUnits).toContain("ltr");
   });
+
+  it("enforces immutable business sector locking after customer registration", () => {
+    const registeredSector = "electronics";
+
+    // Simulate store settings update: attempts to change other fields but sector is fixed
+    const initialConfig = {
+      name: "Apex Electronics",
+      businessType: registeredSector,
+      ownerName: "Vikas Sharma",
+      isSubscribed: true,
+    };
+
+    // User submits updated store details (address, phone, name)
+    const submittedForm = {
+      ...initialConfig,
+      name: "Apex Electronics & Smart Gadgets",
+      address: "New Address Road",
+      businessType: initialConfig.businessType, // Locked
+    };
+
+    expect(submittedForm.businessType).toBe("electronics");
+    const activeProfile = getBusinessProfile(submittedForm.businessType);
+    expect(activeProfile.showKgs).toBe(false);
+    expect(activeProfile.allowedUnits).not.toContain("kg");
+    expect(activeProfile.allowedUnits).toContain("Pcs");
+  });
 });

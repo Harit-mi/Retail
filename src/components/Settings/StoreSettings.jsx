@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/useStore";
-import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck } from "lucide-react";
+import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck, Lock } from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 import { getBusinessProfile } from "../../config/businessProfiles";
 
@@ -22,6 +22,8 @@ export const StoreSettings = () => {
   const [backupMsg, setBackupMsg] = useState(null);
 
   const fileInputRef = useRef(null);
+
+  const currentProfile = getBusinessProfile(formData.businessType || storeConfig?.businessType || "supermarket");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -107,34 +109,60 @@ export const StoreSettings = () => {
 
         {/* Store Profile Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Retail Sector Selector */}
-          <div className="bg-slate-50 border-2 border-slate-200 rounded-lg p-3.5 space-y-2">
-            <label className="text-xs font-bold text-slate-900 block">
-              Retail Store Sector / Business Profile:
-            </label>
-            <select
-              value={formData.businessType || "supermarket"}
-              onChange={(e) => {
-                const newType = e.target.value;
-                const prof = getBusinessProfile(newType);
-                setFormData((prev) => ({
-                  ...prev,
-                  businessType: newType,
-                  receiptFooterNote: prof.invoiceTerms || prev.receiptFooterNote,
-                }));
-              }}
-              className="w-full bg-white border-2 border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#1E3A5F] cursor-pointer"
-            >
-              <option value="supermarket">🛒 Supermarket, Grocery & FMCG (सुपरमार्केट / ग्रॉसरी मार्ट)</option>
-              <option value="electronics">📱 Electronics, Mobile & Computer Accessories (मोबाइल व इलेक्ट्रॉनिक्स)</option>
-              <option value="apparel">👔 Apparel, Clothing, Fashion & Footwear (कपड़े, परिधान व जूते)</option>
-              <option value="pharmacy">💊 Pharmacy, Chemist & Healthcare (दवाइयां व मेडिकल स्टोर)</option>
-              <option value="hardware">🔧 Hardware, Electrical & Sanitaryware (हार्डवेयर, बिजली व सेनेटरी)</option>
-              <option value="stationery">📚 Stationery, Books, Office & Toys (स्टेशनरी, किताबें व खिलौने)</option>
-              <option value="general">🛍️ Universal Retail Merchandise (डिपार्टमेंटल व जनरल स्टोर)</option>
-            </select>
-            <p className="text-[11px] text-slate-500 font-mono">
-              Adapts unit options, category presets, and receipt formatting for your specific retail store.
+          {/* Registered Business Profile Card (Locked to Subscription) */}
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">
+                  {currentProfile.id === "supermarket" ? "🛒" :
+                   currentProfile.id === "electronics" ? "📱" :
+                   currentProfile.id === "apparel" ? "👔" :
+                   currentProfile.id === "pharmacy" ? "💊" :
+                   currentProfile.id === "hardware" ? "🔧" :
+                   currentProfile.id === "stationery" ? "📚" : "🛍️"}
+                </span>
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 font-display">
+                    {currentProfile.name}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 font-mono">
+                    Registered Trade Vertical & Profile Configuration
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Locked to Subscription</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-slate-200/80 text-[11px]">
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-slate-400 block font-mono text-[10px] uppercase font-bold">Weighing / Loose Units</span>
+                <span className={`font-bold ${currentProfile.showKgs ? "text-emerald-700" : "text-slate-700"}`}>
+                  {currentProfile.showKgs ? "⚖️ Scales & Kgs Active" : "🚫 Discrete Only (Zero Kgs)"}
+                </span>
+              </div>
+
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-slate-400 block font-mono text-[10px] uppercase font-bold">Specialized Attributes</span>
+                <span className="font-bold text-slate-800 truncate block" title={currentProfile.primaryAttributes?.map((a) => a.label).join(", ")}>
+                  {currentProfile.primaryAttributes?.map((a) => a.label).slice(0, 3).join(", ") || "Standard SKU"}
+                </span>
+              </div>
+
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-slate-400 block font-mono text-[10px] uppercase font-bold">Allowed UOM Units</span>
+                <span className="font-bold text-slate-800 truncate block" title={currentProfile.allowedUnits?.join(", ")}>
+                  {currentProfile.allowedUnits?.join(", ") || "Pcs"}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 pt-1">
+              <Lock className="w-3 h-3 text-slate-400 shrink-0" />
+              <span>Business sector was provisioned during customer self-signup. To switch your store vertical or upgrade, contact DukaanPOS enterprise billing support.</span>
             </p>
           </div>
 
