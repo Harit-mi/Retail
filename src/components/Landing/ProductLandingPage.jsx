@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStore } from "../../context/useStore";
 import { INDIAN_LANGUAGES } from "../../i18n/translations";
+import { SelfSignupModal } from "./SelfSignupModal";
 import {
   Zap,
   CheckCircle2,
@@ -22,7 +23,14 @@ export const ProductLandingPage = () => {
   const { setActiveTab, currentLanguage, changeLanguage } = useStore();
   const [activeVertical, setActiveVertical] = useState("supermarket");
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [signupInitialPlan, setSignupInitialPlan] = useState("pro");
   const [openFaqIdx, setOpenFaqIdx] = useState(null);
+
+  const handleOpenSignup = (plan = "pro") => {
+    setSignupInitialPlan(plan);
+    setIsSignupModalOpen(true);
+  };
 
   const verticals = [
     {
@@ -235,10 +243,10 @@ export const ProductLandingPage = () => {
         <Sparkles className="w-4 h-4 fill-slate-950" />
         <span>DukaanPOS 2.0: Cloud-Connected & Modern POS for Supermarkets and Retail Businesses with Dual A4/3" Billing, Barcodes & Inventory!</span>
         <button
-          onClick={() => setActiveTab("pos")}
-          className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black"
+          onClick={() => handleOpenSignup("pro")}
+          className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black cursor-pointer"
         >
-          Launch Live POS App →
+          Start Self Signup & Setup →
         </button>
       </div>
 
@@ -286,11 +294,11 @@ export const ProductLandingPage = () => {
 
             {/* Launch App Button */}
             <button
-              onClick={() => setActiveTab("pos")}
-              className="px-4 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display text-xs rounded-lg shadow-md transition flex items-center space-x-1.5"
+              onClick={() => handleOpenSignup("pro")}
+              className="px-4 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display text-xs rounded-lg shadow-md transition flex items-center space-x-1.5 cursor-pointer"
             >
               <Zap className="w-3.5 h-3.5 fill-slate-950" />
-              <span>Launch Live POS App</span>
+              <span>Start Free Trial / Signup</span>
             </button>
           </div>
         </div>
@@ -324,19 +332,19 @@ export const ProductLandingPage = () => {
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
-              onClick={() => setActiveTab("pos")}
-              className="w-full sm:w-auto px-8 py-4 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-sm min-h-[52px]"
+              onClick={() => handleOpenSignup("pro")}
+              className="w-full sm:w-auto px-8 py-4 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 text-sm min-h-[52px] cursor-pointer"
             >
-              <span>⚡ Open Live Billing Counter</span>
+              <span>⚡ Start Self Signup & Store Setup</span>
               <ArrowRight className="w-5 h-5" />
             </button>
 
             <button
               onClick={() => setIsVideoModalOpen(true)}
-              className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/15 transition flex items-center justify-center gap-2 text-sm min-h-[52px]"
+              className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/15 transition flex items-center justify-center gap-2 text-sm min-h-[52px] cursor-pointer"
             >
               <Play className="w-4 h-4 fill-white text-white" />
-              <span>Watch Hindi Voiceover Video (40s)</span>
+              <span>Watch Demo Walkthrough (40s)</span>
             </button>
           </div>
 
@@ -402,6 +410,20 @@ export const ProductLandingPage = () => {
                   </a>
                 </p>
               </video>
+            </div>
+            <div className="p-3.5 bg-slate-950 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-xs text-slate-300 font-medium text-center sm:text-left">
+                Watched the walkthrough? Setup your store and start billing in 60 seconds:
+              </span>
+              <button
+                onClick={() => {
+                  setIsVideoModalOpen(false);
+                  handleOpenSignup("pro");
+                }}
+                className="w-full sm:w-auto px-4 py-2 bg-[#F5A623] hover:bg-amber-400 text-slate-950 font-black font-display text-xs rounded-lg shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Proceed to Self Signup & Setup →</span>
+              </button>
             </div>
           </div>
         </div>
@@ -469,10 +491,10 @@ export const ProductLandingPage = () => {
                     </div>
 
                     <button
-                      onClick={() => setActiveTab("pos")}
-                      className="mt-4 px-5 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold rounded-lg text-xs transition flex items-center gap-2 border border-white/15"
+                      onClick={() => handleOpenSignup("pro")}
+                      className="mt-4 px-5 py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold rounded-lg text-xs transition flex items-center gap-2 border border-white/15 cursor-pointer"
                     >
-                      <span>Try {v.name} Billing Mode</span>
+                      <span>Setup {v.name} Store</span>
                       <ChevronRight className="w-4 h-4 text-[#F5A623]" />
                     </button>
                   </div>
@@ -653,8 +675,16 @@ export const ProductLandingPage = () => {
               </div>
 
               <button
-                onClick={() => setActiveTab("pos")}
-                className={`w-full mt-8 py-3.5 rounded-xl font-extrabold text-xs transition font-display flex items-center justify-center gap-2 ${
+                onClick={() =>
+                  handleOpenSignup(
+                    p.name.toLowerCase().includes("starter")
+                      ? "starter"
+                      : p.name.toLowerCase().includes("chain")
+                      ? "enterprise"
+                      : "pro"
+                  )
+                }
+                className={`w-full mt-8 py-3.5 rounded-xl font-extrabold text-xs transition font-display flex items-center justify-center gap-2 cursor-pointer ${
                   p.popular
                     ? "bg-[#F5A623] hover:bg-amber-400 text-slate-950 shadow-lg"
                     : "bg-white/10 hover:bg-white/20 text-white border border-white/15"
@@ -724,6 +754,13 @@ export const ProductLandingPage = () => {
           </p>
         </div>
       </footer>
+
+      {/* Self-Signup Onboarding & Payment Modal */}
+      <SelfSignupModal
+        isOpen={isSignupModalOpen}
+        onClose={() => setIsSignupModalOpen(false)}
+        initialPlan={signupInitialPlan}
+      />
     </div>
   );
 };

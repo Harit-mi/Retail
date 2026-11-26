@@ -7,7 +7,6 @@ export const Navbar = ({ onOpenMobileMenu }) => {
   const {
     storeConfig,
     businessProfile,
-    switchBusinessType,
     currentLanguage,
     changeLanguage,
     products,
@@ -47,30 +46,15 @@ export const Navbar = ({ onOpenMobileMenu }) => {
             <i className="fa-solid fa-bars text-lg text-[#1E3A5F]" aria-hidden="true"></i>
           </button>
 
-          {/* Retail Store Title Badge */}
-          <div className="hidden sm:flex items-center space-x-2 bg-amber-50 p-2 px-3 rounded-lg border border-amber-200 shadow-2xs">
+          {/* Retail Store Title Badge & Business Sector Tag */}
+          <div className="hidden sm:flex items-center space-x-2 bg-amber-50 p-1.5 px-3 rounded-lg border border-amber-200 shadow-2xs">
             <i className={`fa-solid ${businessProfile?.icon ? businessProfile.icon : "fa-cart-shopping"} text-[#F5A623] text-sm`} aria-hidden="true"></i>
             <span className="text-slate-900 text-xs font-black font-display tracking-tight whitespace-nowrap">
               {storeConfig.name || "Gupta Supermarket & Retail Mart"}
             </span>
-          </div>
-
-          {/* Business Profile Sector Switcher */}
-          <div className="flex items-center space-x-1 bg-slate-100 border border-slate-300 rounded-lg p-0.5" title="Switch Business Type (Adapts units, attributes, quick keys and invoicing)">
-            <select
-              value={storeConfig.businessType || "supermarket"}
-              onChange={(e) => switchBusinessType(e.target.value)}
-              aria-label="Select Retail Business Sector"
-              className="bg-white border-0 text-slate-900 text-xs font-extrabold py-1 px-2 rounded-md outline-none cursor-pointer hover:bg-slate-50 transition"
-            >
-              <option value="supermarket">🛒 Supermarket & FMCG</option>
-              <option value="electronics">📱 Electronics & Mobile</option>
-              <option value="apparel">👔 Fashion & Apparel</option>
-              <option value="pharmacy">💊 Pharmacy & Wellness</option>
-              <option value="hardware">🔧 Hardware & Electrical</option>
-              <option value="stationery">📚 Stationery & Books</option>
-              <option value="general">🛍️ Universal Retail (All)</option>
-            </select>
+            <span className="text-[10px] bg-white border border-amber-300 text-amber-900 font-mono px-2 py-0.5 rounded font-extrabold uppercase shadow-2xs">
+              {businessProfile?.shortName || "Retail"}
+            </span>
           </div>
 
           {/* Mode Switcher Button */}
