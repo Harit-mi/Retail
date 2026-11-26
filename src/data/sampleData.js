@@ -111,6 +111,7 @@ export const initialStoreConfig = {
   receiptFooterNote: "Exchange possible within 7 days with original invoice. Thank you for shopping with us!",
   taxRegime: "regular",
   shiftOpeningFloat: 2000, // ₹2,000 opening cash float
+  fontStyle: "jakarta", // Modern Geometric (Outfit + Plus Jakarta Sans)
 };
 
 export const initialSuppliers = [

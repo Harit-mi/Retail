@@ -119,6 +119,14 @@ export const StoreProvider = ({ children }) => {
     getSafeStorage("dukaan_store_config", initialStoreConfig, counterPin)
   );
 
+  // Synchronize dynamic font style attribute onto documentElement
+  useEffect(() => {
+    const font = storeConfig?.fontStyle || "jakarta";
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-font-style", font);
+    }
+  }, [storeConfig?.fontStyle]);
+
   const businessProfile = getBusinessProfile(storeConfig?.businessType);
 
   const switchBusinessType = (newType) => {

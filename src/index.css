@@ -1,10 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..900&family=JetBrains+Mono:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 @import "tailwindcss";
 
+:root {
+  --app-font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --app-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --app-font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+}
+
+[data-font-style="poppins"] {
+  --app-font-display: 'Poppins', sans-serif;
+  --app-font-sans: 'Poppins', sans-serif;
+}
+
+[data-font-style="space-grotesk"] {
+  --app-font-display: 'Space Grotesk', sans-serif;
+  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+[data-font-style="inter"] {
+  --app-font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --app-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-font-style="jakarta"] {
+  --app-font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --app-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 @theme {
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
 }
 
@@ -24,7 +50,7 @@
   }
 
   html, body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--app-font-sans, 'Plus Jakarta Sans', sans-serif);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     background-color: #FAFAF9;
     color: #18181B;
@@ -36,13 +62,13 @@
   }
 
   h1, h2, h3, h4, .font-display {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--app-font-display, 'Outfit', 'Plus Jakarta Sans', sans-serif);
     letter-spacing: -0.025em;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   .font-mono, .font-numeric {
-    font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--app-font-mono, 'JetBrains Mono', monospace);
     font-variant-numeric: tabular-nums;
   }
 }

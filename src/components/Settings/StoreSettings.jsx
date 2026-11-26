@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/useStore";
-import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck, Lock } from "lucide-react";
+import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck, Lock, Type } from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 import { getBusinessProfile } from "../../config/businessProfiles";
 
@@ -163,6 +163,92 @@ export const StoreSettings = () => {
             <p className="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 pt-1">
               <Lock className="w-3 h-3 text-slate-400 shrink-0" />
               <span>Business sector was provisioned during customer self-signup. To switch your store vertical or upgrade, contact DukaanPOS enterprise billing support.</span>
+            </p>
+          </div>
+
+          {/* POS Typography & Font Style Customizer */}
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Type className="w-4 h-4 text-[#1E3A5F]" />
+                <label className="text-xs font-bold text-slate-900 block">
+                  POS Display Font Style & Typography:
+                </label>
+              </div>
+              <span className="text-[11px] font-mono text-slate-500">
+                Live Interactive Preview
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+              {[
+                {
+                  id: "jakarta",
+                  name: "Modern Geometric",
+                  display: "Outfit & Plus Jakarta",
+                  preview: "Abc ₹1,499",
+                  desc: "Modern SaaS & Retail standard (Recommended)",
+                },
+                {
+                  id: "poppins",
+                  name: "Urban Friendly",
+                  display: "Poppins Geometric",
+                  preview: "Abc ₹1,499",
+                  desc: "Warm, rounded, vibrant retail",
+                },
+                {
+                  id: "space-grotesk",
+                  name: "Neo-Grotesk Tech",
+                  display: "Space Grotesk & Jakarta",
+                  preview: "Abc ₹1,499",
+                  desc: "Bold high-tech store display",
+                },
+                {
+                  id: "inter",
+                  name: "Classic Swiss",
+                  display: "Inter Clean Sans",
+                  preview: "Abc ₹1,499",
+                  desc: "Minimalist compact system font",
+                },
+              ].map((font) => {
+                const isSelected = (formData.fontStyle || "jakarta") === font.id;
+                return (
+                  <button
+                    key={font.id}
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, fontStyle: font.id }));
+                      if (typeof document !== "undefined") {
+                        document.documentElement.setAttribute("data-font-style", font.id);
+                      }
+                    }}
+                    className={`text-left p-3 rounded-lg border-2 transition relative flex flex-col justify-between ${
+                      isSelected
+                        ? "border-[#1E3A5F] bg-blue-50/50 shadow-xs ring-1 ring-[#1E3A5F]"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900">{font.name}</span>
+                        {isSelected && (
+                          <span className="w-2 h-2 rounded-full bg-[#1E3A5F]"></span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono mt-0.5">{font.display}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-xs font-black tracking-tight text-slate-800">{font.preview}</span>
+                      <span className="text-[9px] text-slate-400 font-bold">
+                        {font.id === "jakarta" ? "★ Default" : ""}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-slate-500 font-mono">
+              Instantly adapts headline styles, till terminal readability, price tags, and receipt layout typography across the entire POS.
             </p>
           </div>
 

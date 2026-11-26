@@ -35,8 +35,10 @@
 
 ## 3. Typography Standards
 
-* **Display & Body Font:** System Sans / Inter / Display (`font-display`, `font-sans`)
-* **Numeric & Financial Typography:** `font-mono tabular-nums` MANDATORY for:
+* **Display & Brand Font:** Outfit / Plus Jakarta Sans (`font-display`) — geometric, modern, punchy retail headings
+* **Body & UI Font:** Plus Jakarta Sans (`font-sans`) — high-legibility modern SaaS typography
+* **Customizable Styles:** Plus Jakarta Sans (default), Poppins, Space Grotesk, Inter (`data-font-style`)
+* **Numeric & Financial Typography:** `font-mono tabular-nums` (JetBrains Mono) MANDATORY for:
   * Prices & Totals (e.g. `₹1,250`)
   * Stock Quantities (e.g. `10 Pcs`)
   * Barcodes & HSN Codes
