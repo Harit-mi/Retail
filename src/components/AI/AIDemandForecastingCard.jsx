@@ -48,21 +48,21 @@ export const AIDemandForecastingCard = () => {
 
   if (forecastData.length === 0) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
-            <PackageCheck className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-lg bg-[#1FAA59] text-white flex items-center justify-center font-bold shadow-xs">
+            <PackageCheck className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
             <h4 className="text-xs font-black font-display text-emerald-950">
               Inventory Buffer Status: Optimal
             </h4>
-            <p className="text-[11px] text-emerald-700 font-mono">
-              All supermarket and retail catalog items meet minimum stock warning thresholds.
+            <p className="text-[11px] text-emerald-800 font-mono">
+              All retail store catalog items meet minimum stock warning thresholds.
             </p>
           </div>
         </div>
-        <span className="text-[10px] font-mono font-bold bg-emerald-200/60 text-emerald-900 px-2.5 py-1 rounded">
+        <span className="text-[10px] font-mono font-bold bg-emerald-200 text-emerald-900 px-2.5 py-1 rounded-full">
           100% Buffered
         </span>
       </div>
@@ -70,26 +70,26 @@ export const AIDemandForecastingCard = () => {
   }
 
   return (
-    <div className="bg-[#2A2825] text-white rounded-xl p-4 border border-[#E8E3DA]/20 shadow-sm space-y-3">
+    <div className="bg-[#0F1F35] text-white rounded-xl p-4 border-2 border-slate-700/80 shadow-sm space-y-3">
       <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-[#C2782A] text-white flex items-center justify-center font-bold">
-            <Sparkles className="w-4 h-4" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-[#1E3A5F] text-[#F5A623] flex items-center justify-center font-bold shadow-xs">
+            <Sparkles className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
             <h4 className="text-xs font-black font-display tracking-tight text-white flex items-center gap-1.5">
               <span>7-Day Sales Velocity & Reorder Heuristic</span>
-              <span className="text-[9px] font-mono bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-400/30">
+              <span className="text-[9px] font-mono bg-amber-400/20 text-[#F5A623] px-1.5 py-0.5 rounded border border-amber-400/30 font-bold">
                 Rule-Based
               </span>
             </h4>
-            <p className="text-[10px] text-[#E8E3DA]/80 font-mono">
+            <p className="text-[10px] text-slate-300 font-mono">
               Rolling 7-day sales velocity model & purchase order suggestions
             </p>
           </div>
         </div>
 
-        <span className="text-[10px] font-mono text-amber-300 font-bold bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+        <span className="text-[10px] font-mono text-[#F5A623] font-black bg-amber-500/15 px-2.5 py-1 rounded-full border border-amber-400/30">
           {forecastData.length} Low Stock
         </span>
       </div>
@@ -98,16 +98,16 @@ export const AIDemandForecastingCard = () => {
         {forecastData.slice(0, 3).map((item) => (
           <div
             key={item.id}
-            className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs"
+            className="bg-slate-900/70 border border-slate-700/80 rounded-lg p-3 flex items-center justify-between gap-3 text-xs hover:bg-slate-900/90 transition"
           >
             <div className="min-w-0 flex-1">
               <div className="font-extrabold text-white font-display truncate">
                 {item.name}
               </div>
-              <div className="text-[10px] text-amber-300 font-mono flex items-center gap-2 mt-0.5">
-                <span>Stock: {item.stock} {item.unit} left</span>
+              <div className="text-[10px] text-slate-300 font-mono flex items-center gap-2 mt-0.5">
+                <span className="text-amber-300 font-bold">Stock: {item.stock} {item.unit} left</span>
                 <span>•</span>
-                <span>
+                <span className="text-slate-400">
                   {item.predictedRunoutDays !== null
                     ? `Runout in ~${item.predictedRunoutDays} day(s)`
                     : "No sales in 7d"}
@@ -116,15 +116,15 @@ export const AIDemandForecastingCard = () => {
             </div>
 
             <div className="text-right flex-shrink-0">
-              <div className="text-[11px] font-black font-mono text-emerald-400">
+              <div className="text-[11px] font-black font-mono text-[#1FAA59]">
                 Reorder +{item.recommendedOrderQty} {item.unit}
               </div>
               <button
                 onClick={() => alert(`Created Purchase Order draft for ${item.name} (${item.recommendedOrderQty} ${item.unit})`)}
-                className="mt-1 px-2.5 py-1 bg-[#C2782A] hover:bg-[#A8641F] text-white rounded font-bold text-[10px] flex items-center gap-1 ml-auto"
+                className="mt-1 px-3 py-1 bg-[#F5A623] hover:bg-amber-400 text-slate-950 rounded-md font-black font-display text-[10px] flex items-center gap-1 ml-auto transition shadow-xs cursor-pointer active:scale-95"
               >
                 <span>Draft PO</span>
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-3 h-3 stroke-[2.5]" />
               </button>
             </div>
           </div>
