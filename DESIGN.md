@@ -17,19 +17,16 @@
 
 ## 2. Color Palette & Design Tokens
 
-### Primary Brand Palette
-* **Dark Register Panel Header:** `#0F1F35` (Deep Navy / Slate 950 — used for top ledger header bars, till summary bars, modal headers)
-* **Primary Interactive Navy:** `#1E3A5F` (Used for active navigation tabs, action buttons, table headers)
-* **Amber LED Display Accent:** `#F5A623` (Used for grand total figures, checkout buttons, price highlights)
-* **Emerald Success & Settlement:** `#1FAA59` (Used for settled balances, +1 scan feedback, UPI indicators)
-* **Crimson Warning / Dues:** `#E64545` (Used for out-of-stock badges, overdue Udhaar dues)
+### Strict Minimalist 2-Color Architecture (Black & White)
+* **Primary Color 1 (Black):** `#09090B` / `#000000` (Used for primary text in light mode, solid action buttons, keycap headers, and pure canvas in dark mode)
+* **Primary Color 2 (White):** `#FFFFFF` / `#FAFAFA` (Used for pure canvas in light mode, text/buttons in dark mode)
+* **Neutral Grayscale Ramp:** `#18181B` (zinc-900), `#27272A` (zinc-800), `#71717A` (zinc-500), `#E4E4E7` (zinc-200), `#F4F4F5` (zinc-100)
+* **Zero Rainbow Clutter:** No extraneous amber, emerald, blue, or purple — strictly minimal monochrome styling across all screens.
 
-### Neutral Surface Tokens
-* **App Background:** `#F7F8FA`
-* **Card Surface:** `#FFFFFF`
-* **Border Color:** `#E2E8F0` (`border-2 border-slate-200` for crisp card boundaries)
-* **Muted Text:** `#64748B` (`text-slate-500`)
-* **Primary Text:** `#0F172A` (`text-slate-900`)
+### Dual Theme Modes (Light & Dark)
+* **Light Mode:** Crisp white canvas (`#FFFFFF`), solid black typography and button highlights, hairline `#E4E4E7` borders.
+* **Dark Mode:** Deep black canvas (`#09090B`), solid white typography and action buttons, subtle `#27272A` borders.
+* **Instant Toggle:** Accessible via Sun/Moon icon in Navbar and dedicated theme tiles in Store Settings.
 
 ---
 

@@ -237,44 +237,44 @@ export const ProductLandingPage = () => {
   ];
 
   return (
-    <div className="bg-[#0F1F35] text-slate-100 min-h-screen font-sans selection:bg-[#F5A623] selection:text-slate-950">
+    <div className="bg-zinc-950 text-zinc-100 min-h-screen font-sans selection:bg-white selection:text-zinc-950">
       {/* Top Banner Announcement */}
-      <div className="bg-gradient-to-r from-amber-500 via-[#F5A623] to-orange-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
-        <Sparkles className="w-4 h-4 fill-slate-950" />
+      <div className="bg-zinc-900 border-b border-zinc-800 text-zinc-100 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm">
+        <Sparkles className="w-4 h-4 text-zinc-100" />
         <span>DukaanPOS 2.0: Cloud-Connected & Modern POS for Supermarkets and Retail Businesses with Dual A4/3" Billing, Barcodes & Inventory!</span>
         <button
           onClick={() => handleOpenSignup("pro")}
-          className="underline hover:text-white transition ml-2 font-mono text-[11px] font-black cursor-pointer"
+          className="underline hover:text-zinc-300 transition ml-2 font-mono text-[11px] font-black cursor-pointer"
         >
           Start Self Signup & Setup →
         </button>
       </div>
 
       {/* Website Navigation Header */}
-      <header className="border-b border-white/10 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md">
+      <header className="border-b border-zinc-800 bg-zinc-950/90 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-[#F5A623] flex items-center justify-center shadow text-slate-950 font-black text-base">
+            <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow text-zinc-950 font-black text-base">
               <i className="fa-solid fa-shop"></i>
             </div>
             <div>
               <span className="font-black text-lg font-display text-white tracking-tight">
-                Dukaan<span className="text-[#F5A623]">POS</span>
+                Dukaan<span className="text-zinc-400">POS</span>
               </span>
-              <span className="ml-2 text-[10px] bg-amber-400/20 text-amber-300 font-mono px-2 py-0.5 rounded font-bold uppercase">
+              <span className="ml-2 text-[10px] bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono px-2 py-0.5 rounded font-bold uppercase">
                 🇮🇳 Retail India
               </span>
             </div>
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
-            <a href="#verticals" className="hover:text-amber-400 transition">Verticals</a>
-            <a href="#features" className="hover:text-amber-400 transition">Features</a>
-            <a href="#video" className="hover:text-amber-400 transition">Demo Video</a>
-            <a href="#pricing" className="hover:text-amber-400 transition">Pricing</a>
-            <a href="#faq" className="hover:text-amber-400 transition">FAQ</a>
+          <nav className="hidden md:flex items-center space-x-6 text-xs font-bold text-zinc-300">
+            <a href="#verticals" className="hover:text-white transition">Verticals</a>
+            <a href="#features" className="hover:text-white transition">Features</a>
+            <a href="#video" className="hover:text-white transition">Demo Video</a>
+            <a href="#pricing" className="hover:text-white transition">Pricing</a>
+            <a href="#faq" className="hover:text-white transition">FAQ</a>
           </nav>
 
           {/* Right Action Controls */}

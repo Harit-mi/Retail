@@ -1,11 +1,13 @@
 import React, { useState, useRef } from "react";
 import { useStore } from "../../context/useStore";
-import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck, Lock, Type } from "lucide-react";
+import { Store, Save, RotateCcw, CheckCircle, Download, Upload, ShieldCheck, Lock, Type, Sun, Moon } from "lucide-react";
 import { createEncryptedBackup, verifyAndDecryptBackup, downloadBackupFile } from "../../utils/backupRestore";
 import { getBusinessProfile } from "../../config/businessProfiles";
 
 export const StoreSettings = () => {
   const {
+    theme,
+    setTheme,
     storeConfig,
     setStoreConfig,
     resetDemoData,
@@ -249,6 +251,87 @@ export const StoreSettings = () => {
             </div>
             <p className="text-[11px] text-slate-500 font-mono">
               Instantly adapts headline styles, till terminal readability, price tags, and receipt layout typography across the entire POS.
+            </p>
+          </div>
+
+          {/* Minimal 2-Color Theme Mode Selector (Light & Dark) */}
+          <div className="bg-slate-50 dark:bg-zinc-900 border-2 border-slate-200 dark:border-zinc-800 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-900 dark:text-zinc-50 block">
+                Minimalist 2-Color Theme Mode (Black & White):
+              </label>
+              <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400">
+                Active: <strong className="uppercase">{theme || "dark"}</strong>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (setTheme) setTheme("dark");
+                  if (typeof document !== "undefined") {
+                    document.documentElement.classList.add("dark");
+                    document.documentElement.setAttribute("data-theme", "dark");
+                    localStorage.setItem("dukaan_theme", "dark");
+                  }
+                }}
+                className={`p-3.5 rounded-xl border-2 transition text-left flex items-start gap-3 cursor-pointer ${
+                  theme === "dark"
+                    ? "border-zinc-950 dark:border-white bg-zinc-950 text-white shadow-xs"
+                    : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-slate-300"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center shrink-0 text-white">
+                  <Moon className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black">Minimalist Dark Mode</span>
+                    {theme === "dark" && (
+                      <span className="text-[9px] bg-white text-black font-mono font-bold px-1.5 py-0.5 rounded">ACTIVE</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] opacity-80 mt-0.5">
+                    Deep black background (#09090B), crisp white text & buttons, subtle gray borders.
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (setTheme) setTheme("light");
+                  if (typeof document !== "undefined") {
+                    document.documentElement.classList.remove("dark");
+                    document.documentElement.setAttribute("data-theme", "light");
+                    localStorage.setItem("dukaan_theme", "light");
+                  }
+                }}
+                className={`p-3.5 rounded-xl border-2 transition text-left flex items-start gap-3 cursor-pointer ${
+                  theme === "light"
+                    ? "border-zinc-950 dark:border-white bg-zinc-100 text-zinc-950 shadow-xs"
+                    : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-slate-300"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-white border border-zinc-300 flex items-center justify-center shrink-0 text-zinc-950">
+                  <Sun className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black">Minimalist Light Mode</span>
+                    {theme === "light" && (
+                      <span className="text-[9px] bg-black text-white font-mono font-bold px-1.5 py-0.5 rounded">ACTIVE</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] opacity-80 mt-0.5">
+                    Pure white canvas (#FFFFFF), solid black typography & buttons, clean hairline dividers.
+                  </p>
+                </div>
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
+              Strictly enforces a 2-color high-contrast aesthetic across all billing counters, reports, and settings.
             </p>
           </div>
 

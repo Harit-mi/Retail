@@ -63,6 +63,24 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem("dukaan_language", langCode);
   };
 
+  // Monochromatic Theme Management (Strict 2-Color Light & Dark Mode)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("dukaan_theme") || "dark";
+  });
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  useEffect(() => {
+    const isDark = theme === "dark";
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", isDark);
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("dukaan_theme", theme);
+    }
+  }, [theme]);
+
   // Global POS Counter Register PIN Lock State
   // Raw PIN is held strictly in-memory during active sessions. Never persisted in plaintext.
   const [counterPin, setCounterPin] = useState("");
@@ -1456,6 +1474,9 @@ export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider
       value={{
+        theme,
+        setTheme,
+        toggleTheme,
         currentLanguage,
         changeLanguage,
         t,

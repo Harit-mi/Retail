@@ -190,8 +190,8 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
         {/* Modal Header */}
         <div className="px-6 py-4 bg-slate-950/90 border-b border-white/10 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#F5A623] text-slate-950 flex items-center justify-center font-black text-sm shadow">
-              <Sparkles className="w-4 h-4 fill-slate-950" />
+            <div className="w-8 h-8 rounded-lg bg-white text-zinc-950 flex items-center justify-center font-black text-sm shadow">
+              <Sparkles className="w-4 h-4 fill-zinc-950" />
             </div>
             <div>
               <h3 className="font-extrabold text-sm sm:text-base font-display text-white">
@@ -204,7 +204,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg bg-white/5 hover:bg-white/10 transition"
+            className="text-slate-400 hover:text-white p-1 rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -214,7 +214,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
         <div className="grid grid-cols-3 bg-slate-900/60 border-b border-white/10 text-xs font-mono font-bold shrink-0">
           <div
             className={`py-2 px-3 text-center border-r border-white/10 flex items-center justify-center gap-1.5 ${
-              step === 1 ? "bg-[#F5A623]/20 text-[#F5A623] border-b-2 border-b-[#F5A623]" : "text-slate-400"
+              step === 1 ? "bg-white/10 text-white border-b-2 border-b-white" : "text-slate-400"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[10px]">1</span>
@@ -222,7 +222,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
           </div>
           <div
             className={`py-2 px-3 text-center border-r border-white/10 flex items-center justify-center gap-1.5 ${
-              step === 2 ? "bg-[#F5A623]/20 text-[#F5A623] border-b-2 border-b-[#F5A623]" : "text-slate-400"
+              step === 2 ? "bg-white/10 text-white border-b-2 border-b-white" : "text-slate-400"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[10px]">2</span>
@@ -230,7 +230,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
           </div>
           <div
             className={`py-2 px-3 text-center flex items-center justify-center gap-1.5 ${
-              step === 3 ? "bg-[#F5A623]/20 text-[#F5A623] border-b-2 border-b-[#F5A623]" : "text-slate-400"
+              step === 3 ? "bg-white/10 text-white border-b-2 border-b-white" : "text-slate-400"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[10px]">3</span>
@@ -263,19 +263,19 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       onClick={() => handleSectorSelect(sec.id)}
                       className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                         isSelected
-                          ? "bg-slate-900 border-[#F5A623] shadow-lg shadow-amber-500/10 scale-[1.01]"
+                          ? "bg-slate-900 border-white shadow-lg shadow-white/5 scale-[1.01]"
                           : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
                       }`}
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <i className={`fa-solid ${sec.icon} text-sm ${isSelected ? "text-[#F5A623]" : "text-slate-300"}`} />
+                            <i className={`fa-solid ${sec.icon} text-sm ${isSelected ? "text-white" : "text-slate-300"}`} />
                             <h5 className="font-extrabold font-display text-white text-xs sm:text-sm">
                               {sec.name}
                             </h5>
                           </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-[#F5A623] shrink-0" />}
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-white shrink-0" />}
                         </div>
 
                         <p className="text-[11px] text-slate-300 leading-snug">
@@ -285,7 +285,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                         <div className="pt-2 border-t border-white/5 space-y-1">
                           {sec.highlights.map((h, i) => (
                             <div key={i} className="text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
-                              <span className="w-1 h-1 rounded-full bg-[#1FAA59]"></span>
+                              <span className="w-1 h-1 rounded-full bg-white"></span>
                               <span>{h}</span>
                             </div>
                           ))}
@@ -294,7 +294,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
 
                       <div className="pt-2.5 mt-2 flex justify-end">
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-                          isSelected ? "bg-[#F5A623] text-slate-950 font-black" : "bg-white/10 text-slate-300"
+                          isSelected ? "bg-white text-slate-950 font-black" : "bg-white/10 text-slate-300"
                         }`}>
                           {sec.badge}
                         </span>
@@ -332,7 +332,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       value={storeDetails.name}
                       onChange={(e) => setStoreDetails({ ...storeDetails, name: e.target.value })}
                       placeholder="e.g. Apex Mobile World"
-                      className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs font-bold text-white outline-none"
+                      className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs font-bold text-white outline-none"
                     />
                   </div>
 
@@ -346,7 +346,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       value={storeDetails.ownerName}
                       onChange={(e) => setStoreDetails({ ...storeDetails, ownerName: e.target.value })}
                       placeholder="e.g. Rajesh Gupta"
-                      className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs font-bold text-white outline-none"
+                      className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs font-bold text-white outline-none"
                     />
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       value={storeDetails.phone}
                       onChange={(e) => setStoreDetails({ ...storeDetails, phone: e.target.value })}
                       placeholder="+91 98765 43210"
-                      className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs font-mono font-bold text-white outline-none"
+                      className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs font-mono font-bold text-white outline-none"
                     />
                   </div>
 
@@ -376,7 +376,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       value={storeDetails.city}
                       onChange={(e) => setStoreDetails({ ...storeDetails, city: e.target.value })}
                       placeholder="e.g. New Delhi, Delhi"
-                      className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs text-white outline-none"
+                      className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                     />
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                     value={storeDetails.address}
                     onChange={(e) => setStoreDetails({ ...storeDetails, address: e.target.value })}
                     placeholder="Shop No., Market Road, Sector"
-                    className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs text-white outline-none"
+                    className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                   />
                 </div>
 
@@ -403,7 +403,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                     value={storeDetails.gstin}
                     onChange={(e) => setStoreDetails({ ...storeDetails, gstin: e.target.value })}
                     placeholder="e.g. 07AAAAA0000A1Z5 (Leave blank if composition/unregistered)"
-                    className="w-full bg-slate-950 border border-white/15 focus:border-[#F5A623] rounded-lg px-3 py-2 text-xs font-mono uppercase text-white outline-none"
+                    className="w-full bg-slate-950 border border-white/15 focus:border-white rounded-lg px-3 py-2 text-xs font-mono uppercase text-white outline-none"
                   />
                 </div>
               </div>
@@ -434,12 +434,12 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       onClick={() => setSelectedPlan(p.id)}
                       className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all relative flex flex-col justify-between ${
                         isSelected
-                          ? "bg-gradient-to-b from-slate-900 to-slate-950 border-[#F5A623] shadow-lg shadow-amber-500/10"
+                          ? "bg-gradient-to-b from-slate-900 to-slate-950 border-white shadow-lg shadow-white/5"
                           : "bg-white/5 border-white/10 hover:bg-white/10"
                       }`}
                     >
                       {p.popular && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#F5A623] text-slate-950 text-[9px] font-black font-mono px-2 py-0.5 rounded-full uppercase">
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white text-zinc-950 text-[9px] font-black font-mono px-2 py-0.5 rounded-full uppercase">
                           Popular
                         </span>
                       )}
@@ -454,7 +454,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                         <ul className="mt-2.5 pt-2 border-t border-white/10 space-y-1 text-[10px] text-slate-300">
                           {p.features.map((f, i) => (
                             <li key={i} className="flex items-center gap-1.5">
-                              <Check className="w-3 h-3 text-[#1FAA59] shrink-0" />
+                              <Check className="w-3 h-3 text-white shrink-0" />
                               <span>{f}</span>
                             </li>
                           ))}
@@ -464,7 +464,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
                         <span className="text-[10px] text-slate-400">Select Plan</span>
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          isSelected ? "border-[#F5A623] bg-[#F5A623]" : "border-slate-500"
+                          isSelected ? "border-white bg-white" : "border-slate-500"
                         }`}>
                           {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
                         </div>
@@ -479,12 +479,12 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                 <div className="bg-slate-900 p-4 rounded-xl border border-white/15 space-y-3">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-[#1FAA59]" />
+                      <Lock className="w-4 h-4 text-white" />
                       <span className="font-bold text-white text-xs">
                         Instant Online Merchant Activation (₹{planAmount})
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-amber-300 font-bold bg-amber-400/20 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-zinc-200 font-bold bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded">
                       UPI Auto-Approved
                     </span>
                   </div>
@@ -495,7 +495,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       type="button"
                       onClick={() => setPaymentMethod("upi")}
                       className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-                        paymentMethod === "upi" ? "bg-[#F5A623] text-slate-950 font-black" : "bg-white/5 text-slate-300"
+                        paymentMethod === "upi" ? "bg-white text-zinc-950 font-black" : "bg-white/5 text-slate-300"
                       }`}
                     >
                       <QrCode className="w-3.5 h-3.5" />
@@ -505,7 +505,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                       type="button"
                       onClick={() => setPaymentMethod("card")}
                       className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-                        paymentMethod === "card" ? "bg-[#F5A623] text-slate-950 font-black" : "bg-white/5 text-slate-300"
+                        paymentMethod === "card" ? "bg-white text-zinc-950 font-black" : "bg-white/5 text-slate-300"
                       }`}
                     >
                       <CreditCard className="w-3.5 h-3.5" />
@@ -522,7 +522,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                         <p className="text-[11px] text-slate-300 font-medium">
                           Scan with any UPI App (GPay, PhonePe, Paytm, BHIM) to activate your store license:
                         </p>
-                        <div className="bg-white/5 p-2 rounded border border-white/10 font-mono text-[10px] text-amber-300 space-y-0.5">
+                        <div className="bg-white/5 p-2 rounded border border-white/10 font-mono text-[10px] text-zinc-300 space-y-0.5">
                           <div>VPA: <strong>dukaanpos@icici</strong></div>
                           <div>Amount: <strong>₹{planAmount}.00</strong></div>
                           <div>License: <strong>{selectedSector.toUpperCase()}-ANNUAL</strong></div>
@@ -566,8 +566,8 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
                     onClick={handleSimulatePayment}
                     className={`w-full py-3 rounded-xl font-black text-xs font-display flex items-center justify-center gap-2 transition shadow-lg ${
                       paymentSuccess
-                        ? "bg-[#1FAA59] text-white"
-                        : "bg-[#F5A623] hover:bg-amber-400 text-slate-950 cursor-pointer"
+                        ? "bg-white text-zinc-950"
+                        : "bg-white hover:bg-zinc-200 text-zinc-950 cursor-pointer"
                     }`}
                   >
                     {isProcessingPayment ? (
@@ -633,7 +633,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
             <button
               type="button"
               onClick={() => setStep(step + 1)}
-              className="px-5 py-2.5 rounded-lg bg-[#F5A623] hover:bg-amber-400 text-slate-950 text-xs font-black font-display transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              className="px-5 py-2.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-black font-display transition flex items-center gap-1.5 cursor-pointer shadow-md"
             >
               <span>Continue</span>
               <ArrowRight className="w-4 h-4" />
@@ -643,7 +643,7 @@ export const SelfSignupModal = ({ isOpen, onClose, initialPlan = "pro" }) => {
               <button
                 type="button"
                 onClick={handleFinalLaunch}
-                className="px-5 py-2.5 rounded-lg bg-[#1FAA59] hover:bg-emerald-600 text-white text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+                className="px-5 py-2.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer shadow-md"
               >
                 <span>Launch Free POS Now</span>
                 <ArrowRight className="w-4 h-4" />

@@ -72,7 +72,7 @@ const MainContent = () => {
 
   if (!isStorageLoaded) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center justify-center p-5 text-zinc-900 selection:bg-zinc-900 selection:text-white">
+      <div className="min-h-screen bg-white dark:bg-[#09090B] flex flex-col items-center justify-center p-5 text-zinc-950 dark:text-zinc-50 selection:bg-zinc-950 selection:text-white dark:selection:bg-white dark:selection:text-zinc-950 transition-colors">
         <div className="space-y-4 text-center max-w-sm">
           <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <div>
@@ -89,7 +89,7 @@ const MainContent = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#FAFAF9] text-zinc-900 selection:bg-zinc-900 selection:text-white pb-16 md:pb-0">
+    <div className="min-h-screen flex bg-white dark:bg-[#09090B] text-zinc-950 dark:text-zinc-50 selection:bg-zinc-950 selection:text-white dark:selection:bg-white dark:selection:text-zinc-950 pb-16 md:pb-0 transition-colors">
       {/* Global POS Register Lock Overlay (Gates ENTIRE application when active) */}
       {isCounterLocked && (
         <div

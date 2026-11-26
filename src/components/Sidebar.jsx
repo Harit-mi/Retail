@@ -52,7 +52,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           label: "Products & Stock",
           icon: Boxes,
           badge: lowStockCount > 0 ? `${lowStockCount} low` : null,
-          badgeColor: "bg-amber-100 text-amber-900 border border-amber-200",
+          badgeColor: "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700",
         },
         { id: "suppliers", label: "Suppliers & POs", icon: Truck, badge: null },
         { id: "barcodes", label: "Barcode Printing", icon: Barcode, badge: null },
@@ -66,7 +66,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           label: "Udhaar Khata",
           icon: BookOpen,
           badge: udharCount > 0 ? `${udharCount} due` : null,
-          badgeColor: "bg-red-100 text-red-900 border border-red-200",
+          badgeColor: "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700",
         },
       ],
     },
@@ -97,21 +97,21 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
 
       {/* Main Responsive Sidebar Drawer */}
       <aside
-        className={`bg-[#FAFAF9] text-zinc-900 min-h-screen flex flex-col transition-all duration-200 border-r border-zinc-200/80 shadow-xs z-50 select-none ${
+        className={`bg-white dark:bg-[#09090B] text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col transition-all duration-200 border-r border-zinc-200 dark:border-zinc-800 shadow-xs z-50 select-none ${
           isMobileOpen
-            ? "fixed inset-y-0 left-0 w-64 translate-x-0 bg-white"
+            ? "fixed inset-y-0 left-0 w-64 translate-x-0 bg-white dark:bg-[#09090B]"
             : "hidden md:flex " + (collapsed ? "w-[72px]" : "w-64")
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200/80 bg-white">
+        <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#09090B]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white shrink-0 shadow-2xs">
+            <div className="w-8 h-8 rounded-lg bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950 shrink-0 shadow-2xs">
               <Store className="w-4 h-4" />
             </div>
             {(!collapsed || isMobileOpen) && (
               <div className="leading-tight">
-                <span className="font-bold text-sm font-display text-zinc-950 tracking-tight block">
+                <span className="font-bold text-sm font-display text-zinc-950 dark:text-zinc-50 tracking-tight block">
                   DUKAAN<span className="text-zinc-400 font-normal">POS</span>
                 </span>
                 <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase font-semibold block">
@@ -170,13 +170,13 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                         collapsed && !isMobileOpen ? "justify-center px-2" : "px-3"
                       } py-2 rounded-lg text-xs font-medium transition-colors relative group cursor-pointer ${
                         isActive
-                          ? "bg-zinc-900 text-white font-semibold shadow-xs"
-                          : "text-zinc-600 hover:bg-zinc-200/60 hover:text-zinc-950"
+                          ? "bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-semibold shadow-xs"
+                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-950 dark:hover:text-white"
                       }`}
                     >
                       <Icon
                         className={`w-4 h-4 shrink-0 transition-transform ${
-                          isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-800"
+                          isActive ? "text-white dark:text-zinc-950" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-200"
                         }`}
                       />
 

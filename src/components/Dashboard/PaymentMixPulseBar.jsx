@@ -26,74 +26,74 @@ export const PaymentMixPulseBar = () => {
   const udharPct = Math.max(0, 100 - (cashPct + upiPct + cardPct));
 
   return (
-    <div className="bg-[#FAFAF9]/90 backdrop-blur-md border-b border-zinc-200/80 px-3 sm:px-4 py-2 sticky top-16 z-20 transition-colors">
+    <div className="bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-4 py-2 sticky top-16 z-20 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 text-xs">
         {/* Title Badge & Total */}
         <div className="flex items-center justify-between sm:justify-start space-x-2 shrink-0">
           <div className="flex items-center space-x-1.5">
             <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 dark:bg-zinc-200 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-950 dark:bg-white"></span>
             </span>
-            <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-zinc-600">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-zinc-600 dark:text-zinc-400">
               Payment Mix
             </span>
           </div>
-          <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono">
-            Today: <strong className="font-mono text-zinc-950 font-semibold">₹{totals.total.toLocaleString("en-IN")}</strong>
+          <span className="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+            Today: <strong className="font-mono text-zinc-950 dark:text-zinc-50 font-semibold">₹{totals.total.toLocaleString("en-IN")}</strong>
           </span>
         </div>
 
         {/* Pulse Bar Segments */}
         <div className="flex-1 w-full md:max-w-md md:mx-2">
-          <div className="h-1.5 sm:h-2 w-full bg-zinc-100 rounded-full overflow-hidden flex border border-zinc-200/80">
+          <div className="h-1.5 sm:h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex border border-zinc-200 dark:border-zinc-700">
             <div
               style={{ width: `${cashPct}%` }}
               title={`Cash: ₹${totals.cash} (${cashPct}%)`}
-              className="h-full bg-zinc-950 transition-all duration-300"
+              className="h-full bg-zinc-950 dark:bg-white transition-all duration-300"
             />
             <div
               style={{ width: `${upiPct}%` }}
               title={`UPI: ₹${totals.upi} (${upiPct}%)`}
-              className="h-full bg-emerald-600 transition-all duration-300"
+              className="h-full bg-zinc-700 dark:bg-zinc-300 transition-all duration-300"
             />
             <div
               style={{ width: `${cardPct}%` }}
               title={`Card: ₹${totals.card} (${cardPct}%)`}
-              className="h-full bg-zinc-400 transition-all duration-300"
+              className="h-full bg-zinc-500 dark:bg-zinc-500 transition-all duration-300"
             />
             <div
               style={{ width: `${udharPct}%` }}
               title={`Udhaar: ₹${totals.udhar} (${udharPct}%)`}
-              className="h-full bg-amber-500 transition-all duration-300"
+              className="h-full bg-zinc-300 dark:bg-zinc-700 transition-all duration-300"
             />
           </div>
         </div>
 
         {/* Legend Values */}
-        <div className="flex items-center justify-between md:justify-end space-x-2 sm:space-x-3 text-[10px] sm:text-[11px] font-mono text-zinc-500 overflow-x-auto shrink-0">
+        <div className="flex items-center justify-between md:justify-end space-x-2 sm:space-x-3 text-[10px] sm:text-[11px] font-mono text-zinc-500 dark:text-zinc-400 overflow-x-auto shrink-0">
           <span className="flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-950" />
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-white" />
             <span>Cash:</span>
-            <strong className="text-zinc-900 font-semibold">{cashPct}%</strong>
+            <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{cashPct}%</strong>
           </span>
 
           <span className="flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 dark:bg-zinc-300" />
             <span>UPI:</span>
-            <strong className="text-zinc-900 font-semibold">{upiPct}%</strong>
+            <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{upiPct}%</strong>
           </span>
 
           <span className="flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 dark:bg-zinc-500" />
             <span>Card:</span>
-            <strong className="text-zinc-900 font-semibold">{cardPct}%</strong>
+            <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{cardPct}%</strong>
           </span>
 
           <span className="flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
             <span>Udhaar:</span>
-            <strong className="text-zinc-900 font-semibold">{udharPct}%</strong>
+            <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{udharPct}%</strong>
           </span>
         </div>
       </div>

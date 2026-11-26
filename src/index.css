@@ -2,10 +2,44 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --app-font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --app-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --app-font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Strict Minimal 2-Color Architecture (Light Mode Default) */
+  --bg-app: #FFFFFF;
+  --bg-subtle: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --bg-muted: #F4F4F5;
+  --bg-contrast: #09090B;
+  --text-main: #09090B;
+  --text-muted: #71717A;
+  --text-contrast: #FFFFFF;
+  --border-subtle: #E4E4E7;
+  --border-strong: #18181B;
+  --btn-primary-bg: #09090B;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #27272A;
+}
+
+.dark, [data-theme="dark"] {
+  /* Strict Minimal 2-Color Architecture (Dark Mode) */
+  --bg-app: #09090B;
+  --bg-subtle: #09090B;
+  --bg-card: #121215;
+  --bg-muted: #18181B;
+  --bg-contrast: #FFFFFF;
+  --text-main: #FAFAFA;
+  --text-muted: #A1A1AA;
+  --text-contrast: #09090B;
+  --border-subtle: #27272A;
+  --border-strong: #FAFAFA;
+  --btn-primary-bg: #FFFFFF;
+  --btn-primary-text: #09090B;
+  --btn-primary-hover: #E4E4E7;
 }
 
 [data-font-style="poppins"] {
@@ -35,30 +69,21 @@
 }
 
 @layer base {
-  :root {
-    --bg-main: #F8FAFC;
-    --surface-card: #FFFFFF;
-    --primary-slate: #0F172A;
-    --brand-emerald: #059669;
-    --brand-emerald-hover: #047857;
-    --accent-amber: #D97706;
-    --alert-red: #DC2626;
-  }
-
   * {
     -webkit-tap-highlight-color: transparent;
   }
 
   html, body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
     font-family: var(--app-font-sans, 'Plus Jakarta Sans', sans-serif);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    background-color: #FAFAF9;
-    color: #18181B;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -71,6 +96,178 @@
     font-family: var(--app-font-mono, 'JetBrains Mono', monospace);
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* =========================================================================
+   STRICT 2-COLOR MINIMALIST MONOCHROME SYSTEM (LIGHT & DARK MODE)
+   Eliminates all rainbow colors (amber, emerald, blue, purple, red, cyan)
+   and unifies everything into clean Black & White with crisp grayscale.
+   ========================================================================= */
+
+/* Neutralize legacy hex background tokens */
+.bg-\[\#0F1F35\],
+.bg-\[\#1E3A5F\],
+.bg-\[\#152a45\],
+.bg-\[\#2A2825\] {
+  background-color: var(--bg-contrast) !important;
+  color: var(--text-contrast) !important;
+}
+
+/* Neutralize action button backgrounds */
+.bg-\[\#F5A623\],
+.bg-\[\#1FAA59\],
+.bg-\[\#C2782A\] {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+}
+
+.hover\:bg-\[\#1E3A5F\]:hover,
+.hover\:bg-\[\#152a45\]:hover,
+.hover\:bg-amber-400:hover,
+.hover\:bg-\[\#A8641F\]:hover {
+  background-color: var(--btn-primary-hover) !important;
+}
+
+/* Neutralize text accent colors */
+.text-\[\#F5A623\],
+.text-\[\#1FAA59\],
+.text-\[\#1E3A5F\],
+.text-\[\#C2782A\],
+.text-amber-500,
+.text-amber-600,
+.text-amber-700,
+.text-amber-800,
+.text-emerald-600,
+.text-emerald-700,
+.text-blue-600,
+.text-blue-500,
+.text-purple-600,
+.text-indigo-600 {
+  color: var(--text-main) !important;
+}
+
+/* Neutralize border accents */
+.border-\[\#1E3A5F\],
+.border-\[\#F5A623\],
+.border-\[\#1FAA59\],
+.border-amber-200,
+.border-amber-300,
+.border-amber-400,
+.border-emerald-200,
+.border-emerald-300,
+.border-blue-200,
+.border-purple-200 {
+  border-color: var(--border-subtle) !important;
+}
+
+/* Neutralize soft tinted chip backgrounds */
+.bg-amber-50,
+.bg-amber-100,
+.bg-emerald-50,
+.bg-emerald-100,
+.bg-blue-50,
+.bg-blue-100,
+.bg-purple-50,
+.bg-indigo-50,
+.bg-teal-50,
+.bg-sky-50 {
+  background-color: var(--bg-muted) !important;
+  color: var(--text-main) !important;
+}
+
+/* Neutralize colored button chips to clean monochrome */
+.bg-amber-500,
+.bg-emerald-600,
+.bg-blue-600,
+.bg-indigo-600 {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+}
+
+/* Terminal and Financial LED Displays */
+.terminal-led,
+.terminal-green {
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-main) !important;
+  font-weight: 700;
+}
+
+/* =========================================================================
+   DARK MODE COMPREHENSIVE OVERRIDES
+   Ensures all white/slate surfaces flip to deep minimal black in dark mode
+   ========================================================================= */
+
+.dark .bg-white {
+  background-color: #121215 !important;
+  color: #FAFAFA !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-zinc-50,
+.dark .bg-\[\#FAFAF9\],
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-zinc-100 {
+  background-color: #18181B !important;
+  color: #FAFAFA !important;
+}
+
+.dark .text-slate-900,
+.dark .text-zinc-900,
+.dark .text-zinc-950,
+.dark .text-slate-950,
+.dark .text-slate-800,
+.dark .text-zinc-800 {
+  color: #FAFAFA !important;
+}
+
+.dark .text-slate-700,
+.dark .text-zinc-700,
+.dark .text-slate-600,
+.dark .text-zinc-600 {
+  color: #D4D4D8 !important;
+}
+
+.dark .text-slate-500,
+.dark .text-zinc-500,
+.dark .text-slate-400,
+.dark .text-zinc-400 {
+  color: #A1A1AA !important;
+}
+
+.dark .border-slate-200,
+.dark .border-zinc-200,
+.dark .border-slate-100,
+.dark .border-zinc-100,
+.dark .border-slate-300,
+.dark .border-zinc-300 {
+  border-color: #27272A !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #18181B !important;
+  color: #FAFAFA !important;
+  border-color: #27272A !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #71717A !important;
+}
+
+.dark aside,
+.dark header {
+  background-color: #09090B !important;
+  border-color: #27272A !important;
+  color: #FAFAFA !important;
+}
+
+.dark .keycap {
+  background-color: #27272A !important;
+  color: #E4E4E7 !important;
+  border-color: #3F3F46 !important;
 }
 
 /* Modern Clean Financial Display (Square / Shopify POS tier) */
